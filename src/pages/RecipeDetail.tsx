@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import {
-  Clock, Users, ShoppingCart, Pencil, Trash2, ArrowLeft, Minus, Plus,
+  Clock, Users, ShoppingCart, Pencil, Trash2, ArrowLeft, Minus, Plus, Share2, Flame,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -73,6 +73,27 @@ export default function RecipeDetail() {
     } catch {
       toast.error('Failed to add to list');
     }
+  };
+
+  const formatIngredientsText = () => {
+    return recipe.ingredients
+      .map((ing) => {
+        const qty = ing.quantity ? scaleQuantity(ing.quantity) : '';
+        return `${qty} ${ing.unit} ${ing.name}`.trim();
+      })
+      .join('\n');
+  };
+
+  const exportToGoogleKeep = () => {
+    const title = encodeURIComponent(recipe.title + ' — Ingredients');
+    const body = encodeURIComponent(formatIngredientsText());
+    window.open(`https://keep.google.com/#NOTE`, '_blank');
+    // Google Keep doesn't support pre-filled URLs, so we copy to clipboard first
+    navigator.clipboard.writeText(formatIngredientsText()).then(() => {
+      toast.success('Ingredients copied! Paste them into Google Keep.');
+    }).catch(() => {
+      toast.error('Could not copy to clipboard');
+    });
   };
 
   const handleDelete = async () => {
@@ -169,11 +190,16 @@ export default function RecipeDetail() {
 
         {/* Ingredients */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <h2 className="font-display text-xl font-semibold">Ingredients</h2>
-            <Button variant="outline" size="sm" onClick={handleAddToShoppingList} className="gap-1.5">
-              <ShoppingCart className="h-4 w-4" /> Add to List
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={exportToGoogleKeep} className="gap-1.5">
+                <Share2 className="h-4 w-4" /> Google Keep
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleAddToShoppingList} className="gap-1.5">
+                <ShoppingCart className="h-4 w-4" /> Add to List
+              </Button>
+            </div>
           </div>
           <ul className="space-y-2">
             {recipe.ingredients.map((ing, i) => (
@@ -188,6 +214,51 @@ export default function RecipeDetail() {
         </div>
 
         <Separator />
+
+        {/* Nutrition */}
+        {(recipe.calories_per_serving || recipe.protein_grams || recipe.carbs_grams || recipe.fat_grams || recipe.fiber_grams) && (
+          <>
+            <div className="space-y-3">
+              <h2 className="font-display text-xl font-semibold flex items-center gap-2">
+                <Flame className="h-5 w-5 text-primary" /> Nutrition
+                <span className="text-sm font-body font-normal text-muted-foreground">(per serving)</span>
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {recipe.calories_per_serving && (
+                  <div className="rounded-xl bg-primary/10 p-3 text-center">
+                    <div className="text-xl font-bold text-primary">{Math.round(recipe.calories_per_serving * scale)}</div>
+                    <div className="text-xs text-muted-foreground font-body">kcal</div>
+                  </div>
+                )}
+                {recipe.protein_grams && (
+                  <div className="rounded-xl bg-secondary/10 p-3 text-center">
+                    <div className="text-xl font-bold text-secondary">{(recipe.protein_grams * scale).toFixed(1)}</div>
+                    <div className="text-xs text-muted-foreground font-body">Protein (g)</div>
+                  </div>
+                )}
+                {recipe.carbs_grams && (
+                  <div className="rounded-xl bg-accent/30 p-3 text-center">
+                    <div className="text-xl font-bold text-accent-foreground">{(recipe.carbs_grams * scale).toFixed(1)}</div>
+                    <div className="text-xs text-muted-foreground font-body">Carbs (g)</div>
+                  </div>
+                )}
+                {recipe.fat_grams && (
+                  <div className="rounded-xl bg-muted p-3 text-center">
+                    <div className="text-xl font-bold text-foreground">{(recipe.fat_grams * scale).toFixed(1)}</div>
+                    <div className="text-xs text-muted-foreground font-body">Fat (g)</div>
+                  </div>
+                )}
+                {recipe.fiber_grams && (
+                  <div className="rounded-xl bg-secondary/10 p-3 text-center">
+                    <div className="text-xl font-bold text-secondary">{(recipe.fiber_grams * scale).toFixed(1)}</div>
+                    <div className="text-xs text-muted-foreground font-body">Fiber (g)</div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <Separator />
+          </>
+        )}
 
         {/* Instructions */}
         {recipe.instructions.length > 0 && (

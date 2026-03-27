@@ -26,6 +26,11 @@ interface RecipeFormProps {
     ingredients: Ingredient[];
     instructions: string[];
     image_url: string | null;
+    calories_per_serving: number | null;
+    protein_grams: number | null;
+    carbs_grams: number | null;
+    fat_grams: number | null;
+    fiber_grams: number | null;
   };
 }
 
@@ -51,6 +56,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url ?? null);
   const [saving, setSaving] = useState(false);
+  const [calories, setCalories] = useState<number | ''>(initialData?.calories_per_serving ?? '');
+  const [protein, setProtein] = useState<number | ''>(initialData?.protein_grams ?? '');
+  const [carbs, setCarbs] = useState<number | ''>(initialData?.carbs_grams ?? '');
+  const [fat, setFat] = useState<number | ''>(initialData?.fat_grams ?? '');
+  const [fiber, setFiber] = useState<number | ''>(initialData?.fiber_grams ?? '');
 
   const toggleTag = (tag: string) => {
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
@@ -101,6 +111,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         tags,
         ingredients: ingredients.filter((i) => i.name.trim()),
         instructions: instructions.filter((i) => i.trim()),
+        calories_per_serving: calories || null,
+        protein_grams: protein || null,
+        carbs_grams: carbs || null,
+        fat_grams: fat || null,
+        fiber_grams: fiber || null,
         source_json: null,
       };
 
@@ -202,7 +217,38 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         </div>
       </div>
 
-      {/* Ingredients */}
+      {/* Nutrition */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-display">Nutrition (per serving)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Calories (kcal)</Label>
+              <Input type="number" min={0} value={calories} onChange={(e) => setCalories(e.target.value ? Number(e.target.value) : '')} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Protein (g)</Label>
+              <Input type="number" min={0} step={0.1} value={protein} onChange={(e) => setProtein(e.target.value ? Number(e.target.value) : '')} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Carbs (g)</Label>
+              <Input type="number" min={0} step={0.1} value={carbs} onChange={(e) => setCarbs(e.target.value ? Number(e.target.value) : '')} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Fat (g)</Label>
+              <Input type="number" min={0} step={0.1} value={fat} onChange={(e) => setFat(e.target.value ? Number(e.target.value) : '')} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Fiber (g)</Label>
+              <Input type="number" min={0} step={0.1} value={fiber} onChange={(e) => setFiber(e.target.value ? Number(e.target.value) : '')} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg font-display">Ingredients</CardTitle>

@@ -17,6 +17,11 @@ export interface Recipe {
   tags: string[];
   ingredients: Ingredient[];
   instructions: string[];
+  calories_per_serving: number | null;
+  protein_grams: number | null;
+  carbs_grams: number | null;
+  fat_grams: number | null;
+  fiber_grams: number | null;
   source_json: any;
   created_at: string;
   updated_at: string;

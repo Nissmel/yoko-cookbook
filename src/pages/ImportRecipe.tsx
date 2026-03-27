@@ -38,6 +38,11 @@ export default function ImportRecipe() {
         instructions: Array.isArray(parsed.instructions)
           ? parsed.instructions.map((s: any) => (typeof s === 'string' ? s : s.text || s.step || ''))
           : [],
+        calories_per_serving: parsed.calories_per_serving || parsed.calories || parsed.kcal || null,
+        protein_grams: parsed.protein_grams || parsed.protein || null,
+        carbs_grams: parsed.carbs_grams || parsed.carbs || parsed.carbohydrates || null,
+        fat_grams: parsed.fat_grams || parsed.fat || null,
+        fiber_grams: parsed.fiber_grams || parsed.fiber || null,
         source_json: parsed,
       };
 

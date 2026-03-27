@@ -42,6 +42,11 @@ export default function EditRecipe() {
           ingredients: recipe.ingredients,
           instructions: recipe.instructions,
           image_url: recipe.image_url,
+          calories_per_serving: recipe.calories_per_serving,
+          protein_grams: recipe.protein_grams,
+          carbs_grams: recipe.carbs_grams,
+          fat_grams: recipe.fat_grams,
+          fiber_grams: recipe.fiber_grams,
         }}
       />
     </AppLayout>
