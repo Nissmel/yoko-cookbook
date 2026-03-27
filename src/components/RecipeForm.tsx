@@ -56,6 +56,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url ?? null);
   const [saving, setSaving] = useState(false);
+  const [calories, setCalories] = useState<number | ''>(initialData?.calories_per_serving ?? '');
+  const [protein, setProtein] = useState<number | ''>(initialData?.protein_grams ?? '');
+  const [carbs, setCarbs] = useState<number | ''>(initialData?.carbs_grams ?? '');
+  const [fat, setFat] = useState<number | ''>(initialData?.fat_grams ?? '');
+  const [fiber, setFiber] = useState<number | ''>(initialData?.fiber_grams ?? '');
 
   const toggleTag = (tag: string) => {
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
