@@ -217,7 +217,38 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         </div>
       </div>
 
-      {/* Ingredients */}
+      {/* Nutrition */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-display">Nutrition (per serving)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Calories (kcal)</Label>
+              <Input type="number" min={0} value={calories} onChange={(e) => setCalories(e.target.value ? Number(e.target.value) : '')} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Protein (g)</Label>
+              <Input type="number" min={0} step={0.1} value={protein} onChange={(e) => setProtein(e.target.value ? Number(e.target.value) : '')} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Carbs (g)</Label>
+              <Input type="number" min={0} step={0.1} value={carbs} onChange={(e) => setCarbs(e.target.value ? Number(e.target.value) : '')} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Fat (g)</Label>
+              <Input type="number" min={0} step={0.1} value={fat} onChange={(e) => setFat(e.target.value ? Number(e.target.value) : '')} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Fiber (g)</Label>
+              <Input type="number" min={0} step={0.1} value={fiber} onChange={(e) => setFiber(e.target.value ? Number(e.target.value) : '')} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg font-display">Ingredients</CardTitle>
