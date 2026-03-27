@@ -111,6 +111,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         tags,
         ingredients: ingredients.filter((i) => i.name.trim()),
         instructions: instructions.filter((i) => i.trim()),
+        calories_per_serving: calories || null,
+        protein_grams: protein || null,
+        carbs_grams: carbs || null,
+        fat_grams: fat || null,
+        fiber_grams: fiber || null,
         source_json: null,
       };
 
