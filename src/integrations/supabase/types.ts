@@ -43,15 +43,20 @@ export type Database = {
       }
       recipes: {
         Row: {
+          calories_per_serving: number | null
+          carbs_grams: number | null
           category: string | null
           cook_time_minutes: number | null
           created_at: string
           description: string | null
+          fat_grams: number | null
+          fiber_grams: number | null
           id: string
           image_url: string | null
           ingredients: Json
           instructions: Json
           prep_time_minutes: number | null
+          protein_grams: number | null
           servings: number
           source_json: Json | null
           tags: string[] | null
@@ -60,15 +65,20 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          calories_per_serving?: number | null
+          carbs_grams?: number | null
           category?: string | null
           cook_time_minutes?: number | null
           created_at?: string
           description?: string | null
+          fat_grams?: number | null
+          fiber_grams?: number | null
           id?: string
           image_url?: string | null
           ingredients?: Json
           instructions?: Json
           prep_time_minutes?: number | null
+          protein_grams?: number | null
           servings?: number
           source_json?: Json | null
           tags?: string[] | null
@@ -77,15 +87,20 @@ export type Database = {
           user_id: string
         }
         Update: {
+          calories_per_serving?: number | null
+          carbs_grams?: number | null
           category?: string | null
           cook_time_minutes?: number | null
           created_at?: string
           description?: string | null
+          fat_grams?: number | null
+          fiber_grams?: number | null
           id?: string
           image_url?: string | null
           ingredients?: Json
           instructions?: Json
           prep_time_minutes?: number | null
+          protein_grams?: number | null
           servings?: number
           source_json?: Json | null
           tags?: string[] | null
