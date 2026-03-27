@@ -23,11 +23,11 @@ export function useRecipes(search?: string, category?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data as any[]).map((r) => ({
+      return (data ?? []).map((r) => ({
         ...r,
-        ingredients: r.ingredients as Ingredient[],
-        instructions: r.instructions as string[],
-        tags: r.tags || [],
+        ingredients: (r.ingredients as unknown as Ingredient[]) ?? [],
+        instructions: (r.instructions as unknown as string[]) ?? [],
+        tags: r.tags ?? [],
       })) as Recipe[];
     },
     enabled: !!user,
@@ -48,9 +48,9 @@ export function useRecipe(id: string | undefined) {
       if (error) throw error;
       return {
         ...data,
-        ingredients: data.ingredients as Ingredient[],
-        instructions: data.instructions as string[],
-        tags: data.tags || [],
+        ingredients: (data.ingredients as unknown as Ingredient[]) ?? [],
+        instructions: (data.instructions as unknown as string[]) ?? [],
+        tags: data.tags ?? [],
       } as Recipe;
     },
     enabled: !!user && !!id,
@@ -65,7 +65,12 @@ export function useCreateRecipe() {
     mutationFn: async (recipe: Omit<Recipe, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from('recipes')
-        .insert({ ...recipe, user_id: user!.id })
+        .insert({
+          ...recipe,
+          user_id: user!.id,
+          ingredients: recipe.ingredients as unknown as any,
+          instructions: recipe.instructions as unknown as any,
+        })
         .select()
         .single();
       if (error) throw error;
@@ -82,9 +87,13 @@ export function useUpdateRecipe() {
 
   return useMutation({
     mutationFn: async ({ id, ...recipe }: Partial<Recipe> & { id: string }) => {
+      const updateData: any = { ...recipe };
+      if (recipe.ingredients) updateData.ingredients = recipe.ingredients as unknown as any;
+      if (recipe.instructions) updateData.instructions = recipe.instructions as unknown as any;
+
       const { data, error } = await supabase
         .from('recipes')
-        .update(recipe)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
