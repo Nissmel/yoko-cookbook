@@ -75,6 +75,27 @@ export default function RecipeDetail() {
     }
   };
 
+  const formatIngredientsText = () => {
+    return recipe.ingredients
+      .map((ing) => {
+        const qty = ing.quantity ? scaleQuantity(ing.quantity) : '';
+        return `${qty} ${ing.unit} ${ing.name}`.trim();
+      })
+      .join('\n');
+  };
+
+  const exportToGoogleKeep = () => {
+    const title = encodeURIComponent(recipe.title + ' — Ingredients');
+    const body = encodeURIComponent(formatIngredientsText());
+    window.open(`https://keep.google.com/#NOTE`, '_blank');
+    // Google Keep doesn't support pre-filled URLs, so we copy to clipboard first
+    navigator.clipboard.writeText(formatIngredientsText()).then(() => {
+      toast.success('Ingredients copied! Paste them into Google Keep.');
+    }).catch(() => {
+      toast.error('Could not copy to clipboard');
+    });
+  };
+
   const handleDelete = async () => {
     try {
       await deleteRecipe.mutateAsync(recipe.id);
