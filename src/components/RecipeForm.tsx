@@ -26,6 +26,11 @@ interface RecipeFormProps {
     ingredients: Ingredient[];
     instructions: string[];
     image_url: string | null;
+    calories_per_serving: number | null;
+    protein_grams: number | null;
+    carbs_grams: number | null;
+    fat_grams: number | null;
+    fiber_grams: number | null;
   };
 }
 
