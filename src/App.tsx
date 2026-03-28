@@ -11,6 +11,8 @@ import EditRecipe from "./pages/EditRecipe";
 import RecipeDetail from "./pages/RecipeDetail";
 import ImportRecipe from "./pages/ImportRecipe";
 import ShoppingList from "./pages/ShoppingList";
+import CookingMode from "./pages/CookingMode";
+import Pantry from "./pages/Pantry";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
