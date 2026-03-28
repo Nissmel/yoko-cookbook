@@ -28,6 +28,7 @@ export function useRecipes(search?: string, category?: string) {
         ingredients: (r.ingredients as unknown as Ingredient[]) ?? [],
         instructions: (r.instructions as unknown as string[]) ?? [],
         tags: r.tags ?? [],
+        source_url: (r as any).source_url ?? null,
       })) as Recipe[];
     },
     enabled: !!user,
