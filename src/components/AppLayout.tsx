@@ -9,6 +9,7 @@ import {
   ShoppingCart,
   LogOut,
   Upload,
+  Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
