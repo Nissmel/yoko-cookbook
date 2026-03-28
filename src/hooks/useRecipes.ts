@@ -52,6 +52,7 @@ export function useRecipe(id: string | undefined) {
         ingredients: (data.ingredients as unknown as Ingredient[]) ?? [],
         instructions: (data.instructions as unknown as string[]) ?? [],
         tags: data.tags ?? [],
+        source_url: (data as any).source_url ?? null,
       } as Recipe;
     },
     enabled: !!user && !!id,
