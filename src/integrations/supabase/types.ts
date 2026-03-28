@@ -59,6 +59,7 @@ export type Database = {
           protein_grams: number | null
           servings: number
           source_json: Json | null
+          source_url: string | null
           tags: string[] | null
           title: string
           updated_at: string
@@ -81,6 +82,7 @@ export type Database = {
           protein_grams?: number | null
           servings?: number
           source_json?: Json | null
+          source_url?: string | null
           tags?: string[] | null
           title: string
           updated_at?: string
@@ -103,6 +105,7 @@ export type Database = {
           protein_grams?: number | null
           servings?: number
           source_json?: Json | null
+          source_url?: string | null
           tags?: string[] | null
           title?: string
           updated_at?: string
