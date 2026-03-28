@@ -39,6 +39,8 @@ const App = () => (
             <Route path="/recipe/:id" element={<ProtectedRoute><RecipeDetail /></ProtectedRoute>} />
             <Route path="/import" element={<ProtectedRoute><ImportRecipe /></ProtectedRoute>} />
             <Route path="/shopping-list" element={<ProtectedRoute><ShoppingList /></ProtectedRoute>} />
+            <Route path="/cooking/:id" element={<ProtectedRoute><CookingMode /></ProtectedRoute>} />
+            <Route path="/pantry" element={<ProtectedRoute><Pantry /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

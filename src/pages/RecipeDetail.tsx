@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import {
-  Clock, Users, ShoppingCart, Pencil, Trash2, ArrowLeft, Minus, Plus, Share2, Flame,
+  Clock, Users, ShoppingCart, Pencil, Trash2, ArrowLeft, Minus, Plus, Share2, Flame, ExternalLink, ChefHat,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -85,15 +85,10 @@ export default function RecipeDetail() {
   };
 
   const exportToGoogleKeep = () => {
-    const title = encodeURIComponent(recipe.title + ' — Ingredients');
-    const body = encodeURIComponent(formatIngredientsText());
-    window.open(`https://keep.google.com/#NOTE`, '_blank');
-    // Google Keep doesn't support pre-filled URLs, so we copy to clipboard first
+    window.open('https://keep.google.com/#NOTE', '_blank');
     navigator.clipboard.writeText(formatIngredientsText()).then(() => {
       toast.success('Ingredients copied! Paste them into Google Keep.');
-    }).catch(() => {
-      toast.error('Could not copy to clipboard');
-    });
+    }).catch(() => toast.error('Could not copy to clipboard'));
   };
 
   const handleDelete = async () => {
@@ -105,6 +100,8 @@ export default function RecipeDetail() {
       toast.error('Failed to delete');
     }
   };
+
+  const hasNutrition = recipe.calories_per_serving || recipe.protein_grams || recipe.carbs_grams || recipe.fat_grams || recipe.fiber_grams;
 
   return (
     <AppLayout>
@@ -155,6 +152,17 @@ export default function RecipeDetail() {
             {recipe.category && <Badge variant="secondary">{recipe.category}</Badge>}
             {recipe.tags.map((t) => <Badge key={t} variant="outline">{t}</Badge>)}
           </div>
+
+          {(recipe as any).source_url && (
+            <a
+              href={(recipe as any).source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-body"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Source
+            </a>
+          )}
         </div>
 
         <Separator />
@@ -165,10 +173,7 @@ export default function RecipeDetail() {
             <Users className="h-4 w-4" /> Servings
           </span>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline" size="icon" className="h-8 w-8"
-              onClick={() => setScaledServings(Math.max(1, currentServings - 1))}
-            >
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setScaledServings(Math.max(1, currentServings - 1))}>
               <Minus className="h-3 w-3" />
             </Button>
             <Input
@@ -176,10 +181,7 @@ export default function RecipeDetail() {
               onChange={(e) => setScaledServings(Math.max(1, Number(e.target.value)))}
               className="w-16 text-center h-8"
             />
-            <Button
-              variant="outline" size="icon" className="h-8 w-8"
-              onClick={() => setScaledServings(currentServings + 1)}
-            >
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setScaledServings(currentServings + 1)}>
               <Plus className="h-3 w-3" />
             </Button>
           </div>
@@ -216,13 +218,15 @@ export default function RecipeDetail() {
         <Separator />
 
         {/* Nutrition */}
-        {(recipe.calories_per_serving || recipe.protein_grams || recipe.carbs_grams || recipe.fat_grams || recipe.fiber_grams) && (
+        {hasNutrition && (
           <>
             <div className="space-y-3">
               <h2 className="font-display text-xl font-semibold flex items-center gap-2">
                 <Flame className="h-5 w-5 text-primary" /> Nutrition
-                <span className="text-sm font-body font-normal text-muted-foreground">(per serving)</span>
               </h2>
+
+              {/* Per serving */}
+              <p className="text-sm font-body text-muted-foreground">Per serving ({currentServings} servings)</p>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 {recipe.calories_per_serving && (
                   <div className="rounded-xl bg-primary/10 p-3 text-center">
@@ -255,6 +259,41 @@ export default function RecipeDetail() {
                   </div>
                 )}
               </div>
+
+              {/* Total for entire recipe */}
+              <p className="text-sm font-body text-muted-foreground pt-2">Total for entire recipe</p>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {recipe.calories_per_serving && (
+                  <div className="rounded-xl bg-primary/5 border border-primary/20 p-3 text-center">
+                    <div className="text-xl font-bold text-primary">{Math.round(recipe.calories_per_serving * currentServings)}</div>
+                    <div className="text-xs text-muted-foreground font-body">kcal</div>
+                  </div>
+                )}
+                {recipe.protein_grams && (
+                  <div className="rounded-xl bg-secondary/5 border border-secondary/20 p-3 text-center">
+                    <div className="text-xl font-bold text-secondary">{(recipe.protein_grams * currentServings).toFixed(1)}</div>
+                    <div className="text-xs text-muted-foreground font-body">Protein (g)</div>
+                  </div>
+                )}
+                {recipe.carbs_grams && (
+                  <div className="rounded-xl bg-accent/10 border border-accent/20 p-3 text-center">
+                    <div className="text-xl font-bold text-accent-foreground">{(recipe.carbs_grams * currentServings).toFixed(1)}</div>
+                    <div className="text-xs text-muted-foreground font-body">Carbs (g)</div>
+                  </div>
+                )}
+                {recipe.fat_grams && (
+                  <div className="rounded-xl bg-muted/50 border border-border p-3 text-center">
+                    <div className="text-xl font-bold text-foreground">{(recipe.fat_grams * currentServings).toFixed(1)}</div>
+                    <div className="text-xs text-muted-foreground font-body">Fat (g)</div>
+                  </div>
+                )}
+                {recipe.fiber_grams && (
+                  <div className="rounded-xl bg-secondary/5 border border-secondary/20 p-3 text-center">
+                    <div className="text-xl font-bold text-secondary">{(recipe.fiber_grams * currentServings).toFixed(1)}</div>
+                    <div className="text-xs text-muted-foreground font-body">Fiber (g)</div>
+                  </div>
+                )}
+              </div>
             </div>
             <Separator />
           </>
@@ -263,7 +302,16 @@ export default function RecipeDetail() {
         {/* Instructions */}
         {recipe.instructions.length > 0 && (
           <div className="space-y-4">
-            <h2 className="font-display text-xl font-semibold">Instructions</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-xl font-semibold">Instructions</h2>
+              <Button
+                onClick={() => navigate(`/cooking/${recipe.id}`)}
+                className="gap-1.5"
+                size="sm"
+              >
+                <ChefHat className="h-4 w-4" /> Start Cooking
+              </Button>
+            </div>
             <ol className="space-y-4">
               {recipe.instructions.map((step, i) => (
                 <li key={i} className="flex gap-4 font-body">
