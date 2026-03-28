@@ -44,6 +44,7 @@ export default function ImportRecipe() {
         fat_grams: parsed.fat_grams || parsed.fat || null,
         fiber_grams: parsed.fiber_grams || parsed.fiber || null,
         source_json: parsed,
+        source_url: parsed.source_url || parsed.url || null,
       };
 
       setSaving(true);

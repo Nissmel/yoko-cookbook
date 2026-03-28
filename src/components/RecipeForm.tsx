@@ -117,6 +117,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         fat_grams: fat || null,
         fiber_grams: fiber || null,
         source_json: null,
+        source_url: null,
       };
 
       if (initialData?.id) {
