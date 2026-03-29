@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { useShoppingList, useToggleShoppingItem, useDeleteShoppingItem, useClearCheckedItems } from '@/hooks/useShoppingList';
+import { useShoppingList, useToggleShoppingItem, useDeleteShoppingItem, useClearCheckedItems, useClearAllItems } from '@/hooks/useShoppingList';
 import { useRecipes } from '@/hooks/useRecipes';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trash2, ShoppingCart, CheckCheck, Share2 } from 'lucide-react';
+import { Trash2, ShoppingCart, CheckCheck, Share2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { getStoreSection } from '@/types/recipe';
@@ -16,12 +16,12 @@ export default function ShoppingList() {
   const toggleItem = useToggleShoppingItem();
   const deleteItem = useDeleteShoppingItem();
   const clearChecked = useClearCheckedItems();
+  const clearAll = useClearAllItems();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const unchecked = items?.filter((i) => !i.checked) || [];
   const checked = items?.filter((i) => i.checked) || [];
 
-  // Group by store section
   const bySection = unchecked.reduce((acc, item) => {
     const section = getStoreSection(item.ingredient_name);
     if (!acc[section]) acc[section] = [];
@@ -29,7 +29,6 @@ export default function ShoppingList() {
     return acc;
   }, {} as Record<string, typeof unchecked>);
 
-  // Group by recipe
   const byRecipe = unchecked.reduce((acc, item) => {
     const recipeName = item.recipe_id
       ? recipes?.find((r) => r.id === item.recipe_id)?.title || 'Unknown Recipe'
@@ -109,7 +108,7 @@ export default function ShoppingList() {
             <h1 className="font-display text-3xl font-bold text-foreground">Shopping List</h1>
             <p className="text-muted-foreground font-body text-sm mt-1">{items?.length ?? 0} items</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {selectedIds.size > 0 && (
               <Button variant="outline" size="sm" onClick={exportSelectedToKeep} className="gap-1.5">
                 <Share2 className="h-4 w-4" /> Google Keep ({selectedIds.size})
@@ -118,6 +117,11 @@ export default function ShoppingList() {
             {checked.length > 0 && (
               <Button variant="outline" size="sm" onClick={() => clearChecked.mutate()} className="gap-1.5">
                 <CheckCheck className="h-4 w-4" /> Clear checked
+              </Button>
+            )}
+            {items && items.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => clearAll.mutate()} className="gap-1.5 text-destructive hover:text-destructive">
+                <XCircle className="h-4 w-4" /> Clear all
               </Button>
             )}
           </div>
