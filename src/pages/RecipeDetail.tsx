@@ -59,6 +59,24 @@ export default function RecipeDetail() {
     return scaled % 1 === 0 ? scaled.toString() : scaled.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
   };
 
+  // Enrich instructions with ingredient amounts
+  const enrichInstruction = (step: string) => {
+    let enriched = step;
+    recipe.ingredients.forEach((ing) => {
+      if (!ing.name) return;
+      const namePattern = new RegExp(`\\b${ing.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+      if (namePattern.test(enriched)) {
+        const qty = ing.quantity ? scaleQuantity(ing.quantity) : '';
+        const unit = ing.unit || '';
+        const prefix = `${qty}${unit ? ' ' + unit : ''}`.trim();
+        if (prefix) {
+          enriched = enriched.replace(namePattern, `${prefix} ${ing.name}`);
+        }
+      }
+    });
+    return enriched;
+  };
+
   const handleAddToShoppingList = async () => {
     try {
       await addToList.mutateAsync(
@@ -225,43 +243,43 @@ export default function RecipeDetail() {
                 <Flame className="h-5 w-5 text-primary" /> Nutrition
               </h2>
 
-              {/* Per serving */}
-              <p className="text-sm font-body text-muted-foreground">Per serving ({currentServings} servings)</p>
+              {/* Per serving — always constant, not scaled */}
+              <p className="text-sm font-body text-muted-foreground">Per serving</p>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 {recipe.calories_per_serving && (
                   <div className="rounded-xl bg-primary/10 p-3 text-center">
-                    <div className="text-xl font-bold text-primary">{Math.round(recipe.calories_per_serving * scale)}</div>
+                    <div className="text-xl font-bold text-primary">{recipe.calories_per_serving}</div>
                     <div className="text-xs text-muted-foreground font-body">kcal</div>
                   </div>
                 )}
                 {recipe.protein_grams && (
                   <div className="rounded-xl bg-secondary/10 p-3 text-center">
-                    <div className="text-xl font-bold text-secondary">{(recipe.protein_grams * scale).toFixed(1)}</div>
+                    <div className="text-xl font-bold text-secondary">{recipe.protein_grams}</div>
                     <div className="text-xs text-muted-foreground font-body">Protein (g)</div>
                   </div>
                 )}
                 {recipe.carbs_grams && (
                   <div className="rounded-xl bg-accent/30 p-3 text-center">
-                    <div className="text-xl font-bold text-accent-foreground">{(recipe.carbs_grams * scale).toFixed(1)}</div>
+                    <div className="text-xl font-bold text-accent-foreground">{recipe.carbs_grams}</div>
                     <div className="text-xs text-muted-foreground font-body">Carbs (g)</div>
                   </div>
                 )}
                 {recipe.fat_grams && (
                   <div className="rounded-xl bg-muted p-3 text-center">
-                    <div className="text-xl font-bold text-foreground">{(recipe.fat_grams * scale).toFixed(1)}</div>
+                    <div className="text-xl font-bold text-foreground">{recipe.fat_grams}</div>
                     <div className="text-xs text-muted-foreground font-body">Fat (g)</div>
                   </div>
                 )}
                 {recipe.fiber_grams && (
                   <div className="rounded-xl bg-secondary/10 p-3 text-center">
-                    <div className="text-xl font-bold text-secondary">{(recipe.fiber_grams * scale).toFixed(1)}</div>
+                    <div className="text-xl font-bold text-secondary">{recipe.fiber_grams}</div>
                     <div className="text-xs text-muted-foreground font-body">Fiber (g)</div>
                   </div>
                 )}
               </div>
 
-              {/* Total for entire recipe */}
-              <p className="text-sm font-body text-muted-foreground pt-2">Total for entire recipe</p>
+              {/* Total for entire recipe = per_serving * currentServings */}
+              <p className="text-sm font-body text-muted-foreground pt-2">Total for {currentServings} servings</p>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 {recipe.calories_per_serving && (
                   <div className="rounded-xl bg-primary/5 border border-primary/20 p-3 text-center">
@@ -299,7 +317,7 @@ export default function RecipeDetail() {
           </>
         )}
 
-        {/* Instructions */}
+        {/* Instructions — enriched with ingredient amounts */}
         {recipe.instructions.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -318,7 +336,7 @@ export default function RecipeDetail() {
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
                     {i + 1}
                   </span>
-                  <p className="pt-0.5 leading-relaxed">{step}</p>
+                  <p className="pt-0.5 leading-relaxed">{enrichInstruction(step)}</p>
                 </li>
               ))}
             </ol>

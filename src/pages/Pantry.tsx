@@ -2,11 +2,13 @@ import { useState, useRef } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useRecipes } from '@/hooks/useRecipes';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Upload, Package, ChefHat } from 'lucide-react';
+import { Upload, Package, ChefHat, FileJson, ClipboardPaste } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface PantryItem {
@@ -29,7 +31,29 @@ export default function Pantry() {
   const { data: recipes } = useRecipes();
   const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
   const [matches, setMatches] = useState<RecipeMatch[]>([]);
+  const [jsonText, setJsonText] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const processPantryData = (parsed: any) => {
+    const items: PantryItem[] = Array.isArray(parsed)
+      ? parsed.map((i: any) =>
+          typeof i === 'string' ? { name: i } : { name: i.name || '', quantity: i.quantity, unit: i.unit }
+        )
+      : parsed.items
+      ? parsed.items.map((i: any) =>
+          typeof i === 'string' ? { name: i } : { name: i.name || '', quantity: i.quantity, unit: i.unit }
+        )
+      : [];
+
+    if (items.length === 0) {
+      toast.error('No items found');
+      return;
+    }
+
+    setPantryItems(items);
+    calculateMatches(items);
+    toast.success(`Loaded ${items.length} pantry items`);
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -37,30 +61,21 @@ export default function Pantry() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const parsed = JSON.parse(ev.target?.result as string);
-        const items: PantryItem[] = Array.isArray(parsed)
-          ? parsed.map((i: any) =>
-              typeof i === 'string' ? { name: i } : { name: i.name || '', quantity: i.quantity, unit: i.unit }
-            )
-          : parsed.items
-          ? parsed.items.map((i: any) =>
-              typeof i === 'string' ? { name: i } : { name: i.name || '', quantity: i.quantity, unit: i.unit }
-            )
-          : [];
-
-        if (items.length === 0) {
-          toast.error('No items found in file');
-          return;
-        }
-
-        setPantryItems(items);
-        calculateMatches(items);
-        toast.success(`Loaded ${items.length} pantry items`);
+        processPantryData(JSON.parse(ev.target?.result as string));
       } catch {
         toast.error('Invalid JSON file');
       }
     };
     reader.readAsText(file);
+  };
+
+  const handlePasteJson = () => {
+    if (!jsonText.trim()) return;
+    try {
+      processPantryData(JSON.parse(jsonText));
+    } catch {
+      toast.error('Invalid JSON');
+    }
   };
 
   const calculateMatches = (items: PantryItem[]) => {
@@ -114,39 +129,62 @@ export default function Pantry() {
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">Pantry Match</h1>
           <p className="text-muted-foreground font-body text-sm mt-1">
-            Upload what's in your pantry and find the best recipes to make.
+            Upload or paste what's in your pantry and find the best recipes to make.
           </p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className="font-display text-lg flex items-center gap-2">
-              <Package className="h-5 w-5" /> Upload Pantry JSON
+              <Package className="h-5 w-5" /> Your Pantry
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground font-body">
-              Upload a JSON file with your pantry items. It can be a simple array of strings or objects with name/quantity/unit.
+              Provide a JSON array of your pantry items — simple strings or objects with name/quantity/unit.
             </p>
             <pre className="bg-muted rounded-lg p-3 text-xs font-mono overflow-auto max-h-32 text-foreground">
               {pantryTemplate}
             </pre>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  navigator.clipboard.writeText(pantryTemplate);
-                  toast.success('Template copied!');
-                }}
-                className="gap-1.5"
-              >
-                Copy Template
-              </Button>
-              <Button onClick={() => fileRef.current?.click()} className="gap-1.5">
-                <Upload className="h-4 w-4" /> Upload Pantry
-              </Button>
-              <input ref={fileRef} type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
-            </div>
+
+            <Tabs defaultValue="paste" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="paste" className="gap-1.5"><ClipboardPaste className="h-4 w-4" /> Paste JSON</TabsTrigger>
+                <TabsTrigger value="file" className="gap-1.5"><FileJson className="h-4 w-4" /> Upload File</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="paste" className="mt-3 space-y-3">
+                <Textarea
+                  value={jsonText}
+                  onChange={(e) => setJsonText(e.target.value)}
+                  placeholder='["Eggs", "Milk", "Butter", "Flour"]'
+                  rows={5}
+                  className="font-mono text-sm"
+                />
+                <Button onClick={handlePasteJson} disabled={!jsonText.trim()} className="w-full gap-1.5">
+                  <ClipboardPaste className="h-4 w-4" /> Match Recipes
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="file" className="mt-3 space-y-3">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(pantryTemplate);
+                      toast.success('Template copied!');
+                    }}
+                    className="gap-1.5"
+                  >
+                    Copy Template
+                  </Button>
+                  <Button onClick={() => fileRef.current?.click()} className="gap-1.5">
+                    <Upload className="h-4 w-4" /> Upload Pantry
+                  </Button>
+                  <input ref={fileRef} type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
+                </div>
+              </TabsContent>
+            </Tabs>
 
             {pantryItems.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-2">

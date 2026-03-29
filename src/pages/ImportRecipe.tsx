@@ -12,7 +12,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Upload, FileJson, Globe, Copy, Loader2 } from 'lucide-react';
 
-const EMPTY_TEMPLATE = JSON.stringify(
+const AI_INSTRUCTIONS = `## Instructions for AI
+Fill in the JSON template below with recipe data. Follow these rules:
+- Use ONLY metric units (grams, ml, liters, °C). No cups, tablespoons, teaspoons, or ounces.
+- calories_per_serving is per ONE serving. Nutrition values are always per single serving.
+- Each ingredient must have a "category" field indicating the store section (one of: "Dairy & Eggs", "Meat & Poultry", "Seafood", "Fruits", "Vegetables", "Bakery & Bread", "Pasta & Grains", "Canned & Jarred", "Oils & Condiments", "Spices & Seasonings", "Baking", "Frozen", "Beverages", "Snacks & Nuts", "Other").
+- Instructions should reference ingredients by name as they appear in the recipe (e.g. "Add the flour and mix").
+- Return ONLY the filled JSON, no extra text.`;
+
+const EMPTY_TEMPLATE = `${AI_INSTRUCTIONS}
+
+${JSON.stringify(
   {
     title: '',
     description: '',
@@ -21,7 +31,7 @@ const EMPTY_TEMPLATE = JSON.stringify(
     cook_time_minutes: null,
     category: '',
     tags: [],
-    ingredients: [{ name: '', quantity: '', unit: '' }],
+    ingredients: [{ name: '', quantity: '', unit: 'g', category: 'Other' }],
     instructions: [''],
     calories_per_serving: null,
     protein_grams: null,
@@ -33,7 +43,7 @@ const EMPTY_TEMPLATE = JSON.stringify(
   },
   null,
   2
-);
+)}`;
 
 export default function ImportRecipe() {
   const navigate = useNavigate();
@@ -45,7 +55,10 @@ export default function ImportRecipe() {
 
   const parseAndSave = async (raw: string) => {
     try {
-      const parsed = JSON.parse(raw);
+      // Strip AI instruction comments if present
+      const jsonStart = raw.indexOf('{');
+      const cleanRaw = jsonStart >= 0 ? raw.substring(jsonStart) : raw;
+      const parsed = JSON.parse(cleanRaw);
 
       const recipe = {
         title: parsed.title || 'Untitled Recipe',
@@ -60,7 +73,7 @@ export default function ImportRecipe() {
           ? parsed.ingredients.map((i: any) =>
               typeof i === 'string'
                 ? { name: i, quantity: '', unit: '' }
-                : { name: i.name || '', quantity: String(i.quantity || ''), unit: i.unit || '' }
+                : { name: i.name || '', quantity: String(i.quantity || ''), unit: i.unit || '', category: i.category || undefined }
             )
           : [],
         instructions: Array.isArray(parsed.instructions)
@@ -100,7 +113,7 @@ export default function ImportRecipe() {
 
   const handleCopyTemplate = () => {
     navigator.clipboard.writeText(EMPTY_TEMPLATE).then(() => {
-      toast.success('Template copied to clipboard! Paste it into ChatGPT or your AI to fill it out.');
+      toast.success('Template with AI instructions copied! Paste it into ChatGPT or your AI.');
     }).catch(() => toast.error('Could not copy'));
   };
 
@@ -108,7 +121,6 @@ export default function ImportRecipe() {
     if (!url.trim()) return;
     setScraping(true);
     try {
-      // Step 1: Scrape the page
       const { data: scrapeData, error: scrapeError } = await supabase.functions.invoke('scrape-recipe', {
         body: { url: url.trim() },
       });
@@ -117,7 +129,6 @@ export default function ImportRecipe() {
 
       toast.info('Page scraped! Parsing recipe with AI...');
 
-      // Step 2: Parse with AI
       const { data: parseData, error: parseError } = await supabase.functions.invoke('parse-recipe', {
         body: {
           markdown: scrapeData.markdown,
@@ -169,7 +180,7 @@ export default function ImportRecipe() {
       <div className="max-w-2xl mx-auto px-4 py-6 md:py-10 space-y-6 animate-fade-in">
         <h1 className="font-display text-3xl font-bold text-foreground">Import Recipe</h1>
         <p className="text-muted-foreground font-body">
-          Import from a URL, JSON file, or paste JSON directly.
+          Import from a URL, JSON file, or paste JSON directly. All units are metric (g, ml, °C).
         </p>
 
         <Tabs defaultValue="url" className="w-full">
@@ -201,11 +212,10 @@ export default function ImportRecipe() {
           </TabsContent>
 
           <TabsContent value="json" className="space-y-4 mt-4">
-            {/* Template section */}
             <Card>
               <CardHeader>
                 <CardTitle className="font-display text-lg flex items-center justify-between">
-                  JSON Template
+                  JSON Template for AI
                   <Button variant="outline" size="sm" onClick={handleCopyTemplate} className="gap-1.5">
                     <Copy className="h-4 w-4" /> Copy Template
                   </Button>
@@ -213,9 +223,9 @@ export default function ImportRecipe() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground font-body mb-3">
-                  Copy this empty template and give it to ChatGPT or any AI with your recipe — it will fill it out for you.
+                  Copy this template (includes AI instructions) and paste it into ChatGPT with your recipe — it will fill it out using metric units only.
                 </p>
-                <pre className="bg-muted rounded-lg p-3 text-xs font-mono overflow-auto max-h-48 text-foreground">
+                <pre className="bg-muted rounded-lg p-3 text-xs font-mono overflow-auto max-h-64 text-foreground whitespace-pre-wrap">
                   {EMPTY_TEMPLATE}
                 </pre>
               </CardContent>

@@ -84,3 +84,21 @@ export function useClearCheckedItems() {
     },
   });
 }
+
+export function useClearAllItems() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('shopping_list_items')
+        .delete()
+        .eq('user_id', user!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopping-list'] });
+    },
+  });
+}
