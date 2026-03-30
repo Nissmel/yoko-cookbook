@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      pantry_items: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          quantity: string | null
+          unit: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          quantity?: string | null
+          unit?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          quantity?: string | null
+          unit?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -38,6 +65,30 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      recipe_shares: {
+        Row: {
+          created_at: string
+          id: string
+          recipe_owner_id: string
+          shared_with_email: string
+          shared_with_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recipe_owner_id: string
+          shared_with_email: string
+          shared_with_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recipe_owner_id?: string
+          shared_with_email?: string
+          shared_with_user_id?: string | null
         }
         Relationships: []
       }
