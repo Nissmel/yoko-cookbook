@@ -69,6 +69,24 @@ export default function CookingMode() {
     );
   }
 
+  // Enrich instructions with ingredient amounts (same logic as RecipeDetail)
+  const enrichInstruction = (step: string) => {
+    let enriched = step;
+    recipe.ingredients.forEach((ing) => {
+      if (!ing.name) return;
+      const namePattern = new RegExp(`\\b${ing.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+      if (namePattern.test(enriched)) {
+        const qty = ing.quantity || '';
+        const unit = ing.unit || '';
+        const prefix = `${qty}${unit ? ' ' + unit : ''}`.trim();
+        if (prefix) {
+          enriched = enriched.replace(namePattern, `${prefix} ${ing.name}`);
+        }
+      }
+    });
+    return enriched;
+  };
+
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-hidden">
       {/* Header */}
@@ -104,7 +122,7 @@ export default function CookingMode() {
             Step {currentStep + 1} of {recipe.instructions.length}
           </div>
           <p className="font-body text-2xl md:text-4xl leading-relaxed max-w-2xl text-foreground">
-            {recipe.instructions[currentStep]}
+            {enrichInstruction(recipe.instructions[currentStep])}
           </p>
 
           {/* Navigation */}

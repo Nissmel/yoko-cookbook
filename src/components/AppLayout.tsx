@@ -10,6 +10,7 @@ import {
   LogOut,
   Upload,
   Package,
+  Share2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +20,7 @@ const navItems = [
   { to: '/import', icon: Upload, label: 'Import' },
   { to: '/shopping-list', icon: ShoppingCart, label: 'Shopping' },
   { to: '/pantry', icon: Package, label: 'Pantry' },
+  { to: '/sharing', icon: Share2, label: 'Share' },
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {

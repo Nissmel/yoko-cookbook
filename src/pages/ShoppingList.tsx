@@ -55,19 +55,41 @@ export default function ShoppingList() {
     }
   };
 
-  const exportSelectedToKeep = () => {
-    const toExport = items?.filter((i) => selectedIds.has(i.id)) || [];
+  const exportToGoogleKeep = () => {
+    const toExport = selectedIds.size > 0
+      ? items?.filter((i) => selectedIds.has(i.id)) || []
+      : unchecked;
+
     if (toExport.length === 0) {
-      toast.error('Select items to export');
+      toast.error('No items to export');
       return;
     }
-    const text = toExport
-      .map((i) => `${i.quantity || ''} ${i.unit || ''} ${i.ingredient_name}`.trim())
-      .join('\n');
 
-    navigator.clipboard.writeText(text).then(() => {
+    const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const header = `🛒 Shopping List — ${today}\n\n`;
+
+    // Group by store section for the note
+    const grouped = toExport.reduce((acc, item) => {
+      const section = getStoreSection(item.ingredient_name);
+      if (!acc[section]) acc[section] = [];
+      acc[section].push(item);
+      return acc;
+    }, {} as Record<string, typeof toExport>);
+
+    let text = header;
+    Object.entries(grouped)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([section, sectionItems]) => {
+        text += `── ${section} ──\n`;
+        sectionItems.forEach((i) => {
+          text += `☐ ${i.quantity || ''} ${i.unit || ''} ${i.ingredient_name}`.trim() + '\n';
+        });
+        text += '\n';
+      });
+
+    navigator.clipboard.writeText(text.trim()).then(() => {
       window.open('https://keep.google.com/#NOTE', '_blank');
-      toast.success('Items copied! Paste into Google Keep.');
+      toast.success('Shopping list copied! Paste into Google Keep.');
     }).catch(() => toast.error('Could not copy'));
   };
 
@@ -109,11 +131,9 @@ export default function ShoppingList() {
             <p className="text-muted-foreground font-body text-sm mt-1">{items?.length ?? 0} items</p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {selectedIds.size > 0 && (
-              <Button variant="outline" size="sm" onClick={exportSelectedToKeep} className="gap-1.5">
-                <Share2 className="h-4 w-4" /> Google Keep ({selectedIds.size})
-              </Button>
-            )}
+            <Button variant="outline" size="sm" onClick={exportToGoogleKeep} className="gap-1.5">
+              <Share2 className="h-4 w-4" /> Google Keep {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
+            </Button>
             {checked.length > 0 && (
               <Button variant="outline" size="sm" onClick={() => clearChecked.mutate()} className="gap-1.5">
                 <CheckCheck className="h-4 w-4" /> Clear checked
