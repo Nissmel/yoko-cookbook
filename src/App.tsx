@@ -13,6 +13,7 @@ import ImportRecipe from "./pages/ImportRecipe";
 import ShoppingList from "./pages/ShoppingList";
 import CookingMode from "./pages/CookingMode";
 import Pantry from "./pages/Pantry";
+import Sharing from "./pages/Sharing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
