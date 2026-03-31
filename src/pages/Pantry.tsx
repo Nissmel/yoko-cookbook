@@ -96,9 +96,9 @@ export default function Pantry() {
     <AppLayout>
       <div className="max-w-3xl mx-auto px-4 py-6 md:py-10 space-y-6 animate-fade-in">
         <div>
-          <h1 className="font-display text-3xl font-bold text-foreground">Pantry</h1>
+          <h1 className="font-display text-3xl font-bold text-foreground">Spiżarnia</h1>
           <p className="text-muted-foreground font-body text-sm mt-1">
-            Manage what's in your kitchen and find recipes you can make.
+            Zarządzaj tym, co masz w kuchni i znajdź przepisy do przygotowania.
           </p>
         </div>
 
