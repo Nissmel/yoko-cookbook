@@ -133,7 +133,7 @@ export default function Pantry() {
                 <TabsTrigger value="file" className="gap-1.5"><FileJson className="h-4 w-4" /> Prześlij plik</TabsTrigger>
               </TabsList>
               <TabsContent value="paste" className="mt-3 space-y-3">
-                <Textarea value={jsonText} onChange={(e) => setJsonText(e.target.value)} placeholder='["Eggs", "Milk", "Butter"]' rows={4} className="font-mono text-sm" />
+                <Textarea value={jsonText} onChange={(e) => setJsonText(e.target.value)} placeholder='["Jajka", "Mleko", "Masło"]' rows={4} className="font-mono text-sm" />
                 <Button onClick={handlePasteJson} disabled={!jsonText.trim()} className="w-full gap-1.5">
                   <ClipboardPaste className="h-4 w-4" /> Import Items
                 </Button>
