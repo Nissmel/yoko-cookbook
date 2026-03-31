@@ -176,7 +176,7 @@ export default function Pantry() {
                 ))}
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm font-body">No items yet. Add items above.</p>
+              <p className="text-muted-foreground text-sm font-body">Brak produktów. Dodaj powyżej.</p>
             )}
           </CardContent>
         </Card>
