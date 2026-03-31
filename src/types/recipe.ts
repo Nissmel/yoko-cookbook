@@ -28,8 +28,6 @@ export interface Recipe {
   updated_at: string;
 }
 
-// Store section categories for shopping list grouping
-export const STORE_SECTIONS: Record<string, string[]> = {
 // Store section categories for shopping list grouping (Polish)
 export const STORE_SECTIONS: Record<string, string[]> = {
   'Nabiał i Jajka': ['mleko', 'śmietana', 'śmietanka', 'ser', 'masło', 'jogurt', 'jajko', 'jajka', 'twaróg', 'kefir', 'maślanka', 'cheddar', 'mozzarella', 'parmezan', 'ricotta', 'feta', 'cream', 'milk', 'cheese', 'butter', 'yogurt', 'egg', 'sour cream'],
