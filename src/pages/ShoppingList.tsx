@@ -55,18 +55,18 @@ export default function ShoppingList() {
     }
   };
 
-  const exportToGoogleKeep = () => {
+  const exportToGoogleKeep = async () => {
     const toExport = selectedIds.size > 0
       ? items?.filter((i) => selectedIds.has(i.id)) || []
       : unchecked;
 
     if (toExport.length === 0) {
-      toast.error('No items to export');
+      toast.error('Brak produktów do eksportu');
       return;
     }
 
-    const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    const header = `🛒 Shopping List — ${today}\n\n`;
+    const today = new Date().toLocaleDateString('pl-PL', { day: '2-digit', month: 'long', year: 'numeric' });
+    const header = `🛒 Lista zakupów — ${today}\n\n`;
 
     // Group by store section for the note
     const grouped = toExport.reduce((acc, item) => {
@@ -87,10 +87,26 @@ export default function ShoppingList() {
         text += '\n';
       });
 
-    navigator.clipboard.writeText(text.trim()).then(() => {
-      window.open('https://keep.google.com/#NOTE', '_blank');
-      toast.success('Shopping list copied! Paste into Google Keep.');
-    }).catch(() => toast.error('Could not copy'));
+    const finalText = text.trim();
+
+    // Try clipboard API first, fallback to textarea trick
+    try {
+      await navigator.clipboard.writeText(finalText);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = finalText;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+
+    // Open Google Keep with pre-filled content via URL params
+    const keepUrl = `https://keep.google.com/#NOTE`;
+    window.open(keepUrl, '_blank');
+    toast.success('Lista skopiowana! Wklej ją w Google Keep (Ctrl+V / ⌘+V).');
   };
 
   const renderItem = (item: typeof unchecked[0], isChecked = false) => (
