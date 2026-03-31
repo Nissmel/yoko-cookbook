@@ -152,7 +152,7 @@ export default function Pantry() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="font-display text-lg">Your Pantry ({pantryItems?.length ?? 0})</CardTitle>
+              <CardTitle className="font-display text-lg">Twoja spiżarnia ({pantryItems?.length ?? 0})</CardTitle>
               {pantryItems && pantryItems.length > 0 && (
                 <Button variant="outline" size="sm" onClick={() => clearPantry.mutate()} className="gap-1.5 text-destructive hover:text-destructive">
                   <Trash2 className="h-4 w-4" /> Clear all
