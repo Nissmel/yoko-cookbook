@@ -55,7 +55,7 @@ export default function ShoppingList() {
     }
   };
 
-  const exportToGoogleKeep = async () => {
+  const exportToGoogleKeep = () => {
     const toExport = selectedIds.size > 0
       ? items?.filter((i) => selectedIds.has(i.id)) || []
       : unchecked;
@@ -68,7 +68,6 @@ export default function ShoppingList() {
     const today = new Date().toLocaleDateString('pl-PL', { day: '2-digit', month: 'long', year: 'numeric' });
     const header = `🛒 Lista zakupów — ${today}\n\n`;
 
-    // Group by store section for the note
     const grouped = toExport.reduce((acc, item) => {
       const section = getStoreSection(item.ingredient_name);
       if (!acc[section]) acc[section] = [];
@@ -89,9 +88,13 @@ export default function ShoppingList() {
 
     const finalText = text.trim();
 
-    // Try clipboard API first, fallback to textarea trick
+    // Open Google Keep FIRST (synchronous, won't be blocked)
+    const keepUrl = `https://keep.google.com/#NOTE`;
+    window.open(keepUrl, '_blank');
+
+    // Then copy to clipboard
     try {
-      await navigator.clipboard.writeText(finalText);
+      navigator.clipboard.writeText(finalText);
     } catch {
       const ta = document.createElement('textarea');
       ta.value = finalText;
@@ -103,9 +106,6 @@ export default function ShoppingList() {
       document.body.removeChild(ta);
     }
 
-    // Open Google Keep with pre-filled content via URL params
-    const keepUrl = `https://keep.google.com/#NOTE`;
-    window.open(keepUrl, '_blank');
     toast.success('Lista skopiowana! Wklej ją w Google Keep (Ctrl+V / ⌘+V).');
   };
 
