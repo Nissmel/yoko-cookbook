@@ -55,7 +55,7 @@ export default function ShoppingList() {
     }
   };
 
-  const exportToGoogleKeep = () => {
+  const shareShoppingList = async () => {
     const toExport = selectedIds.size > 0
       ? items?.filter((i) => selectedIds.has(i.id)) || []
       : unchecked;
@@ -66,7 +66,7 @@ export default function ShoppingList() {
     }
 
     const today = new Date().toLocaleDateString('pl-PL', { day: '2-digit', month: 'long', year: 'numeric' });
-    const header = `🛒 Lista zakupów — ${today}\n\n`;
+    const title = `🛒 Lista zakupów — ${today}`;
 
     const grouped = toExport.reduce((acc, item) => {
       const section = getStoreSection(item.ingredient_name);
@@ -75,7 +75,7 @@ export default function ShoppingList() {
       return acc;
     }, {} as Record<string, typeof toExport>);
 
-    let text = header;
+    let text = '';
     Object.entries(grouped)
       .sort(([a], [b]) => a.localeCompare(b))
       .forEach(([section, sectionItems]) => {
@@ -88,16 +88,23 @@ export default function ShoppingList() {
 
     const finalText = text.trim();
 
-    // Open Google Keep FIRST (synchronous, won't be blocked)
-    const keepUrl = `https://keep.google.com/#NOTE`;
-    window.open(keepUrl, '_blank');
+    // Try native Share API (works great on mobile — can share directly to Keep, WhatsApp, etc.)
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text: finalText });
+        toast.success('Udostępniono!');
+        return;
+      } catch (e: any) {
+        if (e.name === 'AbortError') return; // user cancelled
+      }
+    }
 
-    // Then copy to clipboard
+    // Desktop fallback: copy to clipboard
     try {
-      navigator.clipboard.writeText(finalText);
+      await navigator.clipboard.writeText(`${title}\n\n${finalText}`);
     } catch {
       const ta = document.createElement('textarea');
-      ta.value = finalText;
+      ta.value = `${title}\n\n${finalText}`;
       ta.style.position = 'fixed';
       ta.style.opacity = '0';
       document.body.appendChild(ta);
@@ -105,8 +112,7 @@ export default function ShoppingList() {
       document.execCommand('copy');
       document.body.removeChild(ta);
     }
-
-    toast.success('Lista skopiowana! Wklej ją w Google Keep (Ctrl+V / ⌘+V).');
+    toast.success('Lista skopiowana do schowka! Wklej ją gdziekolwiek (Ctrl+V).');
   };
 
   const renderItem = (item: typeof unchecked[0], isChecked = false) => (
