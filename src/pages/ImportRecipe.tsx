@@ -12,13 +12,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Upload, FileJson, Globe, Copy, Loader2 } from 'lucide-react';
 
-const AI_INSTRUCTIONS = `## Instructions for AI
-Fill in the JSON template below with recipe data. Follow these rules:
-- Use ONLY metric units (grams, ml, liters, °C). No cups, tablespoons, teaspoons, or ounces.
-- calories_per_serving is per ONE serving. Nutrition values are always per single serving.
-- Each ingredient must have a "category" field indicating the store section (one of: "Dairy & Eggs", "Meat & Poultry", "Seafood", "Fruits", "Vegetables", "Bakery & Bread", "Pasta & Grains", "Canned & Jarred", "Oils & Condiments", "Spices & Seasonings", "Baking", "Frozen", "Beverages", "Snacks & Nuts", "Other").
-- Instructions should reference ingredients by name as they appear in the recipe (e.g. "Add the flour and mix").
-- Return ONLY the filled JSON, no extra text.`;
+const AI_INSTRUCTIONS = `## Instrukcje dla AI
+Wypełnij poniższy szablon JSON danymi przepisu. Zasady:
+- Używaj WYŁĄCZNIE jednostek metrycznych (gramy, ml, litry, °C). Żadnych łyżek, szklanek, uncji.
+- calories_per_serving dotyczy JEDNEJ porcji. Wartości odżywcze zawsze na jedną porcję.
+- Każdy składnik musi mieć pole "category" wskazujące sekcję sklepu (jedna z: "Nabiał i Jajka", "Mięso i Drób", "Ryby i Owoce Morza", "Owoce", "Warzywa", "Pieczywo", "Makarony i Kasze", "Konserwy i Słoiki", "Oleje i Sosy", "Przyprawy", "Do Pieczenia", "Mrożonki", "Napoje", "Przekąski i Orzechy", "Inne").
+- Nazwy składników i instrukcje w języku POLSKIM.
+- W instrukcjach odwołuj się do składników po nazwie (np. "Dodaj mąkę i wymieszaj").
+- Zwróć TYLKO wypełniony JSON, bez dodatkowego tekstu.`;
 
 const EMPTY_TEMPLATE = `${AI_INSTRUCTIONS}
 
