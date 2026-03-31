@@ -30,20 +30,22 @@ export interface Recipe {
 
 // Store section categories for shopping list grouping
 export const STORE_SECTIONS: Record<string, string[]> = {
-  'Dairy & Eggs': ['milk', 'cream', 'cheese', 'butter', 'yogurt', 'egg', 'sour cream', 'cottage cheese', 'whipping cream', 'cheddar', 'mozzarella', 'parmesan', 'ricotta', 'feta'],
-  'Meat & Poultry': ['chicken', 'beef', 'pork', 'turkey', 'lamb', 'sausage', 'bacon', 'ham', 'ground', 'steak', 'breast', 'thigh', 'wing'],
-  'Seafood': ['fish', 'salmon', 'tuna', 'shrimp', 'prawn', 'cod', 'tilapia', 'crab', 'lobster', 'mussel', 'clam'],
-  'Fruits': ['apple', 'banana', 'orange', 'lemon', 'lime', 'berry', 'strawberry', 'blueberry', 'raspberry', 'grape', 'mango', 'pineapple', 'peach', 'pear', 'avocado', 'tomato'],
-  'Vegetables': ['onion', 'garlic', 'potato', 'carrot', 'celery', 'pepper', 'broccoli', 'spinach', 'lettuce', 'cucumber', 'zucchini', 'mushroom', 'corn', 'pea', 'bean', 'cabbage', 'kale', 'cauliflower', 'eggplant', 'squash', 'asparagus', 'leek', 'shallot', 'ginger', 'jalapeño', 'chili'],
-  'Bakery & Bread': ['bread', 'tortilla', 'bun', 'roll', 'pita', 'naan', 'croissant', 'bagel', 'wrap'],
-  'Pasta & Grains': ['pasta', 'spaghetti', 'rice', 'noodle', 'quinoa', 'couscous', 'oat', 'barley', 'farro', 'penne', 'fusilli', 'macaroni'],
-  'Canned & Jarred': ['canned', 'tomato sauce', 'tomato paste', 'broth', 'stock', 'coconut milk', 'beans', 'chickpea', 'lentil', 'salsa', 'olive'],
-  'Oils & Condiments': ['oil', 'olive oil', 'vinegar', 'soy sauce', 'mustard', 'ketchup', 'mayonnaise', 'hot sauce', 'worcestershire', 'honey', 'maple syrup', 'sesame oil'],
-  'Spices & Seasonings': ['salt', 'pepper', 'cumin', 'paprika', 'oregano', 'basil', 'thyme', 'rosemary', 'cinnamon', 'nutmeg', 'turmeric', 'chili powder', 'curry', 'bay leaf', 'parsley', 'cilantro', 'dill', 'sage', 'vanilla'],
-  'Baking': ['flour', 'sugar', 'baking soda', 'baking powder', 'yeast', 'cocoa', 'chocolate', 'cornstarch'],
-  'Frozen': ['frozen', 'ice cream'],
-  'Beverages': ['water', 'juice', 'coffee', 'tea', 'wine', 'beer'],
-  'Snacks & Nuts': ['nut', 'almond', 'walnut', 'pecan', 'peanut', 'cashew', 'pistachio', 'seed', 'chip', 'cracker'],
+// Store section categories for shopping list grouping (Polish)
+export const STORE_SECTIONS: Record<string, string[]> = {
+  'Nabiał i Jajka': ['mleko', 'śmietana', 'śmietanka', 'ser', 'masło', 'jogurt', 'jajko', 'jajka', 'twaróg', 'kefir', 'maślanka', 'cheddar', 'mozzarella', 'parmezan', 'ricotta', 'feta', 'cream', 'milk', 'cheese', 'butter', 'yogurt', 'egg', 'sour cream'],
+  'Mięso i Drób': ['kurczak', 'wołowina', 'wieprzowina', 'indyk', 'jagnięcina', 'kiełbasa', 'boczek', 'szynka', 'mielone', 'stek', 'pierś', 'udko', 'skrzydełko', 'chicken', 'beef', 'pork', 'turkey', 'bacon', 'ham', 'sausage', 'ground', 'steak'],
+  'Ryby i Owoce Morza': ['ryba', 'łosoś', 'tuńczyk', 'krewetki', 'dorsz', 'tilapia', 'krab', 'homar', 'małże', 'śledź', 'makrela', 'fish', 'salmon', 'tuna', 'shrimp', 'cod', 'prawn'],
+  'Owoce': ['jabłko', 'banan', 'pomarańcza', 'cytryna', 'limonka', 'truskawka', 'malina', 'jagoda', 'borówka', 'winogrono', 'mango', 'ananas', 'brzoskwinia', 'gruszka', 'awokado', 'pomidor', 'apple', 'banana', 'orange', 'lemon', 'lime', 'berry', 'grape', 'mango', 'pineapple', 'tomato', 'avocado'],
+  'Warzywa': ['cebula', 'czosnek', 'ziemniak', 'marchew', 'seler', 'papryka', 'brokuł', 'szpinak', 'sałata', 'ogórek', 'cukinia', 'pieczarki', 'grzyb', 'kukurydza', 'groch', 'fasola', 'kapusta', 'jarmuż', 'kalafior', 'bakłażan', 'dynia', 'szparagi', 'por', 'szalotka', 'imbir', 'jalapeño', 'chili', 'onion', 'garlic', 'potato', 'carrot', 'celery', 'pepper', 'broccoli', 'spinach', 'lettuce', 'cucumber', 'zucchini', 'mushroom', 'corn', 'cabbage', 'cauliflower', 'eggplant', 'squash', 'ginger'],
+  'Pieczywo': ['chleb', 'bułka', 'tortilla', 'pita', 'naan', 'croissant', 'bagel', 'wrap', 'bread', 'roll', 'bajgiel', 'rogalik'],
+  'Makarony i Kasze': ['makaron', 'spaghetti', 'ryż', 'kasza', 'kuskus', 'owies', 'płatki', 'penne', 'fusilli', 'noodle', 'pasta', 'rice', 'quinoa', 'farro', 'gryczana', 'jęczmienna', 'jaglana', 'bulgur'],
+  'Konserwy i Słoiki': ['konserwa', 'passata', 'koncentrat', 'bulion', 'mleko kokosowe', 'ciecierzyca', 'soczewica', 'salsa', 'oliwki', 'ogórki konserwowe', 'canned', 'broth', 'stock', 'tomato sauce', 'tomato paste', 'coconut milk', 'chickpea', 'lentil'],
+  'Oleje i Sosy': ['olej', 'oliwa', 'ocet', 'sos sojowy', 'musztarda', 'keczup', 'majonez', 'sos ostry', 'worcestershire', 'miód', 'syrop klonowy', 'sezamowy', 'oil', 'vinegar', 'soy sauce', 'mustard', 'ketchup', 'mayonnaise', 'honey'],
+  'Przyprawy': ['sól', 'pieprz', 'kmin', 'kminek', 'papryka w proszku', 'oregano', 'bazylia', 'tymianek', 'rozmaryn', 'cynamon', 'gałka muszkatołowa', 'kurkuma', 'chili w proszku', 'curry', 'liść laurowy', 'pietruszka', 'kolendra', 'koperek', 'szałwia', 'wanilia', 'ziele angielskie', 'salt', 'pepper', 'cumin', 'paprika', 'oregano', 'basil', 'thyme', 'rosemary', 'cinnamon', 'turmeric', 'vanilla', 'parsley', 'cilantro', 'dill'],
+  'Do Pieczenia': ['mąka', 'cukier', 'soda', 'proszek do pieczenia', 'drożdże', 'kakao', 'czekolada', 'skrobia', 'flour', 'sugar', 'baking soda', 'baking powder', 'yeast', 'cocoa', 'chocolate', 'cornstarch', 'cukier puder', 'cukier waniliowy'],
+  'Mrożonki': ['mrożone', 'mrożonka', 'lody', 'frozen', 'ice cream'],
+  'Napoje': ['woda', 'sok', 'kawa', 'herbata', 'wino', 'piwo', 'water', 'juice', 'coffee', 'tea', 'wine', 'beer'],
+  'Przekąski i Orzechy': ['orzech', 'migdał', 'orzechy włoskie', 'pekan', 'fistaszki', 'nerkowce', 'pistacje', 'pestki', 'chipsy', 'krakersy', 'nut', 'almond', 'walnut', 'peanut', 'cashew', 'pistachio', 'seed', 'chip', 'cracker'],
 };
 
 export function getStoreSection(ingredientName: string): string {
@@ -51,7 +53,7 @@ export function getStoreSection(ingredientName: string): string {
   for (const [section, keywords] of Object.entries(STORE_SECTIONS)) {
     if (keywords.some((kw) => lower.includes(kw))) return section;
   }
-  return 'Other';
+  return 'Inne';
 }
 
 export interface ShoppingListItem {
