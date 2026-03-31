@@ -32,7 +32,7 @@ ${JSON.stringify(
     cook_time_minutes: null,
     category: '',
     tags: [],
-    ingredients: [{ name: '', quantity: '', unit: 'g', category: 'Other' }],
+    ingredients: [{ name: '', quantity: '', unit: 'g', category: 'Inne' }],
     instructions: [''],
     calories_per_serving: null,
     protein_grams: null,
