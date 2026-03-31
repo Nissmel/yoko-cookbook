@@ -183,7 +183,7 @@ export default function Pantry() {
 
         {/* Match recipes button */}
         <Button onClick={calculateMatches} className="w-full gap-2" size="lg" disabled={!pantryItems?.length}>
-          <ChefHat className="h-5 w-5" /> Find Matching Recipes
+          <ChefHat className="h-5 w-5" /> Znajdź pasujące przepisy
         </Button>
 
         {/* Results */}
