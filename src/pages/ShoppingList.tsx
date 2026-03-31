@@ -153,8 +153,8 @@ export default function ShoppingList() {
             <p className="text-muted-foreground font-body text-sm mt-1">{items?.length ?? 0} items</p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <Button variant="outline" size="sm" onClick={exportToGoogleKeep} className="gap-1.5">
-              <Share2 className="h-4 w-4" /> Google Keep {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
+            <Button variant="outline" size="sm" onClick={shareShoppingList} className="gap-1.5">
+              <Share2 className="h-4 w-4" /> Udostępnij {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
             </Button>
             {checked.length > 0 && (
               <Button variant="outline" size="sm" onClick={() => clearChecked.mutate()} className="gap-1.5">
