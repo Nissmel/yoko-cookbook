@@ -27,7 +27,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    const systemPrompt = `You are a recipe parser. Extract recipe data from the provided text and return ONLY valid JSON with this exact structure:
+    const systemPrompt = `You are a recipe parser that extracts structured recipe data from web pages. Rules:
+- Use ONLY metric units (grams, ml, liters, °C). Convert cups, tablespoons, ounces, fahrenheit etc. to metric.
+- Ingredient names and instructions MUST be in Polish.
+- In instructions, reference ingredients by name with amounts (e.g. "Dodaj 150g mąki pszennej i wymieszaj").
+- Each ingredient MUST have a "category" field with one of: "Nabiał i Jajka", "Mięso i Drób", "Ryby i Owoce Morza", "Owoce", "Warzywa", "Pieczywo", "Makarony i Kasze", "Konserwy i Słoiki", "Oleje i Sosy", "Przyprawy", "Do Pieczenia", "Mrożonki", "Napoje", "Przekąski i Orzechy", "Inne".
+- calories_per_serving is for ONE serving. Calculate if not provided.
+- Extract ALL instructions as detailed steps, not summaries.
+- If ingredients are listed as baker's percentages, convert them to actual gram amounts for the given recipe yield.
+- Return ONLY valid JSON, no markdown, no code blocks.
+
+JSON structure:
 {
   "title": "string",
   "description": "string or null",
@@ -36,16 +46,15 @@ Deno.serve(async (req) => {
   "cook_time_minutes": number or null,
   "category": "one of: Breakfast, Lunch, Dinner, Appetizer, Dessert, Snack, Beverage, Soup, Salad, Side Dish" or null,
   "tags": ["string array"],
-  "ingredients": [{"name": "string", "quantity": "string", "unit": "string"}],
-  "instructions": ["step 1", "step 2"],
+  "ingredients": [{"name": "Polish name", "quantity": "number as string", "unit": "g/ml/etc", "category": "store section"}],
+  "instructions": ["detailed step in Polish with ingredient amounts"],
   "calories_per_serving": number or null,
   "protein_grams": number or null,
   "carbs_grams": number or null,
   "fat_grams": number or null,
   "fiber_grams": number or null,
   "image_url": "string or null"
-}
-Return ONLY the JSON object, no markdown formatting, no code blocks.`;
+}`;
 
     const aiRes = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -57,7 +66,7 @@ Return ONLY the JSON object, no markdown formatting, no code blocks.`;
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Page title: ${pageTitle || 'Unknown'}\n\nContent:\n${markdown.substring(0, 8000)}` },
+          { role: 'user', content: `Page title: ${pageTitle || 'Unknown'}\n\nExtract the full recipe from this page content:\n${markdown.substring(0, 15000)}` },
         ],
         response_format: { type: 'json_object' },
       }),
