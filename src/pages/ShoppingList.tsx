@@ -92,7 +92,7 @@ export default function ShoppingList() {
     if (navigator.share) {
       try {
         await navigator.share({ title, text: finalText });
-        toast.success('Udostępniono!');
+        toast.success('Shared!');
         return;
       } catch (e: any) {
         if (e.name === 'AbortError') return; // user cancelled
