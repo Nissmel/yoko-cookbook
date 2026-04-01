@@ -61,7 +61,7 @@ export default function ShoppingList() {
       : unchecked;
 
     if (toExport.length === 0) {
-      toast.error('Brak produktów do eksportu');
+      toast.error('No items to export');
       return;
     }
 
@@ -92,7 +92,7 @@ export default function ShoppingList() {
     if (navigator.share) {
       try {
         await navigator.share({ title, text: finalText });
-        toast.success('Udostępniono!');
+        toast.success('Shared!');
         return;
       } catch (e: any) {
         if (e.name === 'AbortError') return; // user cancelled
@@ -112,7 +112,7 @@ export default function ShoppingList() {
       document.execCommand('copy');
       document.body.removeChild(ta);
     }
-    toast.success('Lista skopiowana do schowka! Wklej ją gdziekolwiek (Ctrl+V).');
+    toast.success('List copied to clipboard! Paste it anywhere (Ctrl+V).');
   };
 
   const renderItem = (item: typeof unchecked[0], isChecked = false) => (
@@ -154,7 +154,7 @@ export default function ShoppingList() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={shareShoppingList} className="gap-1.5">
-              <Share2 className="h-4 w-4" /> Udostępnij {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
+              <Share2 className="h-4 w-4" /> Share {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
             </Button>
             {checked.length > 0 && (
               <Button variant="outline" size="sm" onClick={() => clearChecked.mutate()} className="gap-1.5">
