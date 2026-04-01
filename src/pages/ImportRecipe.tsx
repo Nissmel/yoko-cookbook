@@ -52,6 +52,7 @@ export default function ImportRecipe() {
   const [jsonText, setJsonText] = useState('');
   const [saving, setSaving] = useState(false);
   const [url, setUrl] = useState('');
+  const [extraPrompt, setExtraPrompt] = useState('');
   const [scraping, setScraping] = useState(false);
 
   const parseAndSave = async (raw: string) => {
