@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { markdown, title: pageTitle, source_url } = await req.json();
+    const { markdown, title: pageTitle, source_url, extra_instructions } = await req.json();
     if (!markdown) {
       return new Response(JSON.stringify({ error: 'Markdown content required' }), {
         status: 400,
@@ -45,7 +45,7 @@ JSON structure:
   "prep_time_minutes": number or null,
   "cook_time_minutes": number or null,
   "category": "one of: Breakfast, Lunch, Dinner, Appetizer, Dessert, Snack, Beverage, Soup, Salad, Side Dish" or null,
-  "tags": ["string array"],
+  "tags": ["tagi po polsku"],
   "ingredients": [{"name": "Polish name", "quantity": "number as string", "unit": "g/ml/etc", "category": "store section"}],
   "instructions": ["detailed step in Polish with ingredient amounts"],
   "calories_per_serving": number or null,
@@ -66,7 +66,7 @@ JSON structure:
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Page title: ${pageTitle || 'Unknown'}\n\nExtract the full recipe from this page content:\n${markdown.substring(0, 15000)}` },
+          { role: 'user', content: `Page title: ${pageTitle || 'Unknown'}\n\n${extra_instructions ? `Additional user instructions: ${extra_instructions}\n\n` : ''}Extract the full recipe from this page content:\n${markdown.substring(0, 15000)}` },
         ],
         response_format: { type: 'json_object' },
       }),

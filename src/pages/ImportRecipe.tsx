@@ -52,6 +52,7 @@ export default function ImportRecipe() {
   const [jsonText, setJsonText] = useState('');
   const [saving, setSaving] = useState(false);
   const [url, setUrl] = useState('');
+  const [extraPrompt, setExtraPrompt] = useState('');
   const [scraping, setScraping] = useState(false);
 
   const parseAndSave = async (raw: string) => {
@@ -135,6 +136,7 @@ export default function ImportRecipe() {
           markdown: scrapeData.markdown,
           title: scrapeData.title,
           source_url: scrapeData.source_url,
+          extra_instructions: extraPrompt.trim() || undefined,
         },
       });
       if (parseError) throw new Error(parseError.message);
@@ -205,6 +207,19 @@ export default function ImportRecipe() {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                 />
+                {url.trim() && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="extra-prompt" className="text-sm">Additional AI instructions (optional)</Label>
+                    <Textarea
+                      id="extra-prompt"
+                      value={extraPrompt}
+                      onChange={(e) => setExtraPrompt(e.target.value)}
+                      placeholder="e.g. This recipe serves 2 people, convert to 4 servings. Or: Use butter instead of margarine."
+                      rows={3}
+                      className="text-sm"
+                    />
+                  </div>
+                )}
                 <Button onClick={handleUrlImport} disabled={!url.trim() || scraping} className="w-full gap-2">
                   {scraping ? <><Loader2 className="h-4 w-4 animate-spin" /> Scraping & Parsing...</> : 'Import from URL'}
                 </Button>
