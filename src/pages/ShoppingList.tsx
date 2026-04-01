@@ -61,7 +61,7 @@ export default function ShoppingList() {
       : unchecked;
 
     if (toExport.length === 0) {
-      toast.error('Brak produktów do eksportu');
+      toast.error('No items to export');
       return;
     }
 
