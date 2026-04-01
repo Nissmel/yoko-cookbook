@@ -154,7 +154,7 @@ export default function ShoppingList() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={shareShoppingList} className="gap-1.5">
-              <Share2 className="h-4 w-4" /> Udostępnij {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
+              <Share2 className="h-4 w-4" /> Share {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
             </Button>
             {checked.length > 0 && (
               <Button variant="outline" size="sm" onClick={() => clearChecked.mutate()} className="gap-1.5">
