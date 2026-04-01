@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { markdown, title: pageTitle, source_url } = await req.json();
+    const { markdown, title: pageTitle, source_url, extra_instructions } = await req.json();
     if (!markdown) {
       return new Response(JSON.stringify({ error: 'Markdown content required' }), {
         status: 400,
