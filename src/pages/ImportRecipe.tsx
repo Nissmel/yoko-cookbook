@@ -136,6 +136,7 @@ export default function ImportRecipe() {
           markdown: scrapeData.markdown,
           title: scrapeData.title,
           source_url: scrapeData.source_url,
+          extra_instructions: extraPrompt.trim() || undefined,
         },
       });
       if (parseError) throw new Error(parseError.message);
