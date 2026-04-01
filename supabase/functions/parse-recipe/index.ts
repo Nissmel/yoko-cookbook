@@ -66,7 +66,7 @@ JSON structure:
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Page title: ${pageTitle || 'Unknown'}\n\nExtract the full recipe from this page content:\n${markdown.substring(0, 15000)}` },
+          { role: 'user', content: `Page title: ${pageTitle || 'Unknown'}\n\n${extra_instructions ? `Additional user instructions: ${extra_instructions}\n\n` : ''}Extract the full recipe from this page content:\n${markdown.substring(0, 15000)}` },
         ],
         response_format: { type: 'json_object' },
       }),
