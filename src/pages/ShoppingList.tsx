@@ -112,7 +112,7 @@ export default function ShoppingList() {
       document.execCommand('copy');
       document.body.removeChild(ta);
     }
-    toast.success('Lista skopiowana do schowka! Wklej ją gdziekolwiek (Ctrl+V).');
+    toast.success('List copied to clipboard! Paste it anywhere (Ctrl+V).');
   };
 
   const renderItem = (item: typeof unchecked[0], isChecked = false) => (
