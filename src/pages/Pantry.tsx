@@ -123,7 +123,7 @@ export default function Pantry() {
         <Card>
           <CardHeader>
             <CardTitle className="font-display text-lg flex items-center gap-2">
-              <Package className="h-5 w-5" /> Import hurtowy
+              <Package className="h-5 w-5" /> Bulk Import
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
