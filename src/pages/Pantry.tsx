@@ -109,7 +109,7 @@ export default function Pantry() {
               <Input
                 value={newItemName}
                 onChange={(e) => setNewItemName(e.target.value)}
-                placeholder="Dodaj produkt (np. Jajka)"
+                placeholder="Add item (e.g. Eggs)"
                 onKeyDown={(e) => e.key === 'Enter' && handleAddSingle()}
               />
               <Button onClick={handleAddSingle} disabled={!newItemName.trim()} className="gap-1.5 shrink-0">
