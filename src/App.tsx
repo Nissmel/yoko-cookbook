@@ -45,6 +45,9 @@ const App = () => (
             <Route path="/cooking/:id" element={<ProtectedRoute><CookingMode /></ProtectedRoute>} />
             <Route path="/pantry" element={<ProtectedRoute><Pantry /></ProtectedRoute>} />
             <Route path="/sharing" element={<ProtectedRoute><Sharing /></ProtectedRoute>} />
+            <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
+            <Route path="/meal-planner" element={<ProtectedRoute><MealPlanner /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
