@@ -45,7 +45,7 @@ export function useShareRecipes() {
         .insert({
           recipe_owner_id: user!.id,
           shared_with_email: email,
-          shared_with_user_id: profiles?.user_id || null,
+          shared_with_user_id: profile?.user_id || null,
         });
       if (error) throw error;
     },
