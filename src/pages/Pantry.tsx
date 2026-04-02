@@ -155,7 +155,7 @@ export default function Pantry() {
               <CardTitle className="font-display text-lg">Your Pantry ({pantryItems?.length ?? 0})</CardTitle>
               {pantryItems && pantryItems.length > 0 && (
                 <Button variant="outline" size="sm" onClick={() => clearPantry.mutate()} className="gap-1.5 text-destructive hover:text-destructive">
-                  <Trash2 className="h-4 w-4" /> Wyczyść
+                  <Trash2 className="h-4 w-4" /> Clear All
                 </Button>
               )}
             </div>
