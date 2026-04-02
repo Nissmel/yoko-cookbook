@@ -11,6 +11,8 @@ import {
   Upload,
   Package,
   Share2,
+  Folder,
+  CalendarDays,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -20,6 +22,8 @@ const navItems = [
   { to: '/import', icon: Upload, label: 'Import' },
   { to: '/shopping-list', icon: ShoppingCart, label: 'Shopping' },
   { to: '/pantry', icon: Package, label: 'Pantry' },
+  { to: '/collections', icon: Folder, label: 'Collections' },
+  { to: '/meal-planner', icon: CalendarDays, label: 'Planner' },
   { to: '/sharing', icon: Share2, label: 'Share' },
 ];
 

@@ -14,6 +14,8 @@ import ShoppingList from "./pages/ShoppingList";
 import CookingMode from "./pages/CookingMode";
 import Pantry from "./pages/Pantry";
 import Sharing from "./pages/Sharing";
+import Collections from "./pages/Collections";
+import MealPlanner from "./pages/MealPlanner";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +45,9 @@ const App = () => (
             <Route path="/cooking/:id" element={<ProtectedRoute><CookingMode /></ProtectedRoute>} />
             <Route path="/pantry" element={<ProtectedRoute><Pantry /></ProtectedRoute>} />
             <Route path="/sharing" element={<ProtectedRoute><Sharing /></ProtectedRoute>} />
+            <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
+            <Route path="/meal-planner" element={<ProtectedRoute><MealPlanner /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

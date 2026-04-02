@@ -96,9 +96,9 @@ export default function Pantry() {
     <AppLayout>
       <div className="max-w-3xl mx-auto px-4 py-6 md:py-10 space-y-6 animate-fade-in">
         <div>
-          <h1 className="font-display text-3xl font-bold text-foreground">Spiżarnia</h1>
+          <h1 className="font-display text-3xl font-bold text-foreground">Pantry</h1>
           <p className="text-muted-foreground font-body text-sm mt-1">
-            Zarządzaj tym, co masz w kuchni i znajdź przepisy do przygotowania.
+            Manage what you have in the kitchen and find recipes to cook.
           </p>
         </div>
 
@@ -109,7 +109,7 @@ export default function Pantry() {
               <Input
                 value={newItemName}
                 onChange={(e) => setNewItemName(e.target.value)}
-                placeholder="Dodaj produkt (np. Jajka)"
+                placeholder="Add item (e.g. Eggs)"
                 onKeyDown={(e) => e.key === 'Enter' && handleAddSingle()}
               />
               <Button onClick={handleAddSingle} disabled={!newItemName.trim()} className="gap-1.5 shrink-0">
@@ -123,24 +123,24 @@ export default function Pantry() {
         <Card>
           <CardHeader>
             <CardTitle className="font-display text-lg flex items-center gap-2">
-              <Package className="h-5 w-5" /> Import hurtowy
+              <Package className="h-5 w-5" /> Bulk Import
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Tabs defaultValue="paste" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="paste" className="gap-1.5"><ClipboardPaste className="h-4 w-4" /> Wklej JSON</TabsTrigger>
-                <TabsTrigger value="file" className="gap-1.5"><FileJson className="h-4 w-4" /> Prześlij plik</TabsTrigger>
+                <TabsTrigger value="paste" className="gap-1.5"><ClipboardPaste className="h-4 w-4" /> Paste JSON</TabsTrigger>
+                <TabsTrigger value="file" className="gap-1.5"><FileJson className="h-4 w-4" /> Upload File</TabsTrigger>
               </TabsList>
               <TabsContent value="paste" className="mt-3 space-y-3">
                 <Textarea value={jsonText} onChange={(e) => setJsonText(e.target.value)} placeholder='["Jajka", "Mleko", "Masło"]' rows={4} className="font-mono text-sm" />
                 <Button onClick={handlePasteJson} disabled={!jsonText.trim()} className="w-full gap-1.5">
-                  <ClipboardPaste className="h-4 w-4" /> Importuj produkty
+                  <ClipboardPaste className="h-4 w-4" /> Import Items
                 </Button>
               </TabsContent>
               <TabsContent value="file" className="mt-3">
                 <Button onClick={() => fileRef.current?.click()} variant="outline" className="gap-1.5">
-                  <FileJson className="h-4 w-4" /> Prześlij JSON
+                  <FileJson className="h-4 w-4" /> Upload JSON
                 </Button>
                 <input ref={fileRef} type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
               </TabsContent>
@@ -152,10 +152,10 @@ export default function Pantry() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="font-display text-lg">Twoja spiżarnia ({pantryItems?.length ?? 0})</CardTitle>
+              <CardTitle className="font-display text-lg">Your Pantry ({pantryItems?.length ?? 0})</CardTitle>
               {pantryItems && pantryItems.length > 0 && (
                 <Button variant="outline" size="sm" onClick={() => clearPantry.mutate()} className="gap-1.5 text-destructive hover:text-destructive">
-                  <Trash2 className="h-4 w-4" /> Wyczyść
+                  <Trash2 className="h-4 w-4" /> Clear All
                 </Button>
               )}
             </div>
@@ -176,21 +176,21 @@ export default function Pantry() {
                 ))}
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm font-body">Brak produktów. Dodaj powyżej.</p>
+              <p className="text-muted-foreground text-sm font-body">No items yet. Add some above.</p>
             )}
           </CardContent>
         </Card>
 
         {/* Match recipes button */}
         <Button onClick={calculateMatches} className="w-full gap-2" size="lg" disabled={!pantryItems?.length}>
-          <ChefHat className="h-5 w-5" /> Znajdź pasujące przepisy
+          <ChefHat className="h-5 w-5" /> Find Matching Recipes
         </Button>
 
         {/* Results */}
         {matches.length > 0 && (
           <div className="space-y-3">
             <h2 className="font-display text-xl font-semibold flex items-center gap-2">
-              <ChefHat className="h-5 w-5 text-primary" /> Sugestie przepisów
+              <ChefHat className="h-5 w-5 text-primary" /> Recipe Suggestions
             </h2>
             {matches.map((match) => (
               <Link key={match.recipeId} to={`/recipe/${match.recipeId}`} className="block">
