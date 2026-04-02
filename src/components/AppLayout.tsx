@@ -11,6 +11,8 @@ import {
   Upload,
   Package,
   Share2,
+  Folder,
+  CalendarDays,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
