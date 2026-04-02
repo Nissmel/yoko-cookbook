@@ -14,6 +14,8 @@ import ShoppingList from "./pages/ShoppingList";
 import CookingMode from "./pages/CookingMode";
 import Pantry from "./pages/Pantry";
 import Sharing from "./pages/Sharing";
+import Collections from "./pages/Collections";
+import MealPlanner from "./pages/MealPlanner";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
