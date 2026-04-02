@@ -190,7 +190,7 @@ export default function Pantry() {
         {matches.length > 0 && (
           <div className="space-y-3">
             <h2 className="font-display text-xl font-semibold flex items-center gap-2">
-              <ChefHat className="h-5 w-5 text-primary" /> Sugestie przepisów
+              <ChefHat className="h-5 w-5 text-primary" /> Recipe Suggestions
             </h2>
             {matches.map((match) => (
               <Link key={match.recipeId} to={`/recipe/${match.recipeId}`} className="block">
