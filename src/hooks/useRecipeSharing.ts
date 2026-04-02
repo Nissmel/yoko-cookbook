@@ -34,10 +34,10 @@ export function useShareRecipes() {
   return useMutation({
     mutationFn: async (email: string) => {
       // Try to find the user by email to pre-fill shared_with_user_id
-      const { data: profiles } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
         .select('user_id')
-        .eq('display_name', email)
+        .eq('email', email)
         .maybeSingle();
 
       const { error } = await supabase
