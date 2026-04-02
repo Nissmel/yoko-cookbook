@@ -140,7 +140,7 @@ export default function Pantry() {
               </TabsContent>
               <TabsContent value="file" className="mt-3">
                 <Button onClick={() => fileRef.current?.click()} variant="outline" className="gap-1.5">
-                  <FileJson className="h-4 w-4" /> Prześlij JSON
+                  <FileJson className="h-4 w-4" /> Upload JSON
                 </Button>
                 <input ref={fileRef} type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
               </TabsContent>
