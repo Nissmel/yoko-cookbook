@@ -9,49 +9,56 @@ export default function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link
       to={`/recipe/${recipe.id}`}
-      className="group block overflow-hidden rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-all duration-200 animate-fade-in"
+      className="group block overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm card-cozy animate-fade-in"
     >
-      <div className="aspect-[4/3] overflow-hidden bg-muted">
+      <div className="aspect-[16/10] overflow-hidden bg-muted relative">
         {recipe.image_url ? (
           <img
             src={recipe.image_url}
             alt={recipe.title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground">
-            <span className="text-4xl">🍽️</span>
+          <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary/10 to-accent/40">
+            <span className="text-5xl">🍽️</span>
           </div>
         )}
+        {/* Warm gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground/10 via-transparent to-transparent" />
+        {recipe.category && (
+          <Badge className="absolute top-3 left-3 bg-card/85 backdrop-blur-sm text-foreground border-0 text-xs font-body shadow-sm">
+            {recipe.category}
+          </Badge>
+        )}
       </div>
-      <div className="p-4 space-y-2">
-        <h3 className="font-display text-lg font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+      <div className="p-4 space-y-2.5">
+        <h3 className="font-display text-lg font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
           {recipe.title}
         </h3>
         {recipe.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 font-body">
+          <p className="text-sm text-muted-foreground line-clamp-2 font-body leading-relaxed">
             {recipe.description}
           </p>
         )}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground font-body">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground font-body pt-1">
           {totalTime > 0 && (
-            <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5 text-primary/70" />
               {totalTime} min
             </span>
           )}
-          <span className="flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
+          <span className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-primary/70" />
             {recipe.servings} servings
           </span>
         </div>
         {recipe.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 pt-1">
+          <div className="flex flex-wrap gap-1.5 pt-0.5">
             {recipe.tags.slice(0, 3).map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs font-body">
+              <span key={tag} className="text-[11px] font-body text-muted-foreground bg-muted/70 px-2 py-0.5 rounded-full">
                 {tag}
-              </Badge>
+              </span>
             ))}
           </div>
         )}
