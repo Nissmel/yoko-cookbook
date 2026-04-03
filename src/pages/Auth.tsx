@@ -2,7 +2,6 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { UtensilsCrossed } from 'lucide-react';
 
@@ -21,22 +20,27 @@ export default function Auth() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md border-border/50 shadow-xl animate-fade-in">
-        <CardHeader className="text-center space-y-3 pb-2">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-            <UtensilsCrossed className="h-7 w-7" />
+      <div className="w-full max-w-sm animate-fade-in">
+        {/* Logo & Branding */}
+        <div className="text-center space-y-5 mb-8">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-lg">
+            <UtensilsCrossed className="h-10 w-10" />
           </div>
-          <h1 className="font-display text-3xl font-bold text-foreground">
-            Recipe Keeper
-          </h1>
-          <p className="text-muted-foreground font-body">
-            Sign in to your private cookbook
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <h1 className="font-display text-4xl font-extrabold text-foreground tracking-tight">
+              Recipe Keeper
+            </h1>
+            <p className="text-muted-foreground font-body text-base leading-relaxed">
+              Your cozy personal cookbook
+            </p>
+          </div>
+        </div>
+
+        {/* Sign in card */}
+        <div className="rounded-3xl bg-card border border-border/50 p-6 shadow-lg space-y-5">
           <Button
             type="button"
-            className="w-full gap-2 h-12 text-base"
+            className="w-full gap-3 h-13 text-base rounded-2xl font-body font-semibold shadow-sm"
             onClick={async () => {
               const result = await lovable.auth.signInWithOAuth("google", {
                 redirect_uri: window.location.origin,
@@ -52,8 +56,11 @@ export default function Auth() {
             </svg>
             Sign in with Google
           </Button>
-        </CardContent>
-      </Card>
+          <p className="text-center text-xs text-muted-foreground font-body leading-relaxed">
+            Sign in to save, organize & share<br />your favorite recipes
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
