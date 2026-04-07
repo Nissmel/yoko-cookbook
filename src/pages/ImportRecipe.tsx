@@ -16,6 +16,7 @@ const AI_INSTRUCTIONS = `## Instrukcje dla AI
 Wypełnij poniższy szablon JSON danymi przepisu. Zasady:
 - Używaj WYŁĄCZNIE jednostek metrycznych (gramy, ml, litry, °C). Żadnych łyżek, szklanek, uncji.
 - calories_per_serving dotyczy JEDNEJ porcji. Wartości odżywcze zawsze na jedną porcję.
+- Pole "category" przepisu jest OBOWIĄZKOWE — wybierz jedną z: "Breakfast", "Lunch", "Dinner", "Appetizer", "Dessert", "Snack", "Beverage", "Soup", "Salad", "Side Dish".
 - Każdy składnik musi mieć pole "category" wskazujące sekcję sklepu (jedna z: "Nabiał i Jajka", "Mięso i Drób", "Ryby i Owoce Morza", "Owoce", "Warzywa", "Pieczywo", "Makarony i Kasze", "Konserwy i Słoiki", "Oleje i Sosy", "Przyprawy", "Do Pieczenia", "Mrożonki", "Napoje", "Przekąski i Orzechy", "Inne").
 - Nazwy składników i instrukcje w języku POLSKIM.
 - W instrukcjach odwołuj się do składników po nazwie (np. "Dodaj mąkę i wymieszaj").
