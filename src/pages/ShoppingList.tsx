@@ -117,13 +117,6 @@ export default function ShoppingList() {
 
   const renderItem = (item: typeof unchecked[0], isChecked = false) => (
     <div key={item.id} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted/50 transition-colors group">
-      {!isChecked && (
-        <Checkbox
-          checked={selectedIds.has(item.id)}
-          onCheckedChange={() => toggleSelect(item.id)}
-          className="border-muted-foreground/50"
-        />
-      )}
       <Checkbox
         checked={isChecked}
         onCheckedChange={() => toggleItem.mutate({ id: item.id, checked: !isChecked })}
