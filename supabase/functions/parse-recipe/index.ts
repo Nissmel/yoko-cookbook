@@ -44,7 +44,7 @@ JSON structure:
   "servings": number,
   "prep_time_minutes": number or null,
   "cook_time_minutes": number or null,
-  "category": "one of: Breakfast, Lunch, Dinner, Appetizer, Dessert, Snack, Beverage, Soup, Salad, Side Dish" or null,
+  "category": "REQUIRED - one of: Breakfast, Lunch, Dinner, Appetizer, Dessert, Snack, Beverage, Soup, Salad, Side Dish",
   "tags": ["tagi po polsku"],
   "ingredients": [{"name": "Polish name", "quantity": "number as string", "unit": "g/ml/etc", "category": "store section"}],
   "instructions": ["detailed step in Polish with ingredient amounts"],

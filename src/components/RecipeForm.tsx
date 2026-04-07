@@ -91,6 +91,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return toast.error('Title is required');
+    if (!category) return toast.error('Please select a category');
     if (ingredients.filter((i) => i.name.trim()).length === 0) return toast.error('Add at least one ingredient');
 
     setSaving(true);
