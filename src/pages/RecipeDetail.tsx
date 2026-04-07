@@ -2,18 +2,196 @@ import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useRecipe, useDeleteRecipe } from '@/hooks/useRecipes';
 import { useAddToShoppingList } from '@/hooks/useShoppingList';
+import { useCollections, useAddToCollection, useRemoveFromCollection } from '@/hooks/useCollections';
+import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
   Clock, Users, ShoppingCart, Pencil, Trash2, ArrowLeft, Minus, Plus, Share2, Flame, ExternalLink, ChefHat,
+  FolderPlus, Check, X, MessageCircle, Send, Loader2, Sparkles,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from '@/components/ui/dialog';
+import { useQuery } from '@tanstack/react-query';
+
+function CollectionPicker({ recipeId }: { recipeId: string }) {
+  const { data: collections } = useCollections();
+  const addToCollection = useAddToCollection();
+  const removeFromCollection = useRemoveFromCollection();
+
+  // Check which collections contain this recipe
+  const { data: memberships, refetch } = useQuery({
+    queryKey: ['recipe-memberships', recipeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('recipe_collection_items')
+        .select('collection_id')
+        .eq('recipe_id', recipeId);
+      if (error) throw error;
+      return new Set(data.map((d: any) => d.collection_id));
+    },
+  });
+
+  const toggle = async (collectionId: string) => {
+    try {
+      if (memberships?.has(collectionId)) {
+        await removeFromCollection.mutateAsync({ collectionId, recipeId });
+        toast.success('Removed from collection');
+      } else {
+        await addToCollection.mutateAsync({ collectionId, recipeId });
+        toast.success('Added to collection');
+      }
+      refetch();
+    } catch {
+      toast.error('Failed to update collection');
+    }
+  };
+
+  if (!collections?.length) {
+    return <p className="text-sm text-muted-foreground py-4">No collections yet. Create one in the Collections page first.</p>;
+  }
+
+  return (
+    <div className="space-y-1 pt-2">
+      {collections.map((col) => {
+        const isMember = memberships?.has(col.id);
+        return (
+          <button
+            key={col.id}
+            onClick={() => toggle(col.id)}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-body transition-colors ${
+              isMember ? 'bg-primary/10 text-primary' : 'hover:bg-muted'
+            }`}
+          >
+            <span>{col.name}</span>
+            {isMember ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4 text-muted-foreground" />}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function RecipeAIChat({ recipe }: { recipe: any }) {
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const [chat, setChat] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const quickPrompts = [
+    'What can I substitute for the main ingredient?',
+    'How can I make this healthier?',
+    'What goes well as a side dish?',
+    'Can I prepare this ahead of time?',
+  ];
+
+  const send = async (text: string) => {
+    if (!text.trim() || loading) return;
+    const userMsg = text.trim();
+    setMessage('');
+    setChat((prev) => [...prev, { role: 'user', content: userMsg }]);
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('recipe-chat', {
+        body: { message: userMsg, recipe },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      setChat((prev) => [...prev, { role: 'assistant', content: data.response }]);
+    } catch (e: any) {
+      toast.error(e.message || 'AI request failed');
+      setChat((prev) => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1.5 rounded-xl text-xs">
+          <Sparkles className="h-3.5 w-3.5" /> Ask AI
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="rounded-2xl max-w-lg max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="font-display flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" /> Recipe Assistant
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-y-auto space-y-3 min-h-[200px] max-h-[400px] py-2">
+          {chat.length === 0 && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground font-body">Ask anything about this recipe:</p>
+              <div className="flex flex-wrap gap-2">
+                {quickPrompts.map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => send(q)}
+                    className="text-xs bg-muted hover:bg-muted/80 rounded-full px-3 py-1.5 font-body transition-colors text-left"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {chat.map((msg, i) => (
+            <div
+              key={i}
+              className={`text-sm font-body rounded-2xl px-3 py-2.5 whitespace-pre-wrap ${
+                msg.role === 'user'
+                  ? 'bg-primary text-primary-foreground ml-8'
+                  : 'bg-muted mr-8'
+              }`}
+            >
+              {msg.content}
+            </div>
+          ))}
+          {loading && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mr-8 bg-muted rounded-2xl px-3 py-2.5">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking...
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-2 pt-2 border-t border-border/50">
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Ask about this recipe..."
+            className="min-h-[44px] max-h-[100px] rounded-xl text-sm resize-none"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                send(message);
+              }
+            }}
+          />
+          <Button
+            size="icon"
+            className="rounded-xl shrink-0 h-[44px] w-[44px]"
+            onClick={() => send(message)}
+            disabled={!message.trim() || loading}
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function RecipeDetail() {
   const { id } = useParams();
@@ -141,6 +319,21 @@ export default function RecipeDetail() {
               {recipe.title}
             </h1>
             <div className="flex gap-1 shrink-0">
+              {/* Collection picker */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-xl" title="Add to collection">
+                    <FolderPlus className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="rounded-2xl max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle className="font-display">Add to Collection</DialogTitle>
+                  </DialogHeader>
+                  <CollectionPicker recipeId={recipe.id} />
+                </DialogContent>
+              </Dialog>
+
               <Button variant="ghost" size="icon" className="rounded-xl" asChild>
                 <Link to={`/edit/${recipe.id}`}><Pencil className="h-4 w-4" /></Link>
               </Button>
@@ -331,15 +524,18 @@ export default function RecipeDetail() {
         {/* Instructions */}
         {recipe.instructions.length > 0 && (
           <div className="space-y-5">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <h2 className="font-display text-xl font-bold">Instructions</h2>
-              <Button
-                onClick={() => navigate(`/cooking/${recipe.id}`)}
-                className="gap-1.5 rounded-xl shadow-sm"
-                size="sm"
-              >
-                <ChefHat className="h-4 w-4" /> Start Cooking
-              </Button>
+              <div className="flex gap-2">
+                <RecipeAIChat recipe={recipe} />
+                <Button
+                  onClick={() => navigate(`/cooking/${recipe.id}`)}
+                  className="gap-1.5 rounded-xl shadow-sm"
+                  size="sm"
+                >
+                  <ChefHat className="h-4 w-4" /> Start Cooking
+                </Button>
+              </div>
             </div>
             <ol className="space-y-5">
               {recipe.instructions.map((step, i) => (
