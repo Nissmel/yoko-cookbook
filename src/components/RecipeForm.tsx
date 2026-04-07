@@ -192,7 +192,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Category</Label>
+          <Label>Category <span className="text-destructive">*</span></Label>
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
             <SelectContent>
