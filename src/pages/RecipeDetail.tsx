@@ -200,8 +200,10 @@ export default function RecipeDetail() {
   const navigate = useNavigate();
   const { data: recipe, isLoading } = useRecipe(id);
   const deleteRecipe = useDeleteRecipe();
+  const updateRecipe = useUpdateRecipe();
   const addToList = useAddToShoppingList();
   const [scaledServings, setScaledServings] = useState<number | null>(null);
+  const [pendingCategory, setPendingCategory] = useState<string>('');
 
   if (isLoading) {
     return (
