@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useRecipe, useDeleteRecipe } from '@/hooks/useRecipes';
+import { useRecipe, useDeleteRecipe, useUpdateRecipe } from '@/hooks/useRecipes';
 import { useAddToShoppingList } from '@/hooks/useShoppingList';
 import { useCollections, useAddToCollection, useRemoveFromCollection } from '@/hooks/useCollections';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,8 +12,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
   Clock, Users, ShoppingCart, Pencil, Trash2, ArrowLeft, Minus, Plus, Share2, Flame, ExternalLink, ChefHat,
-  FolderPlus, Check, X, MessageCircle, Send, Loader2, Sparkles,
+  FolderPlus, Check, X, MessageCircle, Send, Loader2, Sparkles, AlertTriangle,
 } from 'lucide-react';
+import { CATEGORIES } from '@/types/recipe';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -198,8 +200,10 @@ export default function RecipeDetail() {
   const navigate = useNavigate();
   const { data: recipe, isLoading } = useRecipe(id);
   const deleteRecipe = useDeleteRecipe();
+  const updateRecipe = useUpdateRecipe();
   const addToList = useAddToShoppingList();
   const [scaledServings, setScaledServings] = useState<number | null>(null);
+  const [pendingCategory, setPendingCategory] = useState<string>('');
 
   if (isLoading) {
     return (
@@ -304,6 +308,44 @@ export default function RecipeDetail() {
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1.5 text-muted-foreground -ml-2 rounded-xl">
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
+
+        {/* Category missing banner */}
+        {!recipe.category && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-destructive/10 border border-destructive/30 rounded-2xl p-4">
+            <div className="flex items-center gap-2 text-sm font-body text-destructive font-medium">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              This recipe has no category.
+            </div>
+            <div className="flex items-center gap-2 ml-auto">
+              <Select value={pendingCategory} onValueChange={setPendingCategory}>
+                <SelectTrigger className="w-[160px] h-9 rounded-xl text-sm">
+                  <SelectValue placeholder="Pick category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                className="rounded-xl"
+                disabled={!pendingCategory || updateRecipe.isPending}
+                onClick={async () => {
+                  try {
+                    await updateRecipe.mutateAsync({ id: recipe.id, category: pendingCategory });
+                    toast.success('Category saved!');
+                    setPendingCategory('');
+                  } catch {
+                    toast.error('Failed to save category');
+                  }
+                }}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Hero image */}
         {recipe.image_url && (
