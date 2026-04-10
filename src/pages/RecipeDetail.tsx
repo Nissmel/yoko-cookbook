@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useRecipe, useDeleteRecipe } from '@/hooks/useRecipes';
+import { useRecipe, useDeleteRecipe, useUpdateRecipe } from '@/hooks/useRecipes';
 import { useAddToShoppingList } from '@/hooks/useShoppingList';
 import { useCollections, useAddToCollection, useRemoveFromCollection } from '@/hooks/useCollections';
 import { supabase } from '@/integrations/supabase/client';
