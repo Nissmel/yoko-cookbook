@@ -12,8 +12,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
   Clock, Users, ShoppingCart, Pencil, Trash2, ArrowLeft, Minus, Plus, Share2, Flame, ExternalLink, ChefHat,
-  FolderPlus, Check, X, MessageCircle, Send, Loader2, Sparkles,
+  FolderPlus, Check, X, MessageCircle, Send, Loader2, Sparkles, AlertTriangle,
 } from 'lucide-react';
+import { CATEGORIES } from '@/types/recipe';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
