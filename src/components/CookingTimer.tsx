@@ -10,7 +10,7 @@ interface TimerInstance {
   running: boolean;
 }
 
-export function useTimerParser(text: string): { minutes: number; label: string }[] {
+export function parseTimeMentions(text: string): { minutes: number; label: string }[] {
   const results: { minutes: number; label: string }[] = [];
   // Match patterns like "30 minut", "15 min", "2 godziny", "1.5h", "45 minutes", "1 godz"
   const patterns = [

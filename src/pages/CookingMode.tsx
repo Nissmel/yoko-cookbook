@@ -4,7 +4,7 @@ import { useRecipe } from '@/hooks/useRecipes';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTimers, useTimerParser, CookingTimerBar, InlineTimerButton } from '@/components/CookingTimer';
+import { useTimers, parseTimeMentions, CookingTimerBar, InlineTimerButton } from '@/components/CookingTimer';
 
 export default function CookingMode() {
   const { id } = useParams();
@@ -87,7 +87,7 @@ export default function CookingMode() {
   // Parse time mentions from current step and render with inline timer buttons
   const renderStepWithTimers = (step: string) => {
     const enriched = enrichInstruction(step);
-    const timeMatches = useTimerParser(enriched);
+    const timeMatches = parseTimeMentions(enriched);
     
     if (timeMatches.length === 0) {
       return <span>{enriched}</span>;
