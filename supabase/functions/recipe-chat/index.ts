@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { message, recipe } = await req.json();
+    const { message, recipe, mode } = await req.json();
     if (!message || !recipe) {
       return new Response(JSON.stringify({ error: 'Message and recipe required' }), {
         status: 400,
@@ -25,7 +25,33 @@ Deno.serve(async (req) => {
       });
     }
 
-    const systemPrompt = `You are a helpful cooking assistant. The user is viewing a recipe and may ask questions about it, request modifications, substitutions, tips, or related suggestions.
+    const isEditMode = mode === 'edit';
+
+    const systemPrompt = isEditMode
+      ? `You are a recipe modification assistant. The user wants to modify an existing recipe.
+
+Current recipe:
+Title: ${recipe.title}
+Description: ${recipe.description || 'N/A'}
+Servings: ${recipe.servings}
+Category: ${recipe.category || 'N/A'}
+Prep time: ${recipe.prep_time_minutes || 'N/A'} min
+Cook time: ${recipe.cook_time_minutes || 'N/A'} min
+Ingredients: ${JSON.stringify(recipe.ingredients)}
+Instructions: ${JSON.stringify(recipe.instructions)}
+Calories per serving: ${recipe.calories_per_serving || 'N/A'}
+
+Rules:
+- Apply the requested modification to the recipe.
+- Use ONLY metric units (grams, ml, liters, °C).
+- Keep ingredient names and instructions in Polish.
+- Return the modified recipe as JSON with these fields:
+  title, description, servings, category, prep_time_minutes, cook_time_minutes,
+  ingredients (array of {name, quantity, unit}), instructions (array of strings),
+  calories_per_serving, protein_grams, carbs_grams, fat_grams, fiber_grams, tags (array of strings)
+- Also include a "summary" field explaining what was changed.
+- Return ONLY valid JSON, no markdown, no code blocks.`
+      : `You are a helpful cooking assistant. The user is viewing a recipe and may ask questions about it, request modifications, substitutions, tips, or related suggestions.
 
 Current recipe:
 Title: ${recipe.title}
@@ -44,19 +70,25 @@ Rules:
 - If the user asks for modifications, provide clear updated ingredients/instructions.
 - You can suggest tips, substitutions, pairings, and variations.`;
 
+    const requestBody: any = {
+      model: 'google/gemini-3-flash-preview',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message },
+      ],
+    };
+
+    if (isEditMode) {
+      requestBody.response_format = { type: 'json_object' };
+    }
+
     const aiRes = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: message },
-        ],
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (aiRes.status === 429) {
@@ -80,6 +112,21 @@ Rules:
 
     const aiData = await aiRes.json();
     const content = aiData.choices?.[0]?.message?.content || 'No response';
+
+    if (isEditMode) {
+      try {
+        const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        const modifiedRecipe = JSON.parse(cleaned);
+        return new Response(JSON.stringify({ response: modifiedRecipe.summary || 'Recipe modified', modified_recipe: modifiedRecipe }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch {
+        return new Response(JSON.stringify({ error: 'Failed to parse modified recipe' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
 
     return new Response(JSON.stringify({ response: content }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
