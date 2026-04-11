@@ -15,6 +15,7 @@ import {
   CalendarDays,
   Menu,
   X,
+  ChefHat,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +29,7 @@ const mainNav = [
 const secondaryNav = [
   { to: '/create', icon: PlusCircle, label: 'Create' },
   { to: '/import', icon: Upload, label: 'Import' },
+  { to: '/what-can-i-cook', icon: ChefHat, label: 'Cook Now' },
   { to: '/collections', icon: Folder, label: 'Collections' },
   { to: '/sharing', icon: Share2, label: 'Share' },
 ];

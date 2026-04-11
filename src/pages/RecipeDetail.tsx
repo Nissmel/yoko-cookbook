@@ -83,17 +83,26 @@ function CollectionPicker({ recipeId }: { recipeId: string }) {
   );
 }
 
-function RecipeAIChat({ recipe }: { recipe: any }) {
+function RecipeAIChat({ recipe, onRecipeUpdated }: { recipe: any; onRecipeUpdated: () => void }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
-  const [chat, setChat] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
+  const [chat, setChat] = useState<{ role: 'user' | 'assistant'; content: string; modifiedRecipe?: any }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const updateRecipeAI = useUpdateRecipe();
 
   const quickPrompts = [
     'What can I substitute for the main ingredient?',
     'How can I make this healthier?',
     'What goes well as a side dish?',
     'Can I prepare this ahead of time?',
+  ];
+
+  const editPrompts = [
+    'Make this recipe vegan',
+    'Reduce calories by 30%',
+    'Double the recipe',
+    'Make it gluten-free',
   ];
 
   const send = async (text: string) => {
@@ -105,16 +114,52 @@ function RecipeAIChat({ recipe }: { recipe: any }) {
 
     try {
       const { data, error } = await supabase.functions.invoke('recipe-chat', {
-        body: { message: userMsg, recipe },
+        body: { message: userMsg, recipe, mode: editMode ? 'edit' : 'chat' },
       });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
-      setChat((prev) => [...prev, { role: 'assistant', content: data.response }]);
+
+      if (data.modified_recipe) {
+        setChat((prev) => [...prev, {
+          role: 'assistant',
+          content: data.response || 'Recipe modified. Click "Apply Changes" to save.',
+          modifiedRecipe: data.modified_recipe,
+        }]);
+      } else {
+        setChat((prev) => [...prev, { role: 'assistant', content: data.response }]);
+      }
     } catch (e: any) {
       toast.error(e.message || 'AI request failed');
       setChat((prev) => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const applyChanges = async (modifiedRecipe: any) => {
+    try {
+      const updateData: any = { id: recipe.id };
+      if (modifiedRecipe.title) updateData.title = modifiedRecipe.title;
+      if (modifiedRecipe.description !== undefined) updateData.description = modifiedRecipe.description;
+      if (modifiedRecipe.servings) updateData.servings = modifiedRecipe.servings;
+      if (modifiedRecipe.category) updateData.category = modifiedRecipe.category;
+      if (modifiedRecipe.prep_time_minutes !== undefined) updateData.prep_time_minutes = modifiedRecipe.prep_time_minutes;
+      if (modifiedRecipe.cook_time_minutes !== undefined) updateData.cook_time_minutes = modifiedRecipe.cook_time_minutes;
+      if (modifiedRecipe.ingredients) updateData.ingredients = modifiedRecipe.ingredients;
+      if (modifiedRecipe.instructions) updateData.instructions = modifiedRecipe.instructions;
+      if (modifiedRecipe.calories_per_serving !== undefined) updateData.calories_per_serving = modifiedRecipe.calories_per_serving;
+      if (modifiedRecipe.protein_grams !== undefined) updateData.protein_grams = modifiedRecipe.protein_grams;
+      if (modifiedRecipe.carbs_grams !== undefined) updateData.carbs_grams = modifiedRecipe.carbs_grams;
+      if (modifiedRecipe.fat_grams !== undefined) updateData.fat_grams = modifiedRecipe.fat_grams;
+      if (modifiedRecipe.fiber_grams !== undefined) updateData.fiber_grams = modifiedRecipe.fiber_grams;
+      if (modifiedRecipe.tags) updateData.tags = modifiedRecipe.tags;
+
+      await updateRecipeAI.mutateAsync(updateData);
+      toast.success('Recipe updated!');
+      onRecipeUpdated();
+      setOpen(false);
+    } catch {
+      toast.error('Failed to apply changes');
     }
   };
 
@@ -132,12 +177,34 @@ function RecipeAIChat({ recipe }: { recipe: any }) {
           </DialogTitle>
         </DialogHeader>
 
+        {/* Mode toggle */}
+        <div className="flex gap-1 bg-muted rounded-xl p-1">
+          <button
+            onClick={() => setEditMode(false)}
+            className={`flex-1 text-xs font-body py-1.5 rounded-lg transition-colors ${
+              !editMode ? 'bg-background text-foreground shadow-sm font-semibold' : 'text-muted-foreground'
+            }`}
+          >
+            💬 Ask
+          </button>
+          <button
+            onClick={() => setEditMode(true)}
+            className={`flex-1 text-xs font-body py-1.5 rounded-lg transition-colors ${
+              editMode ? 'bg-background text-foreground shadow-sm font-semibold' : 'text-muted-foreground'
+            }`}
+          >
+            ✏️ Edit Recipe
+          </button>
+        </div>
+
         <div className="flex-1 overflow-y-auto space-y-3 min-h-[200px] max-h-[400px] py-2">
           {chat.length === 0 && (
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground font-body">Ask anything about this recipe:</p>
+              <p className="text-sm text-muted-foreground font-body">
+                {editMode ? 'Describe how to modify this recipe:' : 'Ask anything about this recipe:'}
+              </p>
               <div className="flex flex-wrap gap-2">
-                {quickPrompts.map((q) => (
+                {(editMode ? editPrompts : quickPrompts).map((q) => (
                   <button
                     key={q}
                     onClick={() => send(q)}
@@ -150,20 +217,38 @@ function RecipeAIChat({ recipe }: { recipe: any }) {
             </div>
           )}
           {chat.map((msg, i) => (
-            <div
-              key={i}
-              className={`text-sm font-body rounded-2xl px-3 py-2.5 whitespace-pre-wrap ${
-                msg.role === 'user'
-                  ? 'bg-primary text-primary-foreground ml-8'
-                  : 'bg-muted mr-8'
-              }`}
-            >
-              {msg.content}
+            <div key={i}>
+              <div
+                className={`text-sm font-body rounded-2xl px-3 py-2.5 whitespace-pre-wrap ${
+                  msg.role === 'user'
+                    ? 'bg-primary text-primary-foreground ml-8'
+                    : 'bg-muted mr-8'
+                }`}
+              >
+                {msg.content}
+              </div>
+              {msg.modifiedRecipe && (
+                <div className="mr-8 mt-2">
+                  <Button
+                    size="sm"
+                    className="gap-1.5 rounded-xl w-full"
+                    onClick={() => applyChanges(msg.modifiedRecipe)}
+                    disabled={updateRecipeAI.isPending}
+                  >
+                    {updateRecipeAI.isPending ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Check className="h-3.5 w-3.5" />
+                    )}
+                    Apply Changes
+                  </Button>
+                </div>
+              )}
             </div>
           ))}
           {loading && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground mr-8 bg-muted rounded-2xl px-3 py-2.5">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking...
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> {editMode ? 'Modifying recipe...' : 'Thinking...'}
             </div>
           )}
         </div>
@@ -172,7 +257,7 @@ function RecipeAIChat({ recipe }: { recipe: any }) {
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Ask about this recipe..."
+            placeholder={editMode ? 'e.g. Make this recipe vegan...' : 'Ask about this recipe...'}
             className="min-h-[44px] max-h-[100px] rounded-xl text-sm resize-none"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -569,7 +654,7 @@ export default function RecipeDetail() {
             <div className="flex items-center justify-between flex-wrap gap-2">
               <h2 className="font-display text-xl font-bold">Instructions</h2>
               <div className="flex gap-2">
-                <RecipeAIChat recipe={recipe} />
+                <RecipeAIChat recipe={recipe} onRecipeUpdated={() => window.location.reload()} />
                 <Button
                   onClick={() => navigate(`/cooking/${recipe.id}`)}
                   className="gap-1.5 rounded-xl shadow-sm"

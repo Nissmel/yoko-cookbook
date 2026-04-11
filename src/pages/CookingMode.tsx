@@ -4,6 +4,7 @@ import { useRecipe } from '@/hooks/useRecipes';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTimers, parseTimeMentions, CookingTimerBar, InlineTimerButton } from '@/components/CookingTimer';
 
 export default function CookingMode() {
   const { id } = useParams();
@@ -12,8 +13,8 @@ export default function CookingMode() {
   const [currentStep, setCurrentStep] = useState(0);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [wakeLock, setWakeLock] = useState<WakeLockSentinel | null>(null);
+  const { timers, addTimer, removeTimer, toggleTimer } = useTimers();
 
-  // Request wake lock
   useEffect(() => {
     const requestWakeLock = async () => {
       try {
@@ -26,10 +27,7 @@ export default function CookingMode() {
       }
     };
     requestWakeLock();
-
-    return () => {
-      wakeLock?.release();
-    };
+    return () => { wakeLock?.release(); };
   }, []);
 
   const toggleIngredient = (index: number) => {
@@ -69,7 +67,6 @@ export default function CookingMode() {
     );
   }
 
-  // Enrich instructions with ingredient amounts (same logic as RecipeDetail)
   const enrichInstruction = (step: string) => {
     let enriched = step;
     recipe.ingredients.forEach((ing) => {
@@ -87,6 +84,50 @@ export default function CookingMode() {
     return enriched;
   };
 
+  // Parse time mentions from current step and render with inline timer buttons
+  const renderStepWithTimers = (step: string) => {
+    const enriched = enrichInstruction(step);
+    const timeMatches = parseTimeMentions(enriched);
+    
+    if (timeMatches.length === 0) {
+      return <span>{enriched}</span>;
+    }
+
+    // Replace time mentions with clickable timer buttons
+    let parts: (string | { minutes: number; label: string })[] = [enriched];
+    
+    for (const match of timeMatches) {
+      const newParts: (string | { minutes: number; label: string })[] = [];
+      for (const part of parts) {
+        if (typeof part !== 'string') {
+          newParts.push(part);
+          continue;
+        }
+        const idx = part.indexOf(match.label);
+        if (idx === -1) {
+          newParts.push(part);
+          continue;
+        }
+        if (idx > 0) newParts.push(part.slice(0, idx));
+        newParts.push(match);
+        if (idx + match.label.length < part.length) newParts.push(part.slice(idx + match.label.length));
+      }
+      parts = newParts;
+    }
+
+    return (
+      <>
+        {parts.map((part, i) =>
+          typeof part === 'string' ? (
+            <span key={i}>{part}</span>
+          ) : (
+            <InlineTimerButton key={i} minutes={part.minutes} label={part.label} onStart={addTimer} />
+          )
+        )}
+      </>
+    );
+  };
+
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-hidden">
       {/* Header */}
@@ -96,6 +137,9 @@ export default function CookingMode() {
           <X className="h-5 w-5" />
         </Button>
       </div>
+
+      {/* Active timers bar */}
+      <CookingTimerBar timers={timers} onRemove={removeTimer} onToggle={toggleTimer} />
 
       <div className="flex-1 overflow-auto flex flex-col md:flex-row">
         {/* Ingredients sidebar */}
@@ -122,7 +166,7 @@ export default function CookingMode() {
             Step {currentStep + 1} of {recipe.instructions.length}
           </div>
           <p className="font-body text-2xl md:text-4xl leading-relaxed max-w-2xl text-foreground">
-            {enrichInstruction(recipe.instructions[currentStep])}
+            {renderStepWithTimers(recipe.instructions[currentStep])}
           </p>
 
           {/* Navigation */}
