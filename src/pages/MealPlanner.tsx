@@ -2,12 +2,14 @@ import { useState, useMemo } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useMealPlans, useAddMealPlan, useRemoveMealPlan } from '@/hooks/useMealPlanner';
 import { useRecipes } from '@/hooks/useRecipes';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Plus, X, CalendarDays } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2 } from 'lucide-react';
 import { format, startOfWeek, addDays, addWeeks, subWeeks } from 'date-fns';
 import { Link } from 'react-router-dom';
 
@@ -27,6 +29,12 @@ export default function MealPlanner() {
   const [selectedDay, setSelectedDay] = useState('');
   const [selectedMealType, setSelectedMealType] = useState('dinner');
   const [selectedRecipeId, setSelectedRecipeId] = useState('');
+
+  // AI generation state
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [aiDays, setAiDays] = useState(7);
+  const [aiPreferences, setAiPreferences] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
 
   const days = useMemo(() =>
     Array.from({ length: 7 }, (_, i) => {
@@ -73,12 +81,71 @@ export default function MealPlanner() {
     }
   };
 
+  const handleAIGenerate = async () => {
+    if (!recipes?.length) {
+      toast.error('No recipes available');
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+        body: { recipes, days: aiDays, preferences: aiPreferences || undefined },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      const plan = data.plan;
+      if (!plan?.length) throw new Error('Empty plan returned');
+
+      // Add each meal to the plan
+      let added = 0;
+      for (const dayPlan of plan) {
+        const dayIndex = dayPlan.day - 1;
+        if (dayIndex >= 7) continue;
+        const dateStr = days[dayIndex]?.dateStr;
+        if (!dateStr) continue;
+
+        for (const [mealType, meal] of Object.entries(dayPlan.meals)) {
+          const m = meal as any;
+          if (!m?.recipe_id) continue;
+          // Check recipe exists
+          const recipeExists = recipes.some((r) => r.id === m.recipe_id);
+          if (!recipeExists) continue;
+
+          try {
+            await addMealPlan.mutateAsync({ recipeId: m.recipe_id, planDate: dateStr, mealType });
+            added++;
+          } catch {
+            // Skip duplicates
+          }
+        }
+      }
+
+      toast.success(`AI generated ${added} meals!`);
+      setAiDialogOpen(false);
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to generate meal plan');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto px-4 py-6 md:py-10 space-y-6 animate-fade-in">
-        <div>
-          <h1 className="font-display text-3xl font-bold text-foreground">Meal Planner</h1>
-          <p className="text-muted-foreground font-body text-sm mt-1">Plan your meals for the week.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-display text-3xl font-bold text-foreground">Meal Planner</h1>
+            <p className="text-muted-foreground font-body text-sm mt-1">Plan your meals for the week.</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 rounded-xl"
+            onClick={() => setAiDialogOpen(true)}
+          >
+            <Sparkles className="h-4 w-4" /> AI Generate
+          </Button>
         </div>
 
         {/* Week navigation */}
@@ -180,6 +247,53 @@ export default function MealPlanner() {
               <Button onClick={handleAdd} disabled={!selectedRecipeId || addMealPlan.isPending} className="w-full">
                 Add to Plan
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* AI Generate dialog */}
+        <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
+          <DialogContent className="rounded-2xl max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="font-display flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" /> AI Meal Plan
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div>
+                <label className="text-sm font-body text-muted-foreground mb-1.5 block">Days to plan</label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={7}
+                  value={aiDays}
+                  onChange={(e) => setAiDays(Math.min(7, Math.max(1, Number(e.target.value))))}
+                  className="rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-body text-muted-foreground mb-1.5 block">Preferences (optional)</label>
+                <Input
+                  value={aiPreferences}
+                  onChange={(e) => setAiPreferences(e.target.value)}
+                  placeholder="e.g. low carb, under 500 kcal..."
+                  className="rounded-xl"
+                />
+              </div>
+              <Button
+                onClick={handleAIGenerate}
+                disabled={aiLoading || !recipes?.length}
+                className="w-full gap-2 rounded-xl"
+              >
+                {aiLoading ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</>
+                ) : (
+                  <><Sparkles className="h-4 w-4" /> Generate Plan</>
+                )}
+              </Button>
+              {!recipes?.length && (
+                <p className="text-xs text-muted-foreground text-center">Add some recipes first!</p>
+              )}
             </div>
           </DialogContent>
         </Dialog>
