@@ -15,7 +15,7 @@ import {
   CalendarDays,
   Menu,
   X,
-  ChefHat,
+  
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
