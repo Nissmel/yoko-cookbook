@@ -10,8 +10,8 @@ Deno.serve(async (req) => {
 
   try {
     const { recipes, days, preferences } = await req.json();
-    if (!recipes || !days) {
-      return new Response(JSON.stringify({ error: 'Recipes and days required' }), {
+    if (!days) {
+      return new Response(JSON.stringify({ error: 'Days required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -25,28 +25,27 @@ Deno.serve(async (req) => {
       });
     }
 
-    const recipeSummaries = recipes.map((r: any) => ({
+    const existingRecipes = (recipes || []).map((r: any) => ({
       id: r.id,
       title: r.title,
       category: r.category,
-      calories: r.calories_per_serving,
-      servings: r.servings,
-      tags: r.tags,
     }));
 
-    const systemPrompt = `You are a meal planning assistant. Given a list of available recipes, create a meal plan.
+    const systemPrompt = `You are a creative meal planning assistant. Generate a meal plan with MULTIPLE OPTIONS per meal slot so the user can choose.
 
-Available recipes:
-${JSON.stringify(recipeSummaries, null, 2)}
+${existingRecipes.length > 0 ? `The user has these recipes in their cookbook:\n${JSON.stringify(existingRecipes, null, 2)}\n` : 'The user has no recipes yet.'}
 
 Rules:
-- Plan for ${days} days (starting from day 1).
-- Each day should have breakfast, lunch, and dinner.
-- Try to vary meals — avoid repeating the same recipe on consecutive days.
-- Match recipe categories to meal types when possible (Breakfast→breakfast, Soup/Salad→lunch, Dinner→dinner).
-- If a recipe doesn't fit any meal type, use it for dinner.
+- Plan for ${days} days.
+- Each day has 3 meal types: breakfast, lunch, dinner.
+- For EACH meal slot, provide exactly 4 options.
+- Mix existing cookbook recipes (mark with "source": "existing" and include their "recipe_id") with NEW recipe ideas you invent (mark with "source": "new").
+- For new recipes, include: title, short description (1 sentence), estimated category (Breakfast/Lunch/Dinner/Soup/Salad/Dessert/Snack/Appetizer), estimated prep_time_minutes, cook_time_minutes.
+- Try to have at least 1-2 existing recipes per slot (if available) and 2-3 new ideas.
+- New recipe titles should be specific and appetizing (e.g. "Kremowa zupa z pieczonych pomidorów" not just "Soup").
+- Keep names in Polish.
 ${preferences ? `- User preferences: ${preferences}` : ''}
-- Return ONLY valid JSON, no markdown, no code blocks.
+- Return ONLY valid JSON, no markdown.
 
 JSON structure:
 {
@@ -54,15 +53,18 @@ JSON structure:
     {
       "day": 1,
       "meals": {
-        "breakfast": { "recipe_id": "uuid", "recipe_title": "name" },
-        "lunch": { "recipe_id": "uuid", "recipe_title": "name" },
-        "dinner": { "recipe_id": "uuid", "recipe_title": "name" }
+        "breakfast": {
+          "options": [
+            { "source": "existing", "recipe_id": "uuid", "title": "name" },
+            { "source": "new", "title": "New Recipe Name", "description": "Short desc", "category": "Breakfast", "prep_time_minutes": 10, "cook_time_minutes": 15 }
+          ]
+        },
+        "lunch": { "options": [...] },
+        "dinner": { "options": [...] }
       }
     }
   ]
-}
-
-Use ONLY recipe IDs from the provided list. If there aren't enough recipes, you can repeat some but try to minimize repetition.`;
+}`;
 
     const aiRes = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -71,10 +73,10 @@ Use ONLY recipe IDs from the provided list. If there aren't enough recipes, you 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: 'Generate the meal plan now.' },
+          { role: 'user', content: 'Generate the meal plan now with multiple options per meal.' },
         ],
         response_format: { type: 'json_object' },
       }),
