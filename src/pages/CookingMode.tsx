@@ -161,16 +161,18 @@ export default function CookingMode() {
         </div>
 
         {/* Step display */}
-        <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 text-center">
-          <div className="text-sm text-muted-foreground font-body mb-4">
+        <div className="flex-1 flex flex-col p-6 md:p-12 text-center min-h-0">
+          <div className="text-sm text-muted-foreground font-body mb-4 shrink-0">
             Step {currentStep + 1} of {recipe.instructions.length}
           </div>
-          <p className="font-body text-2xl md:text-4xl leading-relaxed max-w-2xl text-foreground">
-            {renderStepWithTimers(recipe.instructions[currentStep])}
-          </p>
+          <div className="flex-1 overflow-auto flex items-center justify-center min-h-0">
+            <p className="font-body text-2xl md:text-4xl leading-relaxed max-w-2xl text-foreground">
+              {renderStepWithTimers(recipe.instructions[currentStep])}
+            </p>
+          </div>
 
-          {/* Navigation */}
-          <div className="flex items-center gap-4 mt-10">
+          {/* Navigation - always at bottom */}
+          <div className="flex items-center justify-center gap-4 mt-6 shrink-0">
             <Button
               variant="outline"
               size="lg"
@@ -191,7 +193,7 @@ export default function CookingMode() {
           </div>
 
           {/* Progress dots */}
-          <div className="flex gap-1.5 mt-6">
+          <div className="flex gap-1.5 mt-4 justify-center shrink-0">
             {recipe.instructions.map((_, i) => (
               <button
                 key={i}

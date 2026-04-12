@@ -14,31 +14,43 @@ export function parseTimeMentions(text: string): { minutes: number; label: strin
   const results: { minutes: number; label: string }[] = [];
   // Match patterns like "30 minut", "15 min", "2 godziny", "1.5h", "45 minutes", "1 godz"
   const patterns = [
-    /(\d+(?:[.,]\d+)?)\s*(?:godzin[yę]?|godz\.?|h)\b/gi,
-    /(\d+(?:[.,]\d+)?)\s*(?:minut[yę]?|min\.?)\b/gi,
-    /(\d+(?:[.,]\d+)?)\s*(?:sekund[yę]?|sek\.?|s)\b/gi,
-    /(\d+(?:[.,]\d+)?)\s*(?:hours?)\b/gi,
-    /(\d+(?:[.,]\d+)?)\s*(?:minutes?)\b/gi,
+    // Hours - Polish & English
+    /(\d+(?:[.,]\d+)?)\s*(?:godzin[yęa]?|godz\.?|hrs?|hours?)\b/gi,
+    // Minutes - Polish & English, including "mins"
+    /(\d+(?:[.,]\d+)?)\s*(?:minut[yęa]?|min\.?s?|minutes?)\b/gi,
+    // Seconds - Polish & English
+    /(\d+(?:[.,]\d+)?)\s*(?:sekund[yęa]?|sek\.?|seconds?|secs?)\b/gi,
+    // Ranges like "10-15 minut" or "10–15 minutes" - take the higher value
+    /(\d+)\s*[-–]\s*(\d+)\s*(?:minut[yęa]?|min\.?s?|minutes?)\b/gi,
+    // Ranges for hours
+    /(\d+)\s*[-–]\s*(\d+)\s*(?:godzin[yęa]?|godz\.?|hrs?|hours?)\b/gi,
   ];
 
+  // Minute ranges (e.g. "10-15 minut") - check first to avoid partial matches
+  for (const match of text.matchAll(patterns[3])) {
+    const higher = parseInt(match[2]);
+    results.push({ minutes: higher, label: match[0] });
+  }
+  // Hour ranges
+  for (const match of text.matchAll(patterns[4])) {
+    const higher = parseInt(match[2]);
+    results.push({ minutes: higher * 60, label: match[0] });
+  }
   // Hours
   for (const match of text.matchAll(patterns[0])) {
-    const hrs = parseFloat(match[1].replace(',', '.'));
-    results.push({ minutes: Math.round(hrs * 60), label: match[0] });
-  }
-  for (const match of text.matchAll(patterns[3])) {
+    // Skip if already matched as range
+    if (results.some(r => r.label === match[0] || match[0].includes(r.label) || r.label.includes(match[0]))) continue;
     const hrs = parseFloat(match[1].replace(',', '.'));
     results.push({ minutes: Math.round(hrs * 60), label: match[0] });
   }
   // Minutes
   for (const match of text.matchAll(patterns[1])) {
-    results.push({ minutes: Math.round(parseFloat(match[1].replace(',', '.'))), label: match[0] });
-  }
-  for (const match of text.matchAll(patterns[4])) {
+    if (results.some(r => r.label === match[0] || match[0].includes(r.label) || r.label.includes(match[0]))) continue;
     results.push({ minutes: Math.round(parseFloat(match[1].replace(',', '.'))), label: match[0] });
   }
   // Seconds → convert to minutes (min 1)
   for (const match of text.matchAll(patterns[2])) {
+    if (results.some(r => r.label === match[0] || match[0].includes(r.label) || r.label.includes(match[0]))) continue;
     const secs = parseFloat(match[1].replace(',', '.'));
     results.push({ minutes: Math.max(1, Math.round(secs / 60)), label: match[0] });
   }

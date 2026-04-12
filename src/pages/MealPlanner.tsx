@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useMealPlans, useAddMealPlan, useRemoveMealPlan } from '@/hooks/useMealPlanner';
 import { useRecipes } from '@/hooks/useRecipes';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,13 +10,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen } from 'lucide-react';
 import { format, startOfWeek, addDays, addWeeks, subWeeks } from 'date-fns';
 import { Link } from 'react-router-dom';
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'];
 
+interface MealOption {
+  source: 'existing' | 'new';
+  recipe_id?: string;
+  title: string;
+  description?: string;
+  category?: string;
+  prep_time_minutes?: number;
+  cook_time_minutes?: number;
+}
+
+interface DayPlan {
+  day: number;
+  meals: Record<string, { options: MealOption[] }>;
+}
+
 export default function MealPlanner() {
+  const { user } = useAuth();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const startDate = format(weekStart, 'yyyy-MM-dd');
   const endDate = format(addDays(weekStart, 6), 'yyyy-MM-dd');
@@ -35,6 +52,11 @@ export default function MealPlanner() {
   const [aiDays, setAiDays] = useState(7);
   const [aiPreferences, setAiPreferences] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
+
+  // AI plan selection state
+  const [aiPlan, setAiPlan] = useState<DayPlan[] | null>(null);
+  const [selections, setSelections] = useState<Record<string, MealOption>>({});
+  const [savingPlan, setSavingPlan] = useState(false);
 
   const days = useMemo(() =>
     Array.from({ length: 7 }, (_, i) => {
@@ -82,46 +104,29 @@ export default function MealPlanner() {
   };
 
   const handleAIGenerate = async () => {
-    if (!recipes?.length) {
-      toast.error('No recipes available');
-      return;
-    }
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
-        body: { recipes, days: aiDays, preferences: aiPreferences || undefined },
+        body: { recipes: recipes || [], days: aiDays, preferences: aiPreferences || undefined },
       });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
 
-      const plan = data.plan;
+      const plan = data.plan as DayPlan[];
       if (!plan?.length) throw new Error('Empty plan returned');
 
-      // Add each meal to the plan
-      let added = 0;
-      for (const dayPlan of plan) {
-        const dayIndex = dayPlan.day - 1;
-        if (dayIndex >= 7) continue;
-        const dateStr = days[dayIndex]?.dateStr;
-        if (!dateStr) continue;
-
+      setAiPlan(plan);
+      // Pre-select first option for each slot
+      const initial: Record<string, MealOption> = {};
+      plan.forEach((dayPlan) => {
         for (const [mealType, meal] of Object.entries(dayPlan.meals)) {
-          const m = meal as any;
-          if (!m?.recipe_id) continue;
-          // Check recipe exists
-          const recipeExists = recipes.some((r) => r.id === m.recipe_id);
-          if (!recipeExists) continue;
-
-          try {
-            await addMealPlan.mutateAsync({ recipeId: m.recipe_id, planDate: dateStr, mealType });
-            added++;
-          } catch {
-            // Skip duplicates
+          const key = `${dayPlan.day}-${mealType}`;
+          if (meal.options?.length) {
+            initial[key] = meal.options[0];
           }
         }
-      }
-
-      toast.success(`AI generated ${added} meals!`);
+      });
+      setSelections(initial);
       setAiDialogOpen(false);
     } catch (e: any) {
       toast.error(e.message || 'Failed to generate meal plan');
@@ -129,6 +134,185 @@ export default function MealPlanner() {
       setAiLoading(false);
     }
   };
+
+  const selectOption = (dayNum: number, mealType: string, option: MealOption) => {
+    setSelections((prev) => ({ ...prev, [`${dayNum}-${mealType}`]: option }));
+  };
+
+  const handleSavePlan = async () => {
+    if (!aiPlan || !user) return;
+    setSavingPlan(true);
+    let added = 0;
+    let newRecipesCreated = 0;
+
+    try {
+      for (const dayPlan of aiPlan) {
+        const dayIndex = dayPlan.day - 1;
+        if (dayIndex >= 7) continue;
+        const dateStr = days[dayIndex]?.dateStr;
+        if (!dateStr) continue;
+
+        for (const mealType of ['breakfast', 'lunch', 'dinner']) {
+          const key = `${dayPlan.day}-${mealType}`;
+          const selected = selections[key];
+          if (!selected) continue;
+
+          let recipeId = selected.recipe_id;
+
+          if (selected.source === 'new') {
+            // Generate full recipe and save to cookbook
+            try {
+              const { data: genData, error: genError } = await supabase.functions.invoke('generate-recipe', {
+                body: { title: selected.title, description: selected.description, category: selected.category },
+              });
+              if (genError) throw genError;
+              if (genData.error) throw new Error(genData.error);
+
+              const newRecipe = genData.recipe;
+              const { data: inserted, error: insertError } = await supabase
+                .from('recipes')
+                .insert({
+                  user_id: user.id,
+                  title: newRecipe.title || selected.title,
+                  description: newRecipe.description || selected.description || '',
+                  category: newRecipe.category || selected.category || 'Dinner',
+                  servings: newRecipe.servings || 4,
+                  prep_time_minutes: newRecipe.prep_time_minutes,
+                  cook_time_minutes: newRecipe.cook_time_minutes,
+                  ingredients: newRecipe.ingredients || [],
+                  instructions: newRecipe.instructions || [],
+                  calories_per_serving: newRecipe.calories_per_serving,
+                  protein_grams: newRecipe.protein_grams,
+                  carbs_grams: newRecipe.carbs_grams,
+                  fat_grams: newRecipe.fat_grams,
+                  fiber_grams: newRecipe.fiber_grams,
+                  tags: newRecipe.tags || [],
+                })
+                .select('id')
+                .single();
+
+              if (insertError) throw insertError;
+              recipeId = inserted.id;
+              newRecipesCreated++;
+            } catch (e: any) {
+              console.error('Failed to create recipe:', selected.title, e);
+              toast.error(`Failed to create recipe: ${selected.title}`);
+              continue;
+            }
+          }
+
+          if (recipeId) {
+            try {
+              await addMealPlan.mutateAsync({ recipeId, planDate: dateStr, mealType });
+              added++;
+            } catch { /* skip duplicates */ }
+          }
+        }
+      }
+
+      const msg = newRecipesCreated > 0
+        ? `Plan saved! ${added} meals added, ${newRecipesCreated} new recipes created in your cookbook.`
+        : `Plan saved! ${added} meals added.`;
+      toast.success(msg);
+      setAiPlan(null);
+      setSelections({});
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to save plan');
+    } finally {
+      setSavingPlan(false);
+    }
+  };
+
+  // AI Plan Selection view
+  if (aiPlan) {
+    const mealTypeLabels: Record<string, string> = { breakfast: '🌅 Breakfast', lunch: '☀️ Lunch', dinner: '🌙 Dinner' };
+    return (
+      <AppLayout>
+        <div className="max-w-4xl mx-auto px-4 py-6 md:py-10 space-y-6 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-display text-2xl font-bold text-foreground">Choose Your Meals</h1>
+              <p className="text-muted-foreground font-body text-sm mt-1">Pick one option for each meal slot. New recipes will be added to your cookbook.</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => { setAiPlan(null); setSelections({}); }}>
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleSavePlan} disabled={savingPlan} className="gap-1.5">
+                {savingPlan ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : <><Check className="h-4 w-4" /> Save Plan</>}
+              </Button>
+            </div>
+          </div>
+
+          {aiPlan.map((dayPlan) => (
+            <Card key={dayPlan.day}>
+              <CardContent className="p-4">
+                <h2 className="font-display font-semibold text-lg mb-3">
+                  Day {dayPlan.day} — {days[dayPlan.day - 1]?.dayName} {days[dayPlan.day - 1]?.dayNum}
+                </h2>
+                <div className="space-y-4">
+                  {(['breakfast', 'lunch', 'dinner'] as const).map((mealType) => {
+                    const meal = dayPlan.meals[mealType];
+                    if (!meal?.options?.length) return null;
+                    const key = `${dayPlan.day}-${mealType}`;
+                    const selected = selections[key];
+
+                    return (
+                      <div key={mealType}>
+                        <p className="text-sm font-body font-semibold text-muted-foreground mb-2">{mealTypeLabels[mealType] || mealType}</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {meal.options.map((option, i) => {
+                            const isSelected = selected?.title === option.title && selected?.source === option.source;
+                            return (
+                              <button
+                                key={i}
+                                onClick={() => selectOption(dayPlan.day, mealType, option)}
+                                className={`text-left p-3 rounded-xl border-2 transition-all font-body ${
+                                  isSelected
+                                    ? 'border-primary bg-primary/5 shadow-sm'
+                                    : 'border-border hover:border-primary/40 bg-card'
+                                }`}
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <p className={`text-sm font-semibold truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                                      {option.title}
+                                    </p>
+                                    {option.description && (
+                                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{option.description}</p>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    {option.source === 'new' && (
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground font-medium">NEW</span>
+                                    )}
+                                    {option.source === 'existing' && (
+                                      <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                                    )}
+                                    {isSelected && <Check className="h-4 w-4 text-primary" />}
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+
+          <div className="sticky bottom-20 md:bottom-4 flex justify-center">
+            <Button size="lg" onClick={handleSavePlan} disabled={savingPlan} className="gap-2 rounded-xl shadow-lg">
+              {savingPlan ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating recipes & saving...</> : <><Check className="h-5 w-5" /> Save Plan & Add New Recipes</>}
+            </Button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -260,6 +444,9 @@ export default function MealPlanner() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-2">
+              <p className="text-sm text-muted-foreground font-body">
+                AI will suggest multiple meal options per day — including new recipe ideas. You'll pick your favorites, and new recipes get added to your cookbook!
+              </p>
               <div>
                 <label className="text-sm font-body text-muted-foreground mb-1.5 block">Days to plan</label>
                 <Input
@@ -276,24 +463,21 @@ export default function MealPlanner() {
                 <Input
                   value={aiPreferences}
                   onChange={(e) => setAiPreferences(e.target.value)}
-                  placeholder="e.g. low carb, under 500 kcal..."
+                  placeholder="e.g. low carb, under 500 kcal, vegetarian..."
                   className="rounded-xl"
                 />
               </div>
               <Button
                 onClick={handleAIGenerate}
-                disabled={aiLoading || !recipes?.length}
+                disabled={aiLoading}
                 className="w-full gap-2 rounded-xl"
               >
                 {aiLoading ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</>
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating ideas...</>
                 ) : (
                   <><Sparkles className="h-4 w-4" /> Generate Plan</>
                 )}
               </Button>
-              {!recipes?.length && (
-                <p className="text-xs text-muted-foreground text-center">Add some recipes first!</p>
-              )}
             </div>
           </DialogContent>
         </Dialog>

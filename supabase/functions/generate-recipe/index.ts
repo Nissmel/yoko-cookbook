@@ -9,9 +9,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipes, days, preferences } = await req.json();
-    if (!days) {
-      return new Response(JSON.stringify({ error: 'Days required' }), {
+    const { title, description, category } = await req.json();
+    if (!title) {
+      return new Response(JSON.stringify({ error: 'Title required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -25,46 +25,33 @@ Deno.serve(async (req) => {
       });
     }
 
-    const existingRecipes = (recipes || []).map((r: any) => ({
-      id: r.id,
-      title: r.title,
-      category: r.category,
-    }));
-
-    const systemPrompt = `You are a creative meal planning assistant. Generate a meal plan with MULTIPLE OPTIONS per meal slot so the user can choose.
-
-${existingRecipes.length > 0 ? `The user has these recipes in their cookbook:\n${JSON.stringify(existingRecipes, null, 2)}\n` : 'The user has no recipes yet.'}
+    const systemPrompt = `You are a professional chef. Generate a complete recipe based on the given title and description.
 
 Rules:
-- Plan for ${days} days.
-- Each day has 3 meal types: breakfast, lunch, dinner.
-- For EACH meal slot, provide exactly 4 options.
-- Mix existing cookbook recipes (mark with "source": "existing" and include their "recipe_id") with NEW recipe ideas you invent (mark with "source": "new").
-- For new recipes, include: title, short description (1 sentence), estimated category (Breakfast/Lunch/Dinner/Soup/Salad/Dessert/Snack/Appetizer), estimated prep_time_minutes, cook_time_minutes.
-- Try to have at least 1-2 existing recipes per slot (if available) and 2-3 new ideas.
-- New recipe titles should be specific and appetizing (e.g. "Kremowa zupa z pieczonych pomidorów" not just "Soup").
-- Keep names in Polish.
-${preferences ? `- User preferences: ${preferences}` : ''}
+- Use ONLY metric units (grams, ml, liters, °C).
+- Write ingredient names and instructions in Polish.
+- Be specific with quantities and steps.
 - Return ONLY valid JSON, no markdown.
 
 JSON structure:
 {
-  "plan": [
-    {
-      "day": 1,
-      "meals": {
-        "breakfast": {
-          "options": [
-            { "source": "existing", "recipe_id": "uuid", "title": "name" },
-            { "source": "new", "title": "New Recipe Name", "description": "Short desc", "category": "Breakfast", "prep_time_minutes": 10, "cook_time_minutes": 15 }
-          ]
-        },
-        "lunch": { "options": [...] },
-        "dinner": { "options": [...] }
-      }
-    }
-  ]
+  "title": "string",
+  "description": "string",
+  "category": "string",
+  "servings": number,
+  "prep_time_minutes": number,
+  "cook_time_minutes": number,
+  "ingredients": [{"name": "string", "quantity": "string", "unit": "string"}],
+  "instructions": ["step1", "step2", ...],
+  "calories_per_serving": number,
+  "protein_grams": number,
+  "carbs_grams": number,
+  "fat_grams": number,
+  "fiber_grams": number,
+  "tags": ["tag1", "tag2"]
 }`;
+
+    const userMsg = `Generate a full recipe for: "${title}"${description ? `\nDescription: ${description}` : ''}${category ? `\nCategory: ${category}` : ''}`;
 
     const aiRes = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -76,7 +63,7 @@ JSON structure:
         model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: 'Generate the meal plan now with multiple options per meal.' },
+          { role: 'user', content: userMsg },
         ],
         response_format: { type: 'json_object' },
       }),
@@ -104,10 +91,9 @@ JSON structure:
     const aiData = await aiRes.json();
     let content = aiData.choices?.[0]?.message?.content || '';
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const recipe = JSON.parse(content);
 
-    const plan = JSON.parse(content);
-
-    return new Response(JSON.stringify({ success: true, ...plan }), {
+    return new Response(JSON.stringify({ success: true, recipe }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
