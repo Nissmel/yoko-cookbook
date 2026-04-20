@@ -74,6 +74,20 @@ export const THEMES: ThemeMeta[] = [
     className: 'theme-tangerine',
     swatches: ['hsl(36 30% 95%)', 'hsl(22 100% 58%)', 'hsl(32 22% 48%)'],
   },
+  {
+    id: 'midnight-kitchen',
+    name: 'Midnight Kitchen',
+    description: 'Deep navy night with warm copper accents',
+    className: 'theme-midnight-kitchen',
+    swatches: ['hsl(220 30% 8%)', 'hsl(22 80% 58%)', 'hsl(215 20% 35%)'],
+  },
+  {
+    id: 'matcha',
+    name: 'Matcha Garden',
+    description: 'Creamy paper with pastel matcha green',
+    className: 'theme-matcha',
+    swatches: ['hsl(50 35% 96%)', 'hsl(130 38% 48%)', 'hsl(90 22% 50%)'],
+  },
 ];
 
 const STORAGE_KEY = 'recipe-keeper-theme';
