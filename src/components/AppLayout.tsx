@@ -18,6 +18,7 @@ import {
   
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ThemeSwitcher from '@/components/ThemeSwitcher';
 
 const mainNav = [
   { to: '/', icon: BookOpen, label: 'Recipes' },
@@ -73,6 +74,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             );
           })}
           <div className="w-px h-6 bg-border mx-2" />
+          <ThemeSwitcher />
           <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground gap-2">
             <LogOut className="h-4 w-4" /> Sign out
           </Button>
@@ -152,6 +154,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   </Link>
                 );
               })}
+            </div>
+
+            <div className="mt-3 px-4 py-3 rounded-2xl bg-muted/60 flex items-center justify-between">
+              <span className="font-body text-sm text-foreground">Theme</span>
+              <ThemeSwitcher variant="full" className="!text-foreground" />
             </div>
 
             <button
