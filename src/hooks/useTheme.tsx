@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-export type ThemeId = 'linen' | 'sage' | 'tomato' | 'midnight' | 'nordic' | 'berry' | 'apricot' | 'terracotta' | 'tangerine';
+export type ThemeId = 'linen' | 'sage' | 'tomato' | 'midnight' | 'nordic' | 'berry' | 'apricot' | 'terracotta' | 'tangerine' | 'midnight-kitchen' | 'matcha';
 
 export interface ThemeMeta {
   id: ThemeId;
