@@ -123,17 +123,8 @@ export default function MealPlanner() {
       if (!plan?.length) throw new Error('Empty plan returned');
 
       setAiPlan(plan);
-      // Pre-select first option for each slot
-      const initial: Record<string, MealOption> = {};
-      plan.forEach((dayPlan) => {
-        for (const [mealType, meal] of Object.entries(dayPlan.meals)) {
-          const key = `${dayPlan.day}-${mealType}`;
-          if (meal.options?.length) {
-            initial[key] = meal.options[0];
-          }
-        }
-      });
-      setSelections(initial);
+      // Start with NO selections — user picks what they want, can skip slots
+      setSelections({});
       setAiDialogOpen(false);
     } catch (e: any) {
       toast.error(e.message || 'Failed to generate meal plan');
