@@ -50,6 +50,7 @@ export default function Pantry() {
   const [matches, setMatches] = useState<RecipeMatch[]>([]);
   const [jsonText, setJsonText] = useState('');
   const [newItemName, setNewItemName] = useState('');
+  const [overwriteMode, setOverwriteMode] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const addItemsFromJson = (parsed: any) => {
