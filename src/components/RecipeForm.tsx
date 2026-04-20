@@ -73,6 +73,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const [fat, setFat] = useState<number | ''>(initialData?.fat_grams ?? '');
   const [fiber, setFiber] = useState<number | ''>(initialData?.fiber_grams ?? '');
   const [newTag, setNewTag] = useState('');
+  const [tagInputFocused, setTagInputFocused] = useState(false);
   const [tagToDelete, setTagToDelete] = useState<string | null>(null);
   const [deletingTag, setDeletingTag] = useState(false);
 
