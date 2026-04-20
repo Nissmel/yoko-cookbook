@@ -52,7 +52,7 @@ Zasady:
 - Dla nowych przepisów dołącz: title, krótki description (1 zdanie), category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), prep_time_minutes, cook_time_minutes.
 - Tytuły nowych przepisów muszą być konkretne i apetyczne, PO POLSKU.
 - WSKAZÓWKA dot. prostoty: większość propozycji powinna być codzienna i prosta (20-40 min), ale od czasu do czasu możesz zaproponować coś bardziej dopracowanego — byle nie cały plan był restauracyjny. Unikaj egzotycznych składników i technik typu sous-vide.
-- Inspiracje codzienne: schabowy z ziemniakami, makaron z sosem pomidorowym, jajecznica, naleśniki, kanapki, sałatka jarzynowa, leniwe pierogi, kotlety mielone, ryż z kurczakiem, zupa pomidorowa z makaronem.
+- RÓŻNORODNOŚĆ KUCHNI: użytkownik lubi nowości i dania z różnych kuchni świata (włoska, azjatycka, meksykańska, bliskowschodnia, indyjska, grecka, amerykańska itd.) — nie ograniczaj się do polskich. Mieszaj kuchnie w propozycjach, ale opisy i tytuły zawsze po polsku.
 - Bądź KREATYWNY i RÓŻNY od wykluczonych tytułów, ale trzymaj się prostoty.
 ${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
 - Zwróć WYŁĄCZNIE poprawny JSON, bez markdown.
@@ -80,12 +80,15 @@ Zasady:
 - Dla deseru: ciasta, mus, lody, tarty, deser na łyżeczce, fit desery itp.
 
 WSKAZÓWKI dot. prostoty (NIE sztywne reguły):
-- Większość propozycji niech będzie codzienna i prosta — typowe polskie dania domowe, które da się zrobić w 20-40 minut.
+- Większość propozycji niech będzie codzienna i prosta — dania, które da się zrobić w 20-40 minut.
 - Możesz CZASEM (1-2 razy w tygodniu) zaproponować coś bardziej dopracowanego lub dłuższego, jeśli pasuje (np. weekend, batch cooking) — ale unikaj sytuacji, gdzie cały tydzień to fancy restauracyjne dania.
 - Unikaj wymyślnych technik (sous-vide, confit, pianki, redukcje) i trudno dostępnych składników (trufle, foie gras).
-- Inspiracje śniadaniowe: jajecznica, owsianka, kanapki, naleśniki, twarożek, omlet, granola, jajka na miękko.
-- Inspiracje obiadowe/kolacyjne: schabowy z ziemniakami, makaron z sosem pomidorowym/bolońskim, kotlety mielone, ryż z kurczakiem i warzywami, leniwe pierogi, gołąbki w pomidorach, ryba pieczona, sałatka z kurczakiem, naleśniki ze szpinakiem, placki ziemniaczane.
-- Inspiracje deserowe: mus czekoladowy, ciasto marchewkowe, sernik na zimno, owoce z bitą śmietaną, brownie, racuchy z jabłkiem, owsiane ciasteczka.
+
+RÓŻNORODNOŚĆ KUCHNI (WAŻNE):
+- Użytkownik LUBI NOWOŚCI i dania z różnych kuchni świata. Nie ograniczaj się do polskich dań domowych.
+- Aktywnie mieszaj kuchnie: włoska (pasta, risotto, pizza, panini), azjatycka (stir-fry, ramen, pad thai, curry tajskie, sushi bowls, bibimbap, gyoza), meksykańska (tacos, quesadilla, burrito bowl, fajitas), bliskowschodnia (hummus, shakshuka, falafel, kofta), indyjska (curry, dal, biryani, masala), grecka (gyros, sałatka grecka, mussaka), amerykańska (burger, mac&cheese, BBQ), francuska (omlet, quiche, croque-monsieur), polska (pierogi, schabowy, gołąbki) — i inne.
+- Tytuły, opisy, kategorie ZAWSZE po polsku, ale samo danie może być z dowolnej kuchni (np. "Kurczak teriyaki z ryżem", "Tacos z wołowiną", "Shakshuka z fetą", "Pad thai z krewetkami").
+- Zaskakuj — nie powtarzaj tych samych typów dań w tygodniu.
 
 BATCH COOKING / RESZTKI (WAŻNE):
 - Dla obiadu i kolacji DODAJ w tygodniu 1-2 propozycje "batch cooking" — większe dania, które naturalnie starczą na 2 porcje i smakują odgrzane.
