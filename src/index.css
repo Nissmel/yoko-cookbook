@@ -453,7 +453,8 @@
   /* On dark themes, switch blend mode + slightly higher opacity so grain
      reads as soft highlights instead of getting crushed. */
   .dark body::before,
-  .theme-midnight body::before {
+  .theme-midnight body::before,
+  .theme-midnight-kitchen body::before {
     opacity: 0.08;
     mix-blend-mode: screen;
   }
