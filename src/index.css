@@ -278,6 +278,35 @@
     @apply bg-background text-foreground font-body antialiased;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    position: relative;
+  }
+
+  /* Subtle paper-grain noise texture overlay — applied to all themes.
+     SVG turbulence is rendered once and tiled, so it's tiny in payload. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.05;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-size: 220px 220px;
+  }
+
+  /* On dark themes, switch blend mode + slightly higher opacity so grain
+     reads as soft highlights instead of getting crushed. */
+  .dark body::before,
+  .theme-midnight body::before {
+    opacity: 0.08;
+    mix-blend-mode: screen;
+  }
+
+  /* Make sure all app content sits above the grain overlay */
+  body > * {
+    position: relative;
+    z-index: 1;
   }
 
   h1, h2, h3, h4, h5, h6 {
