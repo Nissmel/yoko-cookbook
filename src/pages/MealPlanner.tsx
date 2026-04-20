@@ -355,7 +355,17 @@ export default function MealPlanner() {
                                     )}
                                   </div>
                                   <div className="flex items-center gap-1 shrink-0">
-                                    {option.source === 'new' && (
+                                    {option.leftover_from_day && (
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium" title={`Z dnia ${option.leftover_from_day}`}>
+                                        ♻️ Wczorajsze
+                                      </span>
+                                    )}
+                                    {option.batch_cooking && !option.leftover_from_day && (
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium" title="Większa porcja — starczy na 2 dni">
+                                        2x porcja
+                                      </span>
+                                    )}
+                                    {option.source === 'new' && !option.leftover_from_day && (
                                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground font-medium">NEW</span>
                                     )}
                                     {option.source === 'existing' && (
