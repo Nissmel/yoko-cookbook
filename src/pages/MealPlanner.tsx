@@ -160,7 +160,7 @@ export default function MealPlanner() {
         const dateStr = days[dayIndex]?.dateStr;
         if (!dateStr) continue;
 
-        for (const mealType of ['breakfast', 'lunch', 'dinner']) {
+        for (const mealType of PLAN_MEAL_TYPES) {
           const key = `${dayPlan.day}-${mealType}`;
           const selected = selections[key];
           if (!selected) continue;
