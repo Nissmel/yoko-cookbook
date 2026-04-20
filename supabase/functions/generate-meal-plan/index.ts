@@ -109,7 +109,7 @@ JSON structure:
         model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: 'Generate the meal plan now with multiple options per meal.' },
+          { role: 'user', content: singleSlot ? 'Generate 4 fresh options for this single meal slot now.' : 'Generate the meal plan now with multiple options per meal.' },
         ],
         response_format: { type: 'json_object' },
       }),
