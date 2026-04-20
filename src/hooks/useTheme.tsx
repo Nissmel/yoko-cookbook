@@ -16,7 +16,7 @@ export const THEMES: ThemeMeta[] = [
     name: 'Linen & Honey',
     description: 'Warm cream with golden honey accents',
     className: '',
-    swatches: ['hsl(36 33% 95%)', 'hsl(42 78% 49%)', 'hsl(28 20% 56%)'],
+    swatches: ['hsl(36 33% 95%)', 'hsl(28 88% 58%)', 'hsl(28 20% 56%)'],
   },
   {
     id: 'sage',
