@@ -148,7 +148,50 @@ export default function MealPlanner() {
     });
   };
 
-  const handleSavePlan = async () => {
+  const rerollSlot = async (dayNum: number, mealType: string) => {
+    if (!aiPlan) return;
+    const slotKey = `${dayNum}-${mealType}`;
+    setRerollingSlot(slotKey);
+    try {
+      const currentOptions = aiPlan.find((d) => d.day === dayNum)?.meals[mealType]?.options || [];
+      const exclude = currentOptions.map((o) => o.title);
+
+      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+        body: {
+          recipes: recipes || [],
+          singleSlot: { day: dayNum, mealType },
+          exclude,
+          preferences: aiPreferences || undefined,
+        },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      const newOptions = data.options as MealOption[];
+      if (!newOptions?.length) throw new Error('No options returned');
+
+      setAiPlan((prev) => {
+        if (!prev) return prev;
+        return prev.map((d) => {
+          if (d.day !== dayNum) return d;
+          return {
+            ...d,
+            meals: { ...d.meals, [mealType]: { options: newOptions } },
+          };
+        });
+      });
+      // Clear any selection for this slot since options changed
+      setSelections((prev) => {
+        const next = { ...prev };
+        delete next[slotKey];
+        return next;
+      });
+      toast.success('Nowe propozycje wygenerowane!');
+    } catch (e: any) {
+      toast.error(e.message || 'Nie udało się odświeżyć slotu');
+    } finally {
+      setRerollingSlot(null);
+    }
+  };
     if (!aiPlan || !user) return;
     setSavingPlan(true);
     let added = 0;
