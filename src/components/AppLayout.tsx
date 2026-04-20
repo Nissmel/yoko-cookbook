@@ -74,6 +74,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             );
           })}
           <div className="w-px h-6 bg-border mx-2" />
+          <ThemeSwitcher />
           <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground gap-2">
             <LogOut className="h-4 w-4" /> Sign out
           </Button>
