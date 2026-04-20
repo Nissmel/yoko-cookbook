@@ -37,12 +37,13 @@ ${existingRecipes.length > 0 ? `The user has these recipes in their cookbook:\n$
 
 Rules:
 - Plan for ${days} days.
-- Each day has 3 meal types: breakfast, lunch, dinner.
+- Each day has 4 meal types: breakfast (Śniadanie), lunch (Obiad), dinner (Kolacja), dessert (Deser).
 - For EACH meal slot, provide exactly 4 options.
 - Mix existing cookbook recipes (mark with "source": "existing" and include their "recipe_id") with NEW recipe ideas you invent (mark with "source": "new").
-- For new recipes, include: title, short description (1 sentence), estimated category (Breakfast/Lunch/Dinner/Soup/Salad/Dessert/Snack/Appetizer), estimated prep_time_minutes, cook_time_minutes.
+- For new recipes, include: title, short description (1 sentence), estimated category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), estimated prep_time_minutes, cook_time_minutes.
 - Try to have at least 1-2 existing recipes per slot (if available) and 2-3 new ideas.
 - New recipe titles should be specific and appetizing (e.g. "Kremowa zupa z pieczonych pomidorów" not just "Soup").
+- For dessert slot, suggest things like ciasta, mus, lody, tarty, deser na łyżeczce, fit desery itp.
 - Keep names in Polish.
 ${preferences ? `- User preferences: ${preferences}` : ''}
 - Return ONLY valid JSON, no markdown.
@@ -56,11 +57,12 @@ JSON structure:
         "breakfast": {
           "options": [
             { "source": "existing", "recipe_id": "uuid", "title": "name" },
-            { "source": "new", "title": "New Recipe Name", "description": "Short desc", "category": "Breakfast", "prep_time_minutes": 10, "cook_time_minutes": 15 }
+            { "source": "new", "title": "New Recipe Name", "description": "Short desc", "category": "Śniadanie", "prep_time_minutes": 10, "cook_time_minutes": 15 }
           ]
         },
         "lunch": { "options": [...] },
-        "dinner": { "options": [...] }
+        "dinner": { "options": [...] },
+        "dessert": { "options": [...] }
       }
     }
   ]

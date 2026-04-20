@@ -14,7 +14,14 @@ import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen 
 import { format, startOfWeek, addDays, addWeeks, subWeeks } from 'date-fns';
 import { Link } from 'react-router-dom';
 
-const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'];
+const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert'];
+const MEAL_TYPE_LABELS: Record<string, string> = {
+  breakfast: 'Śniadanie',
+  lunch: 'Obiad',
+  dinner: 'Kolacja',
+  dessert: 'Deser',
+};
+const PLAN_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert'] as const;
 
 interface MealOption {
   source: 'existing' | 'new';
@@ -116,17 +123,8 @@ export default function MealPlanner() {
       if (!plan?.length) throw new Error('Empty plan returned');
 
       setAiPlan(plan);
-      // Pre-select first option for each slot
-      const initial: Record<string, MealOption> = {};
-      plan.forEach((dayPlan) => {
-        for (const [mealType, meal] of Object.entries(dayPlan.meals)) {
-          const key = `${dayPlan.day}-${mealType}`;
-          if (meal.options?.length) {
-            initial[key] = meal.options[0];
-          }
-        }
-      });
-      setSelections(initial);
+      // Start with NO selections — user picks what they want, can skip slots
+      setSelections({});
       setAiDialogOpen(false);
     } catch (e: any) {
       toast.error(e.message || 'Failed to generate meal plan');
@@ -136,7 +134,17 @@ export default function MealPlanner() {
   };
 
   const selectOption = (dayNum: number, mealType: string, option: MealOption) => {
-    setSelections((prev) => ({ ...prev, [`${dayNum}-${mealType}`]: option }));
+    const key = `${dayNum}-${mealType}`;
+    setSelections((prev) => {
+      const current = prev[key];
+      // Toggle off if clicking the same option
+      if (current && current.title === option.title && current.source === option.source) {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      }
+      return { ...prev, [key]: option };
+    });
   };
 
   const handleSavePlan = async () => {
@@ -152,7 +160,7 @@ export default function MealPlanner() {
         const dateStr = days[dayIndex]?.dateStr;
         if (!dateStr) continue;
 
-        for (const mealType of ['breakfast', 'lunch', 'dinner']) {
+        for (const mealType of PLAN_MEAL_TYPES) {
           const key = `${dayPlan.day}-${mealType}`;
           const selected = selections[key];
           if (!selected) continue;
@@ -225,21 +233,22 @@ export default function MealPlanner() {
 
   // AI Plan Selection view
   if (aiPlan) {
-    const mealTypeLabels: Record<string, string> = { breakfast: '🌅 Breakfast', lunch: '☀️ Lunch', dinner: '🌙 Dinner' };
+    const mealTypeLabels: Record<string, string> = { breakfast: '🌅 Śniadanie', lunch: '☀️ Obiad', dinner: '🌙 Kolacja', dessert: '🍰 Deser' };
+    const selectedCount = Object.keys(selections).length;
     return (
       <AppLayout>
         <div className="max-w-4xl mx-auto px-4 py-6 md:py-10 space-y-6 animate-fade-in">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-display text-2xl font-bold text-foreground">Choose Your Meals</h1>
-              <p className="text-muted-foreground font-body text-sm mt-1">Pick one option for each meal slot. New recipes will be added to your cookbook.</p>
+              <p className="text-muted-foreground font-body text-sm mt-1">Kliknij propozycję, by ją wybrać. Kliknij ponownie, by odznaczyć. Możesz pominąć dowolny posiłek.</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => { setAiPlan(null); setSelections({}); }}>
                 Cancel
               </Button>
-              <Button size="sm" onClick={handleSavePlan} disabled={savingPlan} className="gap-1.5">
-                {savingPlan ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : <><Check className="h-4 w-4" /> Save Plan</>}
+              <Button size="sm" onClick={handleSavePlan} disabled={savingPlan || selectedCount === 0} className="gap-1.5">
+                {savingPlan ? <><Loader2 className="h-4 w-4 animate-spin" /> Zapisywanie...</> : <><Check className="h-4 w-4" /> Zapisz plan ({selectedCount})</>}
               </Button>
             </div>
           </div>
@@ -251,7 +260,7 @@ export default function MealPlanner() {
                   Day {dayPlan.day} — {days[dayPlan.day - 1]?.dayName} {days[dayPlan.day - 1]?.dayNum}
                 </h2>
                 <div className="space-y-4">
-                  {(['breakfast', 'lunch', 'dinner'] as const).map((mealType) => {
+                  {PLAN_MEAL_TYPES.map((mealType) => {
                     const meal = dayPlan.meals[mealType];
                     if (!meal?.options?.length) return null;
                     const key = `${dayPlan.day}-${mealType}`;
@@ -305,8 +314,12 @@ export default function MealPlanner() {
           ))}
 
           <div className="sticky bottom-20 md:bottom-4 flex justify-center">
-            <Button size="lg" onClick={handleSavePlan} disabled={savingPlan} className="gap-2 rounded-xl shadow-lg">
-              {savingPlan ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating recipes & saving...</> : <><Check className="h-5 w-5" /> Save Plan & Add New Recipes</>}
+            <Button size="lg" onClick={handleSavePlan} disabled={savingPlan || selectedCount === 0} className="gap-2 rounded-xl shadow-lg">
+              {savingPlan
+                ? <><Loader2 className="h-4 w-4 animate-spin" /> Tworzenie przepisów i zapisywanie...</>
+                : selectedCount === 0
+                  ? <>Wybierz co najmniej jeden posiłek</>
+                  : <><Check className="h-5 w-5" /> Zapisz plan ({selectedCount}) i dodaj nowe przepisy</>}
             </Button>
           </div>
         </div>
@@ -377,7 +390,7 @@ export default function MealPlanner() {
                               )}
                               <div className="min-w-0">
                                 <p className="text-sm font-body truncate">{meal.recipe?.title || 'Recipe'}</p>
-                                <p className="text-xs text-muted-foreground capitalize">{meal.meal_type}</p>
+                                <p className="text-xs text-muted-foreground">{MEAL_TYPE_LABELS[meal.meal_type] || meal.meal_type}</p>
                               </div>
                             </Link>
                             <button
@@ -412,7 +425,7 @@ export default function MealPlanner() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {MEAL_TYPES.map((t) => (
-                      <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
+                      <SelectItem key={t} value={t}>{MEAL_TYPE_LABELS[t] || t}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
