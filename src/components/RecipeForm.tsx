@@ -62,9 +62,27 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const [carbs, setCarbs] = useState<number | ''>(initialData?.carbs_grams ?? '');
   const [fat, setFat] = useState<number | ''>(initialData?.fat_grams ?? '');
   const [fiber, setFiber] = useState<number | ''>(initialData?.fiber_grams ?? '');
+  const [newTag, setNewTag] = useState('');
+
+  // Merge default tags with all unique tags ever used by the user
+  const userTags = Array.from(
+    new Set((allRecipes ?? []).flatMap((r) => r.tags ?? []))
+  ).filter((t) => !COMMON_TAGS.includes(t as any));
+  const allAvailableTags = [...COMMON_TAGS, ...userTags];
 
   const toggleTag = (tag: string) => {
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+  };
+
+  const addCustomTag = () => {
+    const trimmed = newTag.trim();
+    if (!trimmed) return;
+    if (tags.includes(trimmed)) {
+      toast.error('Tag already added');
+      return;
+    }
+    setTags((prev) => [...prev, trimmed]);
+    setNewTag('');
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
