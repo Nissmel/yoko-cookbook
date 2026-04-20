@@ -313,12 +313,24 @@ export default function Pantry() {
           </CardContent>
         </Card>
 
-        {/* Match recipes button */}
-        <Button onClick={calculateMatches} className="w-full gap-2" size="lg" disabled={!pantryItems?.length}>
-          <ChefHat className="h-5 w-5" /> Find Matching Recipes
-        </Button>
+        {/* Action buttons - 2 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Button onClick={calculateMatches} className="w-full gap-2" size="lg" disabled={!pantryItems?.length}>
+            <ChefHat className="h-5 w-5" /> Find Matching Recipes
+          </Button>
+          <Button
+            onClick={handleAIIdeas}
+            variant="outline"
+            className="w-full gap-2 border-primary/40 hover:bg-primary/5"
+            size="lg"
+            disabled={!pantryItems?.length || aiLoading}
+          >
+            {aiLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5 text-primary" />}
+            What Can I Cook? <span className="text-xs text-muted-foreground font-body">(AI)</span>
+          </Button>
+        </div>
 
-        {/* Results */}
+        {/* Local match results */}
         {matches.length > 0 && (
           <div className="space-y-3">
             <h2 className="font-display text-xl font-semibold flex items-center gap-2">
@@ -353,6 +365,47 @@ export default function Pantry() {
                   </CardContent>
                 </Card>
               </Link>
+            ))}
+          </div>
+        )}
+
+        {/* AI ideas results */}
+        {aiIdeas.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="font-display text-xl font-semibold flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" /> AI New Ideas
+            </h2>
+            {aiIdeas.map((idea, i) => (
+              <Card key={i} className="border-primary/20">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <h3 className="font-display font-semibold text-lg">{idea.title}</h3>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Badge variant="outline" className="text-xs font-body gap-1">
+                        <Clock className="h-3 w-3" /> {idea.timeMinutes}m
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs font-body">{idea.difficulty}</Badge>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground font-body">{idea.description}</p>
+                  <div className="space-y-1.5">
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-xs text-muted-foreground font-body mr-1">Z Twoich:</span>
+                      {idea.usedIngredients.map((u, j) => (
+                        <Badge key={j} variant="outline" className="text-xs font-body bg-primary/5 border-primary/30 text-primary">{u}</Badge>
+                      ))}
+                    </div>
+                    {idea.missingIngredients.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        <span className="text-xs text-muted-foreground font-body mr-1">Brakuje:</span>
+                        {idea.missingIngredients.map((m, j) => (
+                          <Badge key={j} variant="outline" className="text-xs font-body text-destructive border-destructive/30">{m}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
