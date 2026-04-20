@@ -39,55 +39,65 @@ Deno.serve(async (req) => {
     };
 
     const systemPrompt = singleSlot
-      ? `You are a creative meal planning assistant. Generate FRESH options for a SINGLE meal slot.
+      ? `Jesteś kreatywnym asystentem planowania posiłków. Wygeneruj ŚWIEŻE propozycje dla JEDNEGO slotu posiłkowego.
 
-${existingRecipes.length > 0 ? `The user has these recipes in their cookbook:\n${JSON.stringify(existingRecipes, null, 2)}\n` : 'The user has no recipes yet.'}
+${existingRecipes.length > 0 ? `Użytkownik ma w swojej książce kucharskiej te przepisy:\n${JSON.stringify(existingRecipes, null, 2)}\n` : 'Użytkownik nie ma jeszcze żadnych przepisów.'}
 
-Slot: ${mealLabelMap[singleSlot.mealType] || singleSlot.mealType} (day ${singleSlot.day})
-${exclude?.length ? `AVOID these titles (already shown, user did not like them):\n${exclude.map((t: string) => `- ${t}`).join('\n')}\n` : ''}
+Slot: ${mealLabelMap[singleSlot.mealType] || singleSlot.mealType} (dzień ${singleSlot.day})
+${exclude?.length ? `UNIKAJ tych tytułów (już pokazane, użytkownikowi się nie spodobały):\n${exclude.map((t: string) => `- ${t}`).join('\n')}\n` : ''}
 
-Rules:
-- Provide exactly 4 NEW options for this single meal slot.
-- Mix existing cookbook recipes (mark "source": "existing", include "recipe_id") with NEW recipe ideas (mark "source": "new").
-- For new recipes include: title, short description (1 sentence), category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), prep_time_minutes, cook_time_minutes.
-- New recipe titles must be specific and appetizing in Polish.
-- Be CREATIVE and DIFFERENT from any excluded titles.
-${preferences ? `- User preferences: ${preferences}` : ''}
-- Return ONLY valid JSON, no markdown.
+Zasady:
+- Podaj dokładnie 4 NOWE propozycje dla tego slotu.
+- Mieszaj istniejące przepisy z książki kucharskiej (oznacz "source": "existing", dołącz "recipe_id") z NOWYMI pomysłami (oznacz "source": "new").
+- Dla nowych przepisów dołącz: title, krótki description (1 zdanie), category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), prep_time_minutes, cook_time_minutes.
+- Tytuły nowych przepisów muszą być konkretne i apetyczne, PO POLSKU.
+- PROSTOTA: dania mają być zwykłe, codzienne, łatwe do zrobienia w domu. Łączny czas (prep + cook) MAKS 45 minut, najlepiej 20-30 minut. Bez wymyślnych technik, bez egzotycznych składników, bez wieloskładnikowych sosów.
+- Inspiracje: schabowy z ziemniakami, makaron z sosem pomidorowym, jajecznica, naleśniki, kanapki, sałatka jarzynowa, leniwe pierogi, kotlety mielone, ryż z kurczakiem, zupa pomidorowa z makaronem.
+- Bądź KREATYWNY i RÓŻNY od wykluczonych tytułów, ale trzymaj się prostoty.
+${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
+- Zwróć WYŁĄCZNIE poprawny JSON, bez markdown.
 
-JSON structure:
+Struktura JSON:
 {
   "options": [
-    { "source": "existing", "recipe_id": "uuid", "title": "name" },
+    { "source": "existing", "recipe_id": "uuid", "title": "nazwa" },
     { "source": "new", "title": "...", "description": "...", "category": "...", "prep_time_minutes": 10, "cook_time_minutes": 15 }
   ]
 }`
-      : `You are a creative meal planning assistant. Generate a meal plan with MULTIPLE OPTIONS per meal slot so the user can choose.
+      : `Jesteś kreatywnym asystentem planowania posiłków. Wygeneruj plan posiłków z WIELOMA OPCJAMI na każdy slot, żeby użytkownik mógł wybrać.
 
-${existingRecipes.length > 0 ? `The user has these recipes in their cookbook:\n${JSON.stringify(existingRecipes, null, 2)}\n` : 'The user has no recipes yet.'}
+${existingRecipes.length > 0 ? `Użytkownik ma w swojej książce kucharskiej te przepisy:\n${JSON.stringify(existingRecipes, null, 2)}\n` : 'Użytkownik nie ma jeszcze żadnych przepisów.'}
 
-Rules:
-- Plan for ${days} days.
-- Each day has 4 meal types: breakfast (Śniadanie), lunch (Obiad), dinner (Kolacja), dessert (Deser).
-- For EACH meal slot, provide exactly 4 options.
-- Mix existing cookbook recipes (mark with "source": "existing" and include their "recipe_id") with NEW recipe ideas you invent (mark with "source": "new").
-- For new recipes, include: title, short description (1 sentence), estimated category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), estimated prep_time_minutes, cook_time_minutes.
-- Try to have at least 1-2 existing recipes per slot (if available) and 2-3 new ideas.
-- New recipe titles should be specific and appetizing (e.g. "Kremowa zupa z pieczonych pomidorów" not just "Soup").
-- For dessert slot, suggest things like ciasta, mus, lody, tarty, deser na łyżeczce, fit desery itp.
-- Keep names in Polish.
+Zasady:
+- Plan na ${days} dni.
+- Każdy dzień ma 4 typy posiłków: breakfast (Śniadanie), lunch (Obiad), dinner (Kolacja), dessert (Deser).
+- Dla KAŻDEGO slotu podaj dokładnie 4 opcje.
+- Mieszaj istniejące przepisy z książki kucharskiej (oznacz "source": "existing" i dołącz "recipe_id") z NOWYMI pomysłami (oznacz "source": "new").
+- Dla nowych przepisów dołącz: title, krótki description (1 zdanie), szacunkową category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), szacunkowe prep_time_minutes, cook_time_minutes.
+- Postaraj się dać 1-2 istniejące przepisy na slot (jeśli są) i 2-3 nowe pomysły.
+- WSZYSTKO PO POLSKU — tytuły, opisy, kategorie. Bez angielskich słów.
+- Tytuły konkretne i apetyczne (np. "Kremowa zupa pomidorowa z grzankami", nie samo "Zupa").
+- Dla deseru: ciasta, mus, lody, tarty, deser na łyżeczce, fit desery itp.
 
-BATCH COOKING / LEFTOVERS (IMPORTANT):
-- For lunch (Obiad) and dinner (Kolacja) slots, INCLUDE 1-2 "batch cooking" suggestions across the week — bigger dishes that naturally yield 2 servings worth and taste great reheated the next day.
-- Good batch examples: gulasz, bigos, lasagne, zapiekanki, zupy (pomidorowa, gulaszowa, rosół), pieczeń, curry, chili con carne, risotto na większą porcję, leczo, makarony zapiekane.
-- When you propose such a dish on day N, ALSO include the SAME option in day N+1 in the same meal slot (lunch or dinner) — but mark it with "leftover_from_day": N and prefix the title with "♻️ " and add a short note in description like "Z wczorajszego obiadu — odgrzej i podawaj.".
-- The leftover option can be "source": "new" with the same title (without ♻️) referenced via "leftover_title", OR "source": "existing" with the same recipe_id. Either way set "leftover_from_day".
-- Don't overdo it: at most 2 leftover pairs per week. Other 2-3 options in the slot should still be fresh ideas so user can choose.
-- Never put leftovers in breakfast or dessert.
-${preferences ? `- User preferences: ${preferences}` : ''}
-- Return ONLY valid JSON, no markdown.
+PROSTOTA (BARDZO WAŻNE):
+- Zwykłe, codzienne, polskie dania domowe — NIE restauracyjne.
+- Łączny czas (prep + cook) MAKS 45 minut na większość dań, najlepiej 20-30 min. Wyjątek: batch cooking (patrz niżej) może mieć dłuższy czas gotowania.
+- Bez wymyślnych technik (sous-vide, confit, pianki, redukcje), bez trudno dostępnych składników (trufle, foie gras, świeży tuńczyk).
+- Inspiracje śniadaniowe: jajecznica, owsianka, kanapki, naleśniki, twarożek, omlet, granola, jajka na miękko.
+- Inspiracje obiadowe/kolacyjne: schabowy z ziemniakami, makaron z sosem pomidorowym/bolońskim, kotlety mielone, ryż z kurczakiem i warzywami, leniwe pierogi, gołąbki w pomidorach, ryba pieczona, sałatka z kurczakiem, naleśniki ze szpinakiem, placki ziemniaczane.
+- Inspiracje deserowe: mus czekoladowy, ciasto marchewkowe, sernik na zimno, owoce z bitą śmietaną, brownie, racuchy z jabłkiem, owsiane ciasteczka.
 
-JSON structure:
+BATCH COOKING / RESZTKI (WAŻNE):
+- Dla obiadu i kolacji DODAJ w tygodniu 1-2 propozycje "batch cooking" — większe dania, które naturalnie starczą na 2 porcje i smakują odgrzane.
+- Przykłady: gulasz, bigos, lasagne, zapiekanka makaronowa, zupa pomidorowa, zupa gulaszowa, rosół, pieczeń, curry z kurczakiem, chili con carne, leczo, spaghetti bolognese.
+- Gdy proponujesz takie danie w dniu N, DODAJ TĘ SAMĄ opcję w dniu N+1 w tym samym slocie (obiad lub kolacja) — oznacz polem "leftover_from_day": N i poprzedź tytuł "♻️ ", a w description dodaj krótką notkę "Z wczorajszego obiadu — odgrzej i podawaj." (lub odpowiednio "z wczorajszej kolacji").
+- Opcja resztek może być "source": "new" z tym samym tytułem (bez ♻️) jako "leftover_title", ALBO "source": "existing" z tym samym recipe_id. W obu przypadkach ustaw "leftover_from_day".
+- Bez przesady: maksymalnie 2 pary resztek na tydzień. Pozostałe 2-3 opcje w slocie nadal świeże, żeby użytkownik miał wybór.
+- Nigdy nie dawaj resztek w śniadaniu ani deserze.
+${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
+- Zwróć WYŁĄCZNIE poprawny JSON, bez markdown.
+
+Struktura JSON:
 {
   "plan": [
     {
@@ -95,12 +105,12 @@ JSON structure:
       "meals": {
         "breakfast": {
           "options": [
-            { "source": "existing", "recipe_id": "uuid", "title": "name" },
-            { "source": "new", "title": "New Recipe Name", "description": "Short desc", "category": "Śniadanie", "prep_time_minutes": 10, "cook_time_minutes": 15 }
+            { "source": "existing", "recipe_id": "uuid", "title": "nazwa" },
+            { "source": "new", "title": "Jajecznica ze szczypiorkiem", "description": "Klasyczna jajecznica na maśle.", "category": "Śniadanie", "prep_time_minutes": 5, "cook_time_minutes": 5 }
           ]
         },
         "lunch": { "options": [
-          { "source": "new", "title": "Gulasz wołowy z papryką", "description": "Duża porcja na 2 dni", "category": "Obiad", "prep_time_minutes": 20, "cook_time_minutes": 90, "batch_cooking": true }
+          { "source": "new", "title": "Gulasz wołowy z papryką", "description": "Duża porcja na 2 dni.", "category": "Obiad", "prep_time_minutes": 15, "cook_time_minutes": 90, "batch_cooking": true }
         ] },
         "dinner": { "options": [...] },
         "dessert": { "options": [...] }
@@ -127,7 +137,7 @@ JSON structure:
         model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: singleSlot ? 'Generate 4 fresh options for this single meal slot now.' : 'Generate the meal plan now with multiple options per meal.' },
+          { role: 'user', content: singleSlot ? 'Wygeneruj teraz 4 świeże, proste propozycje na ten slot.' : 'Wygeneruj teraz plan posiłków z wieloma prostymi opcjami na każdy posiłek.' },
         ],
         response_format: { type: 'json_object' },
       }),
