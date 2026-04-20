@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2, ImagePlus, X } from 'lucide-react';
 import { Ingredient, CATEGORIES, COMMON_TAGS } from '@/types/recipe';
-import { useCreateRecipe, useUpdateRecipe, uploadRecipeImage } from '@/hooks/useRecipes';
+import { useCreateRecipe, useUpdateRecipe, uploadRecipeImage, useRecipes } from '@/hooks/useRecipes';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -39,6 +39,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const { user } = useAuth();
   const createRecipe = useCreateRecipe();
   const updateRecipe = useUpdateRecipe();
+  const { data: allRecipes } = useRecipes();
 
   const [title, setTitle] = useState(initialData?.title ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
@@ -61,9 +62,27 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const [carbs, setCarbs] = useState<number | ''>(initialData?.carbs_grams ?? '');
   const [fat, setFat] = useState<number | ''>(initialData?.fat_grams ?? '');
   const [fiber, setFiber] = useState<number | ''>(initialData?.fiber_grams ?? '');
+  const [newTag, setNewTag] = useState('');
+
+  // Merge default tags with all unique tags ever used by the user
+  const userTags = Array.from(
+    new Set((allRecipes ?? []).flatMap((r) => r.tags ?? []))
+  ).filter((t) => !COMMON_TAGS.includes(t as any));
+  const allAvailableTags = [...COMMON_TAGS, ...userTags];
 
   const toggleTag = (tag: string) => {
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+  };
+
+  const addCustomTag = () => {
+    const trimmed = newTag.trim();
+    if (!trimmed) return;
+    if (tags.includes(trimmed)) {
+      toast.error('Tag already added');
+      return;
+    }
+    setTags((prev) => [...prev, trimmed]);
+    setNewTag('');
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -205,7 +224,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         <div className="space-y-2">
           <Label>Tags</Label>
           <div className="flex flex-wrap gap-2">
-            {COMMON_TAGS.map((tag) => (
+            {allAvailableTags.map((tag) => (
               <Badge
                 key={tag}
                 variant={tags.includes(tag) ? 'default' : 'outline'}
@@ -216,6 +235,35 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               </Badge>
             ))}
           </div>
+          <div className="flex gap-2 pt-1">
+            <Input
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addCustomTag();
+                }
+              }}
+              placeholder="Add custom tag (e.g. Italian, Spicy)"
+              className="flex-1"
+            />
+            <Button type="button" variant="outline" onClick={addCustomTag} disabled={!newTag.trim()} className="gap-1.5 shrink-0">
+              <Plus className="h-4 w-4" /> Add Tag
+            </Button>
+          </div>
+          {tags.filter((t) => !allAvailableTags.includes(t as any)).length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {tags
+                .filter((t) => !allAvailableTags.includes(t as any))
+                .map((tag) => (
+                  <Badge key={tag} variant="default" className="cursor-pointer font-body gap-1.5" onClick={() => toggleTag(tag)}>
+                    {tag}
+                    <X className="h-3 w-3" />
+                  </Badge>
+                ))}
+            </div>
+          )}
         </div>
       </div>
 
