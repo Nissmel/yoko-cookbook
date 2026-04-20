@@ -39,6 +39,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const { user } = useAuth();
   const createRecipe = useCreateRecipe();
   const updateRecipe = useUpdateRecipe();
+  const { data: allRecipes } = useRecipes();
 
   const [title, setTitle] = useState(initialData?.title ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
