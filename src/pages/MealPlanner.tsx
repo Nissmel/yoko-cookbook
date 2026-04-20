@@ -425,7 +425,7 @@ export default function MealPlanner() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {MEAL_TYPES.map((t) => (
-                      <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
+                      <SelectItem key={t} value={t}>{MEAL_TYPE_LABELS[t] || t}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
