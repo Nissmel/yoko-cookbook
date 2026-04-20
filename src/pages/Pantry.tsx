@@ -150,6 +150,34 @@ export default function Pantry() {
     });
     results.sort((a, b) => b.matchPercentage - a.matchPercentage);
     setMatches(results);
+    setAiIdeas([]); // clear AI panel when switching to local match
+  };
+
+  const handleAIIdeas = async () => {
+    if (!pantryItems?.length) { toast.error('Add items to your pantry first'); return; }
+    setAiLoading(true);
+    setMatches([]); // clear local matches when switching to AI panel
+    try {
+      const ingredients = pantryItems.map((i) => i.name);
+      const { data, error } = await supabase.functions.invoke('cook-suggestions', {
+        body: { ingredients },
+      });
+      if (error) {
+        const msg = (error as any)?.message || 'Failed to get AI ideas';
+        if (msg.includes('429') || msg.toLowerCase().includes('rate')) toast.error('Rate limit — try again in a moment');
+        else if (msg.includes('402')) toast.error('AI credits exhausted', { description: 'Add credits in workspace settings' });
+        else toast.error(msg);
+        return;
+      }
+      const ideas: AIIdea[] = Array.isArray(data?.ideas) ? data.ideas : [];
+      setAiIdeas(ideas);
+      if (ideas.length === 0) toast.info('No AI ideas — try with different ingredients');
+      else toast.success(`Got ${ideas.length} new ideas from AI`);
+    } catch (e: any) {
+      toast.error(e?.message || 'Something went wrong');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   return (
