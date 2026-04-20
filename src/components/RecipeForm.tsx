@@ -412,6 +412,32 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       <Button type="submit" className="w-full" size="lg" disabled={saving}>
         {saving ? 'Saving...' : initialData?.id ? 'Update Recipe' : 'Save Recipe'}
       </Button>
+
+      <AlertDialog open={!!tagToDelete} onOpenChange={(open) => !open && setTagToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete tag "{tagToDelete}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {recipesUsingTag.length === 0
+                ? 'This tag is not used by any recipe.'
+                : `This will remove the tag from ${recipesUsingTag.length} recipe(s). The recipes themselves will not be deleted.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingTag}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDeleteTag();
+              }}
+              disabled={deletingTag}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingTag ? 'Deleting...' : 'Delete tag'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </form>
   );
 }
