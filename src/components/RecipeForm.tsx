@@ -265,17 +265,40 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         <div className="space-y-2">
           <Label>Tags</Label>
           <div className="flex flex-wrap gap-2">
-            {allAvailableTags.map((tag) => (
-              <Badge
-                key={tag}
-                variant={tags.includes(tag) ? 'default' : 'outline'}
-                className="cursor-pointer font-body transition-colors"
-                onClick={() => toggleTag(tag)}
-              >
-                {tag}
-              </Badge>
-            ))}
+            {allAvailableTags.map((tag) => {
+              const isCustom = !COMMON_TAGS.includes(tag as any);
+              const isSelected = tags.includes(tag);
+              return (
+                <Badge
+                  key={tag}
+                  variant={isSelected ? 'default' : 'outline'}
+                  className="cursor-pointer font-body transition-colors gap-1 pr-1.5"
+                  onClick={() => toggleTag(tag)}
+                >
+                  {tag}
+                  {isCustom && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTagToDelete(tag);
+                      }}
+                      className="ml-0.5 -mr-0.5 rounded-full p-0.5 hover:bg-destructive/20 hover:text-destructive transition-colors"
+                      aria-label={`Delete tag ${tag}`}
+                      title="Delete this custom tag from all recipes"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </Badge>
+              );
+            })}
           </div>
+          {userTags.length > 0 && (
+            <p className="text-xs text-muted-foreground font-body">
+              Tip: click × on a custom tag to remove it from all your recipes.
+            </p>
+          )}
           <div className="flex gap-2 pt-1">
             <Input
               value={newTag}
