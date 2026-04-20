@@ -16,6 +16,7 @@ import Pantry from "./pages/Pantry";
 import Sharing from "./pages/Sharing";
 import Collections from "./pages/Collections";
 import MealPlanner from "./pages/MealPlanner";
+import WhatCanICook from "./pages/WhatCanICook";
 import InstallPrompt from "./components/InstallPrompt";
 
 import NotFound from "./pages/NotFound";
