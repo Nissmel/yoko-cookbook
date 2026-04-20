@@ -10,8 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Package, ChefHat, FileJson, ClipboardPaste, Plus, X, Trash2, Copy, Sparkles } from 'lucide-react';
+import { Package, ChefHat, FileJson, ClipboardPaste, Plus, X, Trash2, Copy, Sparkles, Download, Replace } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const AI_PROMPT_TEMPLATE = `Wygeneruj listę produktów spiżarni w formacie JSON. Użyj poniższego schematu i języka polskiego. Zwróć WYŁĄCZNIE poprawny JSON, bez markdownu i bez komentarzy.
 
@@ -48,6 +50,7 @@ export default function Pantry() {
   const [matches, setMatches] = useState<RecipeMatch[]>([]);
   const [jsonText, setJsonText] = useState('');
   const [newItemName, setNewItemName] = useState('');
+  const [overwriteMode, setOverwriteMode] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const addItemsFromJson = (parsed: any) => {
@@ -58,7 +61,36 @@ export default function Pantry() {
       else if (i.name) items.push({ name: i.name, quantity: i.quantity, unit: i.unit });
     }
     if (items.length === 0) { toast.error('No items found'); return; }
-    addPantryItems.mutate(items, { onSuccess: () => toast.success(`Added ${items.length} items`) });
+
+    const doImport = () => {
+      addPantryItems.mutate(items, {
+        onSuccess: () => toast.success(overwriteMode ? `Replaced pantry with ${items.length} items` : `Added ${items.length} items`),
+      });
+    };
+
+    if (overwriteMode && pantryItems && pantryItems.length > 0) {
+      clearPantry.mutate(undefined, { onSuccess: doImport });
+    } else {
+      doImport();
+    }
+  };
+
+  const handleExportJson = async () => {
+    if (!pantryItems?.length) { toast.error('Pantry is empty'); return; }
+    const exportData = pantryItems.map((i) => {
+      const obj: { name: string; quantity?: string; unit?: string } = { name: i.name };
+      if (i.quantity) obj.quantity = i.quantity;
+      if (i.unit) obj.unit = i.unit;
+      return obj;
+    });
+    const json = JSON.stringify(exportData, null, 2);
+    try {
+      await navigator.clipboard.writeText(json);
+      toast.success(`Copied ${exportData.length} items as JSON`);
+    } catch {
+      setJsonText(json);
+      toast.success('JSON loaded into paste field');
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,11 +170,36 @@ export default function Pantry() {
         {/* Bulk import */}
         <Card>
           <CardHeader>
-            <CardTitle className="font-display text-lg flex items-center gap-2">
-              <Package className="h-5 w-5" /> Bulk Import
-            </CardTitle>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Package className="h-5 w-5" /> Bulk Import
+              </CardTitle>
+              <Button
+                onClick={handleExportJson}
+                variant="outline"
+                size="sm"
+                disabled={!pantryItems?.length}
+                className="gap-1.5"
+              >
+                <Download className="h-4 w-4" /> Export current
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/30 px-3 py-2.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <Replace className={`h-4 w-4 shrink-0 ${overwriteMode ? 'text-primary' : 'text-muted-foreground'}`} />
+                <div className="min-w-0">
+                  <Label htmlFor="overwrite-mode" className="font-body text-sm cursor-pointer">
+                    Overwrite mode
+                  </Label>
+                  <p className="text-xs text-muted-foreground font-body">
+                    {overwriteMode ? 'Imported JSON will replace your entire pantry' : 'Imported items will be added to existing pantry'}
+                  </p>
+                </div>
+              </div>
+              <Switch id="overwrite-mode" checked={overwriteMode} onCheckedChange={setOverwriteMode} />
+            </div>
             <Tabs defaultValue="paste" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="paste" className="gap-1.5"><ClipboardPaste className="h-4 w-4" /> Paste JSON</TabsTrigger>
@@ -152,7 +209,7 @@ export default function Pantry() {
               <TabsContent value="paste" className="mt-3 space-y-3">
                 <Textarea value={jsonText} onChange={(e) => setJsonText(e.target.value)} placeholder='["Jajka", "Mleko", "Masło"]' rows={4} className="font-mono text-sm" />
                 <Button onClick={handlePasteJson} disabled={!jsonText.trim()} className="w-full gap-1.5">
-                  <ClipboardPaste className="h-4 w-4" /> Import Items
+                  {overwriteMode ? <><Replace className="h-4 w-4" /> Replace Pantry</> : <><ClipboardPaste className="h-4 w-4" /> Import Items</>}
                 </Button>
               </TabsContent>
               <TabsContent value="file" className="mt-3">
