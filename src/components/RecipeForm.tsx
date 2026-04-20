@@ -83,6 +83,16 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   ).filter((t) => !COMMON_TAGS.includes(t as any));
   const allAvailableTags = [...COMMON_TAGS, ...userTags];
 
+  // Autocomplete suggestions: any known tag (common + custom) that matches
+  // the current input and isn't already selected on this recipe.
+  const tagSuggestions = (() => {
+    const q = newTag.trim().toLowerCase();
+    if (!q) return [] as string[];
+    return allAvailableTags
+      .filter((t) => !tags.includes(t) && t.toLowerCase().includes(q) && t.toLowerCase() !== q)
+      .slice(0, 8);
+  })();
+
   const toggleTag = (tag: string) => {
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
   };
