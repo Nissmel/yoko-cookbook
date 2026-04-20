@@ -224,7 +224,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         <div className="space-y-2">
           <Label>Tags</Label>
           <div className="flex flex-wrap gap-2">
-            {COMMON_TAGS.map((tag) => (
+            {allAvailableTags.map((tag) => (
               <Badge
                 key={tag}
                 variant={tags.includes(tag) ? 'default' : 'outline'}
@@ -235,6 +235,35 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               </Badge>
             ))}
           </div>
+          <div className="flex gap-2 pt-1">
+            <Input
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addCustomTag();
+                }
+              }}
+              placeholder="Add custom tag (e.g. Italian, Spicy)"
+              className="flex-1"
+            />
+            <Button type="button" variant="outline" onClick={addCustomTag} disabled={!newTag.trim()} className="gap-1.5 shrink-0">
+              <Plus className="h-4 w-4" /> Add Tag
+            </Button>
+          </div>
+          {tags.filter((t) => !allAvailableTags.includes(t as any)).length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {tags
+                .filter((t) => !allAvailableTags.includes(t as any))
+                .map((tag) => (
+                  <Badge key={tag} variant="default" className="cursor-pointer font-body gap-1.5" onClick={() => toggleTag(tag)}>
+                    {tag}
+                    <X className="h-3 w-3" />
+                  </Badge>
+                ))}
+            </div>
+          )}
         </div>
       </div>
 
