@@ -390,7 +390,7 @@ export default function MealPlanner() {
                               )}
                               <div className="min-w-0">
                                 <p className="text-sm font-body truncate">{meal.recipe?.title || 'Recipe'}</p>
-                                <p className="text-xs text-muted-foreground capitalize">{meal.meal_type}</p>
+                                <p className="text-xs text-muted-foreground">{MEAL_TYPE_LABELS[meal.meal_type] || meal.meal_type}</p>
                               </div>
                             </Link>
                             <button
