@@ -16,7 +16,6 @@ import Pantry from "./pages/Pantry";
 import Sharing from "./pages/Sharing";
 import Collections from "./pages/Collections";
 import MealPlanner from "./pages/MealPlanner";
-import WhatCanICook from "./pages/WhatCanICook";
 import InstallPrompt from "./components/InstallPrompt";
 
 import NotFound from "./pages/NotFound";
@@ -51,9 +50,7 @@ const App = () => (
             <Route path="/sharing" element={<ProtectedRoute><Sharing /></ProtectedRoute>} />
             <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
             <Route path="/meal-planner" element={<ProtectedRoute><MealPlanner /></ProtectedRoute>} />
-            <Route path="/what-can-i-cook" element={<ProtectedRoute><WhatCanICook /></ProtectedRoute>} />
             
-            <Route path="*" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

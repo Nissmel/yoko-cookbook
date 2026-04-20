@@ -15,7 +15,6 @@ import {
   CalendarDays,
   Menu,
   X,
-  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
@@ -28,7 +27,6 @@ const mainNav = [
 ];
 
 const secondaryNav = [
-  { to: '/what-can-i-cook', icon: Sparkles, label: 'What Can I Cook?' },
   { to: '/create', icon: PlusCircle, label: 'Create' },
   { to: '/import', icon: Upload, label: 'Import' },
   { to: '/collections', icon: Folder, label: 'Collections' },

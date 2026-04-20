@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useRecipes } from '@/hooks/useRecipes';
 import { usePantryItems, useAddPantryItems, useDeletePantryItem, useClearPantry } from '@/hooks/usePantry';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Package, ChefHat, FileJson, ClipboardPaste, Plus, X, Trash2, Copy, Sparkles, Download, Replace } from 'lucide-react';
+import { Package, ChefHat, FileJson, ClipboardPaste, Plus, X, Trash2, Copy, Sparkles, Download, Replace, Loader2, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -41,6 +42,15 @@ interface RecipeMatch {
   missingIngredients: string[];
 }
 
+interface AIIdea {
+  title: string;
+  description: string;
+  usedIngredients: string[];
+  missingIngredients: string[];
+  timeMinutes: number;
+  difficulty: string;
+}
+
 export default function Pantry() {
   const { data: recipes } = useRecipes();
   const { data: pantryItems, isLoading: pantryLoading } = usePantryItems();
@@ -48,6 +58,8 @@ export default function Pantry() {
   const deletePantryItem = useDeletePantryItem();
   const clearPantry = useClearPantry();
   const [matches, setMatches] = useState<RecipeMatch[]>([]);
+  const [aiIdeas, setAiIdeas] = useState<AIIdea[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
   const [jsonText, setJsonText] = useState('');
   const [newItemName, setNewItemName] = useState('');
   const [overwriteMode, setOverwriteMode] = useState(false);
@@ -138,6 +150,34 @@ export default function Pantry() {
     });
     results.sort((a, b) => b.matchPercentage - a.matchPercentage);
     setMatches(results);
+    setAiIdeas([]); // clear AI panel when switching to local match
+  };
+
+  const handleAIIdeas = async () => {
+    if (!pantryItems?.length) { toast.error('Add items to your pantry first'); return; }
+    setAiLoading(true);
+    setMatches([]); // clear local matches when switching to AI panel
+    try {
+      const ingredients = pantryItems.map((i) => i.name);
+      const { data, error } = await supabase.functions.invoke('cook-suggestions', {
+        body: { ingredients },
+      });
+      if (error) {
+        const msg = (error as any)?.message || 'Failed to get AI ideas';
+        if (msg.includes('429') || msg.toLowerCase().includes('rate')) toast.error('Rate limit — try again in a moment');
+        else if (msg.includes('402')) toast.error('AI credits exhausted', { description: 'Add credits in workspace settings' });
+        else toast.error(msg);
+        return;
+      }
+      const ideas: AIIdea[] = Array.isArray(data?.ideas) ? data.ideas : [];
+      setAiIdeas(ideas);
+      if (ideas.length === 0) toast.info('No AI ideas — try with different ingredients');
+      else toast.success(`Got ${ideas.length} new ideas from AI`);
+    } catch (e: any) {
+      toast.error(e?.message || 'Something went wrong');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   return (
@@ -273,12 +313,24 @@ export default function Pantry() {
           </CardContent>
         </Card>
 
-        {/* Match recipes button */}
-        <Button onClick={calculateMatches} className="w-full gap-2" size="lg" disabled={!pantryItems?.length}>
-          <ChefHat className="h-5 w-5" /> Find Matching Recipes
-        </Button>
+        {/* Action buttons - 2 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Button onClick={calculateMatches} className="w-full gap-2" size="lg" disabled={!pantryItems?.length}>
+            <ChefHat className="h-5 w-5" /> Find Matching Recipes
+          </Button>
+          <Button
+            onClick={handleAIIdeas}
+            variant="outline"
+            className="w-full gap-2 border-primary/40 hover:bg-primary/5"
+            size="lg"
+            disabled={!pantryItems?.length || aiLoading}
+          >
+            {aiLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5 text-primary" />}
+            What Can I Cook? <span className="text-xs text-muted-foreground font-body">(AI)</span>
+          </Button>
+        </div>
 
-        {/* Results */}
+        {/* Local match results */}
         {matches.length > 0 && (
           <div className="space-y-3">
             <h2 className="font-display text-xl font-semibold flex items-center gap-2">
@@ -313,6 +365,47 @@ export default function Pantry() {
                   </CardContent>
                 </Card>
               </Link>
+            ))}
+          </div>
+        )}
+
+        {/* AI ideas results */}
+        {aiIdeas.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="font-display text-xl font-semibold flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" /> AI New Ideas
+            </h2>
+            {aiIdeas.map((idea, i) => (
+              <Card key={i} className="border-primary/20">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <h3 className="font-display font-semibold text-lg">{idea.title}</h3>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Badge variant="outline" className="text-xs font-body gap-1">
+                        <Clock className="h-3 w-3" /> {idea.timeMinutes}m
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs font-body">{idea.difficulty}</Badge>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground font-body">{idea.description}</p>
+                  <div className="space-y-1.5">
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-xs text-muted-foreground font-body mr-1">Z Twoich:</span>
+                      {idea.usedIngredients.map((u, j) => (
+                        <Badge key={j} variant="outline" className="text-xs font-body bg-primary/5 border-primary/30 text-primary">{u}</Badge>
+                      ))}
+                    </div>
+                    {idea.missingIngredients.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        <span className="text-xs text-muted-foreground font-body mr-1">Brakuje:</span>
+                        {idea.missingIngredients.map((m, j) => (
+                          <Badge key={j} variant="outline" className="text-xs font-body text-destructive border-destructive/30">{m}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
