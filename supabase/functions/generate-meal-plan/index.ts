@@ -9,9 +9,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipes, days, preferences } = await req.json();
-    if (!days) {
-      return new Response(JSON.stringify({ error: 'Days required' }), {
+    const { recipes, days, preferences, singleSlot, exclude } = await req.json();
+    if (!days && !singleSlot) {
+      return new Response(JSON.stringify({ error: 'Days or singleSlot required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
