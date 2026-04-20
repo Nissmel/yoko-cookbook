@@ -664,13 +664,21 @@ export default function RecipeDetail() {
                 </Button>
               </div>
             </div>
-            <ol className="space-y-5">
+            <ol className="relative space-y-3">
               {recipe.instructions.map((step, i) => (
-                <li key={i} className="flex gap-4 font-body">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-sm">
-                    {i + 1}
-                  </span>
-                  <p className="pt-1 leading-relaxed text-foreground text-[15px]">{enrichInstruction(step)}</p>
+                <li
+                  key={i}
+                  className="group relative flex gap-4 rounded-2xl border border-border/60 bg-card/60 p-4 font-body transition-all duration-200 hover:border-primary/40 hover:bg-card hover:shadow-sm"
+                >
+                  <div className="flex shrink-0 flex-col items-center">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-display text-base font-semibold leading-none tabular-nums ring-4 ring-primary/10 transition-transform group-hover:scale-105">
+                      {i + 1}
+                    </span>
+                    {i < recipe.instructions.length - 1 && (
+                      <span aria-hidden className="mt-2 hidden w-px flex-1 bg-gradient-to-b from-border to-transparent sm:block" />
+                    )}
+                  </div>
+                  <p className="pt-1.5 leading-relaxed text-foreground text-[15px]">{enrichInstruction(step)}</p>
                 </li>
               ))}
             </ol>
