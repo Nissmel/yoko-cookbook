@@ -15,8 +15,8 @@
     --popover: 36 30% 92%;
     --popover-foreground: 24 42% 12%;
 
-    --primary: 28 88% 58%;
-    --primary-foreground: 36 33% 98%;
+    --primary: 28 92% 64%;
+    --primary-foreground: 24 42% 14%;
 
     --secondary: 28 20% 56%;
     --secondary-foreground: 36 33% 95%;
@@ -32,18 +32,18 @@
 
     --border: 34 16% 82%;
     --input: 34 16% 82%;
-    --ring: 28 88% 58%;
+    --ring: 28 92% 64%;
 
     --radius: 1rem;
 
     --sidebar-background: 36 30% 92%;
     --sidebar-foreground: 24 42% 12%;
-    --sidebar-primary: 28 88% 58%;
-    --sidebar-primary-foreground: 36 33% 98%;
+    --sidebar-primary: 28 92% 64%;
+    --sidebar-primary-foreground: 24 42% 14%;
     --sidebar-accent: 34 22% 88%;
     --sidebar-accent-foreground: 24 42% 12%;
     --sidebar-border: 34 16% 82%;
-    --sidebar-ring: 28 88% 58%;
+    --sidebar-ring: 28 92% 64%;
 
     --badge-blue: 217 60% 92%;
     --badge-blue-fg: 217 50% 40%;
@@ -69,7 +69,7 @@
     --popover: 24 14% 11%;
     --popover-foreground: 36 28% 90%;
 
-    --primary: 28 90% 62%;
+    --primary: 28 92% 66%;
     --primary-foreground: 24 42% 10%;
 
     --secondary: 28 18% 42%;
@@ -86,16 +86,16 @@
 
     --border: 24 10% 16%;
     --input: 24 10% 16%;
-    --ring: 28 90% 62%;
+    --ring: 28 92% 66%;
 
     --sidebar-background: 24 14% 9%;
     --sidebar-foreground: 36 28% 90%;
-    --sidebar-primary: 28 90% 62%;
+    --sidebar-primary: 28 92% 66%;
     --sidebar-primary-foreground: 24 42% 10%;
     --sidebar-accent: 24 10% 14%;
     --sidebar-accent-foreground: 36 28% 90%;
     --sidebar-border: 24 10% 16%;
-    --sidebar-ring: 28 90% 62%;
+    --sidebar-ring: 28 92% 66%;
 
     --badge-blue: 217 40% 18%;
     --badge-blue-fg: 217 50% 70%;
