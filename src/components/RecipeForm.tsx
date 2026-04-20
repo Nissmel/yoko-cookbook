@@ -73,6 +73,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const [fat, setFat] = useState<number | ''>(initialData?.fat_grams ?? '');
   const [fiber, setFiber] = useState<number | ''>(initialData?.fiber_grams ?? '');
   const [newTag, setNewTag] = useState('');
+  const [tagToDelete, setTagToDelete] = useState<string | null>(null);
+  const [deletingTag, setDeletingTag] = useState(false);
 
   // Merge default tags with all unique tags ever used by the user
   const userTags = Array.from(
@@ -93,6 +95,35 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     }
     setTags((prev) => [...prev, trimmed]);
     setNewTag('');
+  };
+
+  // Recipes that currently use the tag the user wants to delete
+  const recipesUsingTag = tagToDelete
+    ? (allRecipes ?? []).filter((r) => (r.tags ?? []).includes(tagToDelete))
+    : [];
+
+  const confirmDeleteTag = async () => {
+    if (!tagToDelete) return;
+    setDeletingTag(true);
+    try {
+      // Strip the tag from every recipe that has it
+      await Promise.all(
+        recipesUsingTag.map((r) =>
+          updateRecipe.mutateAsync({
+            id: r.id,
+            tags: (r.tags ?? []).filter((t) => t !== tagToDelete),
+          })
+        )
+      );
+      // Also remove from current form selection if present
+      setTags((prev) => prev.filter((t) => t !== tagToDelete));
+      toast.success(`Removed "${tagToDelete}" from ${recipesUsingTag.length} recipe(s)`);
+      setTagToDelete(null);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete tag');
+    } finally {
+      setDeletingTag(false);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
