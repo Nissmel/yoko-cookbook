@@ -247,8 +247,8 @@ export default function MealPlanner() {
               <Button variant="outline" size="sm" onClick={() => { setAiPlan(null); setSelections({}); }}>
                 Cancel
               </Button>
-              <Button size="sm" onClick={handleSavePlan} disabled={savingPlan} className="gap-1.5">
-                {savingPlan ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : <><Check className="h-4 w-4" /> Save Plan</>}
+              <Button size="sm" onClick={handleSavePlan} disabled={savingPlan || selectedCount === 0} className="gap-1.5">
+                {savingPlan ? <><Loader2 className="h-4 w-4 animate-spin" /> Zapisywanie...</> : <><Check className="h-4 w-4" /> Zapisz plan ({selectedCount})</>}
               </Button>
             </div>
           </div>
