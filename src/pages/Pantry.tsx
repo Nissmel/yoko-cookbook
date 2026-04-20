@@ -57,13 +57,59 @@ export default function Pantry() {
   const addPantryItems = useAddPantryItems();
   const deletePantryItem = useDeletePantryItem();
   const clearPantry = useClearPantry();
+  const createRecipe = useCreateRecipe();
+  const navigate = useNavigate();
   const [matches, setMatches] = useState<RecipeMatch[]>([]);
   const [aiIdeas, setAiIdeas] = useState<AIIdea[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
+  const [savingIdx, setSavingIdx] = useState<number | null>(null);
   const [jsonText, setJsonText] = useState('');
   const [newItemName, setNewItemName] = useState('');
   const [overwriteMode, setOverwriteMode] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleSaveAsRecipe = async (idea: AIIdea, idx: number) => {
+    setSavingIdx(idx);
+    const tId = toast.loading(`Generuję pełny przepis: ${idea.title}...`);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-recipe', {
+        body: { title: idea.title, description: idea.description },
+      });
+      if (error) throw new Error((error as any)?.message || 'Generation failed');
+      if (!data?.recipe) throw new Error('No recipe returned');
+
+      const r = data.recipe;
+      const created = await createRecipe.mutateAsync({
+        title: r.title || idea.title,
+        description: r.description || idea.description,
+        category: r.category || null,
+        servings: r.servings || 4,
+        prep_time_minutes: r.prep_time_minutes ?? null,
+        cook_time_minutes: r.cook_time_minutes ?? null,
+        ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
+        instructions: Array.isArray(r.instructions) ? r.instructions : [],
+        calories_per_serving: r.calories_per_serving ?? null,
+        protein_grams: r.protein_grams ?? null,
+        carbs_grams: r.carbs_grams ?? null,
+        fat_grams: r.fat_grams ?? null,
+        fiber_grams: r.fiber_grams ?? null,
+        tags: Array.isArray(r.tags) ? r.tags : [],
+        image_url: null,
+        source_url: null,
+        source_json: r,
+      } as any);
+
+      toast.success('Przepis zapisany!', { id: tId });
+      navigate(`/recipe/${created.id}`);
+    } catch (e: any) {
+      const msg = e?.message || 'Nie udało się zapisać';
+      if (msg.includes('429')) toast.error('Rate limit — spróbuj za chwilę', { id: tId });
+      else if (msg.includes('402')) toast.error('Brak kredytów AI', { id: tId, description: 'Doładuj w ustawieniach workspace' });
+      else toast.error(msg, { id: tId });
+    } finally {
+      setSavingIdx(null);
+    }
+  };
 
   const addItemsFromJson = (parsed: any) => {
     const items: { name: string; quantity?: string; unit?: string }[] = [];
