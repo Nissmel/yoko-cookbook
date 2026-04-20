@@ -14,7 +14,14 @@ import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen 
 import { format, startOfWeek, addDays, addWeeks, subWeeks } from 'date-fns';
 import { Link } from 'react-router-dom';
 
-const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'];
+const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert'];
+const MEAL_TYPE_LABELS: Record<string, string> = {
+  breakfast: 'Śniadanie',
+  lunch: 'Obiad',
+  dinner: 'Kolacja',
+  dessert: 'Deser',
+};
+const PLAN_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert'] as const;
 
 interface MealOption {
   source: 'existing' | 'new';
