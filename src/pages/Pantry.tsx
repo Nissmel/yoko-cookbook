@@ -10,8 +10,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Package, ChefHat, FileJson, ClipboardPaste, Plus, X, Trash2 } from 'lucide-react';
+import { Package, ChefHat, FileJson, ClipboardPaste, Plus, X, Trash2, Copy, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+const AI_PROMPT_TEMPLATE = `Wygeneruj listę produktów spiżarni w formacie JSON. Użyj poniższego schematu i języka polskiego. Zwróć WYŁĄCZNIE poprawny JSON, bez markdownu i bez komentarzy.
+
+Schemat:
+[
+  { "name": "Jajka", "quantity": "10", "unit": "szt" },
+  { "name": "Mleko", "quantity": "1", "unit": "l" },
+  { "name": "Masło", "quantity": "200", "unit": "g" },
+  { "name": "Mąka pszenna" }
+]
+
+Zasady:
+- "name" jest wymagane (po polsku, mianownik, liczba pojedyncza gdy to możliwe).
+- "quantity" i "unit" są opcjonalne.
+- Jednostki tylko metryczne: g, kg, ml, l, szt, łyżka, łyżeczka, szklanka.
+- Możesz też zwrócić prostą tablicę nazw, np. ["Jajka", "Mleko", "Masło"].`;
 
 interface RecipeMatch {
   recipeId: string;
