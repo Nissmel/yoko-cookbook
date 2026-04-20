@@ -31,6 +31,8 @@ interface MealOption {
   category?: string;
   prep_time_minutes?: number;
   cook_time_minutes?: number;
+  batch_cooking?: boolean;
+  leftover_from_day?: number;
 }
 
 interface DayPlan {
@@ -198,6 +200,8 @@ export default function MealPlanner() {
     setSavingPlan(true);
     let added = 0;
     let newRecipesCreated = 0;
+    // Cache: title -> recipe_id, so leftovers reuse the same recipe as the original day
+    const titleToRecipeId: Record<string, string> = {};
 
     try {
       for (const dayPlan of aiPlan) {
@@ -212,12 +216,19 @@ export default function MealPlanner() {
           if (!selected) continue;
 
           let recipeId = selected.recipe_id;
+          // Normalize title (strip ♻️ prefix from leftovers) for cache lookup
+          const normalizedTitle = selected.title.replace(/^♻️\s*/, '').trim();
 
-          if (selected.source === 'new') {
+          // If this is a leftover and we already created/linked the original — reuse it
+          if (!recipeId && titleToRecipeId[normalizedTitle]) {
+            recipeId = titleToRecipeId[normalizedTitle];
+          }
+
+          if (!recipeId && selected.source === 'new') {
             // Generate full recipe and save to cookbook
             try {
               const { data: genData, error: genError } = await supabase.functions.invoke('generate-recipe', {
-                body: { title: selected.title, description: selected.description, category: selected.category },
+                body: { title: normalizedTitle, description: selected.description, category: selected.category },
               });
               if (genError) throw genError;
               if (genData.error) throw new Error(genData.error);
@@ -227,7 +238,7 @@ export default function MealPlanner() {
                 .from('recipes')
                 .insert({
                   user_id: user.id,
-                  title: newRecipe.title || selected.title,
+                  title: newRecipe.title || normalizedTitle,
                   description: newRecipe.description || selected.description || '',
                   category: newRecipe.category || selected.category || 'Dinner',
                   servings: newRecipe.servings || 4,
@@ -247,12 +258,16 @@ export default function MealPlanner() {
 
               if (insertError) throw insertError;
               recipeId = inserted.id;
+              titleToRecipeId[normalizedTitle] = recipeId;
               newRecipesCreated++;
             } catch (e: any) {
               console.error('Failed to create recipe:', selected.title, e);
               toast.error(`Failed to create recipe: ${selected.title}`);
               continue;
             }
+          } else if (recipeId) {
+            // Cache existing recipe id by title too, so leftovers can find it
+            titleToRecipeId[normalizedTitle] = recipeId;
           }
 
           if (recipeId) {
@@ -353,7 +368,17 @@ export default function MealPlanner() {
                                     )}
                                   </div>
                                   <div className="flex items-center gap-1 shrink-0">
-                                    {option.source === 'new' && (
+                                    {option.leftover_from_day && (
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium" title={`Z dnia ${option.leftover_from_day}`}>
+                                        ♻️ Wczorajsze
+                                      </span>
+                                    )}
+                                    {option.batch_cooking && !option.leftover_from_day && (
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium" title="Większa porcja — starczy na 2 dni">
+                                        2x porcja
+                                      </span>
+                                    )}
+                                    {option.source === 'new' && !option.leftover_from_day && (
                                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground font-medium">NEW</span>
                                     )}
                                     {option.source === 'existing' && (
