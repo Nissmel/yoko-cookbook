@@ -267,6 +267,99 @@
     --sidebar-border: 340 10% 84%;
     --sidebar-ring: 330 62% 48%;
   }
+
+  /* Apricot Orchard — paper background, soczysty morelowy primary */
+  .theme-apricot {
+    --background: 32 30% 95%;
+    --foreground: 22 35% 14%;
+    --card: 32 26% 92%;
+    --card-foreground: 22 35% 14%;
+    --popover: 32 26% 92%;
+    --popover-foreground: 22 35% 14%;
+    --primary: 24 95% 60%;
+    --primary-foreground: 22 35% 12%;
+    --secondary: 30 22% 50%;
+    --secondary-foreground: 32 30% 96%;
+    --muted: 30 16% 88%;
+    --muted-foreground: 24 14% 42%;
+    --accent: 30 18% 86%;
+    --accent-foreground: 22 35% 14%;
+    --destructive: 0 60% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 12% 82%;
+    --input: 30 12% 82%;
+    --ring: 24 95% 60%;
+    --sidebar-background: 32 26% 92%;
+    --sidebar-foreground: 22 35% 14%;
+    --sidebar-primary: 24 95% 60%;
+    --sidebar-primary-foreground: 22 35% 12%;
+    --sidebar-accent: 30 16% 88%;
+    --sidebar-accent-foreground: 22 35% 14%;
+    --sidebar-border: 30 12% 82%;
+    --sidebar-ring: 24 95% 60%;
+  }
+
+  /* Terracotta Studio — paper background, ziemny ceglasty primary */
+  .theme-terracotta {
+    --background: 28 24% 94%;
+    --foreground: 16 32% 14%;
+    --card: 28 20% 91%;
+    --card-foreground: 16 32% 14%;
+    --popover: 28 20% 91%;
+    --popover-foreground: 16 32% 14%;
+    --primary: 18 78% 58%;
+    --primary-foreground: 28 24% 96%;
+    --secondary: 24 20% 46%;
+    --secondary-foreground: 28 24% 96%;
+    --muted: 26 14% 87%;
+    --muted-foreground: 20 12% 40%;
+    --accent: 26 16% 85%;
+    --accent-foreground: 16 32% 14%;
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 26 10% 80%;
+    --input: 26 10% 80%;
+    --ring: 18 78% 58%;
+    --sidebar-background: 28 20% 91%;
+    --sidebar-foreground: 16 32% 14%;
+    --sidebar-primary: 18 78% 58%;
+    --sidebar-primary-foreground: 28 24% 96%;
+    --sidebar-accent: 26 14% 87%;
+    --sidebar-accent-foreground: 16 32% 14%;
+    --sidebar-border: 26 10% 80%;
+    --sidebar-ring: 18 78% 58%;
+  }
+
+  /* Tangerine Market — paper background, żywy mandarynkowy primary */
+  .theme-tangerine {
+    --background: 36 30% 95%;
+    --foreground: 20 38% 14%;
+    --card: 36 26% 92%;
+    --card-foreground: 20 38% 14%;
+    --popover: 36 26% 92%;
+    --popover-foreground: 20 38% 14%;
+    --primary: 22 100% 58%;
+    --primary-foreground: 20 38% 12%;
+    --secondary: 32 22% 48%;
+    --secondary-foreground: 36 30% 96%;
+    --muted: 34 16% 88%;
+    --muted-foreground: 26 14% 42%;
+    --accent: 34 18% 86%;
+    --accent-foreground: 20 38% 14%;
+    --destructive: 0 60% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 34 12% 82%;
+    --input: 34 12% 82%;
+    --ring: 22 100% 58%;
+    --sidebar-background: 36 26% 92%;
+    --sidebar-foreground: 20 38% 14%;
+    --sidebar-primary: 22 100% 58%;
+    --sidebar-primary-foreground: 20 38% 12%;
+    --sidebar-accent: 34 16% 88%;
+    --sidebar-accent-foreground: 20 38% 14%;
+    --sidebar-border: 34 12% 82%;
+    --sidebar-ring: 22 100% 58%;
+  }
 }
 
 @layer base {
