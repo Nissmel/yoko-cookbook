@@ -200,6 +200,8 @@ export default function MealPlanner() {
     setSavingPlan(true);
     let added = 0;
     let newRecipesCreated = 0;
+    // Cache: title -> recipe_id, so leftovers reuse the same recipe as the original day
+    const titleToRecipeId: Record<string, string> = {};
 
     try {
       for (const dayPlan of aiPlan) {
@@ -214,12 +216,19 @@ export default function MealPlanner() {
           if (!selected) continue;
 
           let recipeId = selected.recipe_id;
+          // Normalize title (strip ♻️ prefix from leftovers) for cache lookup
+          const normalizedTitle = selected.title.replace(/^♻️\s*/, '').trim();
 
-          if (selected.source === 'new') {
+          // If this is a leftover and we already created/linked the original — reuse it
+          if (!recipeId && titleToRecipeId[normalizedTitle]) {
+            recipeId = titleToRecipeId[normalizedTitle];
+          }
+
+          if (!recipeId && selected.source === 'new') {
             // Generate full recipe and save to cookbook
             try {
               const { data: genData, error: genError } = await supabase.functions.invoke('generate-recipe', {
-                body: { title: selected.title, description: selected.description, category: selected.category },
+                body: { title: normalizedTitle, description: selected.description, category: selected.category },
               });
               if (genError) throw genError;
               if (genData.error) throw new Error(genData.error);
@@ -229,7 +238,7 @@ export default function MealPlanner() {
                 .from('recipes')
                 .insert({
                   user_id: user.id,
-                  title: newRecipe.title || selected.title,
+                  title: newRecipe.title || normalizedTitle,
                   description: newRecipe.description || selected.description || '',
                   category: newRecipe.category || selected.category || 'Dinner',
                   servings: newRecipe.servings || 4,
@@ -249,12 +258,16 @@ export default function MealPlanner() {
 
               if (insertError) throw insertError;
               recipeId = inserted.id;
+              titleToRecipeId[normalizedTitle] = recipeId;
               newRecipesCreated++;
             } catch (e: any) {
               console.error('Failed to create recipe:', selected.title, e);
               toast.error(`Failed to create recipe: ${selected.title}`);
               continue;
             }
+          } else if (recipeId) {
+            // Cache existing recipe id by title too, so leftovers can find it
+            titleToRecipeId[normalizedTitle] = recipeId;
           }
 
           if (recipeId) {
