@@ -113,159 +113,159 @@
 
   /* ========== ALTERNATIVE THEMES (color only) ========== */
 
-  /* Sage Kitchen — fresh herbal greens */
+  /* Sage Kitchen — paper background, herbal green accents */
   .theme-sage {
-    --background: 90 25% 96%;
-    --foreground: 150 30% 12%;
-    --card: 90 22% 92%;
-    --card-foreground: 150 30% 12%;
-    --popover: 90 22% 92%;
-    --popover-foreground: 150 30% 12%;
-    --primary: 150 40% 38%;
-    --primary-foreground: 90 25% 96%;
-    --secondary: 100 20% 50%;
-    --secondary-foreground: 90 25% 96%;
-    --muted: 90 18% 88%;
-    --muted-foreground: 150 12% 42%;
-    --accent: 90 22% 84%;
-    --accent-foreground: 150 30% 12%;
+    --background: 60 20% 95%;
+    --foreground: 150 25% 14%;
+    --card: 60 18% 92%;
+    --card-foreground: 150 25% 14%;
+    --popover: 60 18% 92%;
+    --popover-foreground: 150 25% 14%;
+    --primary: 150 38% 36%;
+    --primary-foreground: 60 20% 96%;
+    --secondary: 100 18% 48%;
+    --secondary-foreground: 60 20% 96%;
+    --muted: 55 14% 88%;
+    --muted-foreground: 90 10% 42%;
+    --accent: 80 16% 86%;
+    --accent-foreground: 150 25% 14%;
     --destructive: 8 60% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 90 14% 80%;
-    --input: 90 14% 80%;
-    --ring: 150 40% 38%;
-    --sidebar-background: 90 22% 92%;
-    --sidebar-foreground: 150 30% 12%;
-    --sidebar-primary: 150 40% 38%;
-    --sidebar-primary-foreground: 90 25% 96%;
-    --sidebar-accent: 90 18% 88%;
-    --sidebar-accent-foreground: 150 30% 12%;
-    --sidebar-border: 90 14% 80%;
-    --sidebar-ring: 150 40% 38%;
+    --border: 60 10% 82%;
+    --input: 60 10% 82%;
+    --ring: 150 38% 36%;
+    --sidebar-background: 60 18% 92%;
+    --sidebar-foreground: 150 25% 14%;
+    --sidebar-primary: 150 38% 36%;
+    --sidebar-primary-foreground: 60 20% 96%;
+    --sidebar-accent: 55 14% 88%;
+    --sidebar-accent-foreground: 150 25% 14%;
+    --sidebar-border: 60 10% 82%;
+    --sidebar-ring: 150 38% 36%;
   }
 
-  /* Tomato Trattoria — warm Italian rustic */
+  /* Tomato Trattoria — paper background, warm Italian red accents */
   .theme-tomato {
-    --background: 24 50% 96%;
-    --foreground: 12 35% 15%;
-    --card: 24 45% 92%;
-    --card-foreground: 12 35% 15%;
-    --popover: 24 45% 92%;
-    --popover-foreground: 12 35% 15%;
-    --primary: 8 72% 50%;
-    --primary-foreground: 24 50% 96%;
-    --secondary: 90 30% 38%;
-    --secondary-foreground: 24 50% 96%;
-    --muted: 24 30% 88%;
-    --muted-foreground: 12 18% 42%;
-    --accent: 24 35% 84%;
-    --accent-foreground: 12 35% 15%;
+    --background: 30 28% 95%;
+    --foreground: 12 30% 15%;
+    --card: 30 24% 92%;
+    --card-foreground: 12 30% 15%;
+    --popover: 30 24% 92%;
+    --popover-foreground: 12 30% 15%;
+    --primary: 8 70% 48%;
+    --primary-foreground: 30 28% 96%;
+    --secondary: 90 28% 36%;
+    --secondary-foreground: 30 28% 96%;
+    --muted: 28 16% 88%;
+    --muted-foreground: 18 12% 42%;
+    --accent: 28 18% 86%;
+    --accent-foreground: 12 30% 15%;
     --destructive: 0 60% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 24 22% 80%;
-    --input: 24 22% 80%;
-    --ring: 8 72% 50%;
-    --sidebar-background: 24 45% 92%;
-    --sidebar-foreground: 12 35% 15%;
-    --sidebar-primary: 8 72% 50%;
-    --sidebar-primary-foreground: 24 50% 96%;
-    --sidebar-accent: 24 30% 88%;
-    --sidebar-accent-foreground: 12 35% 15%;
-    --sidebar-border: 24 22% 80%;
-    --sidebar-ring: 8 72% 50%;
+    --border: 28 12% 82%;
+    --input: 28 12% 82%;
+    --ring: 8 70% 48%;
+    --sidebar-background: 30 24% 92%;
+    --sidebar-foreground: 12 30% 15%;
+    --sidebar-primary: 8 70% 48%;
+    --sidebar-primary-foreground: 30 28% 96%;
+    --sidebar-accent: 28 16% 88%;
+    --sidebar-accent-foreground: 12 30% 15%;
+    --sidebar-border: 28 12% 82%;
+    --sidebar-ring: 8 70% 48%;
   }
 
-  /* Midnight Bistro — dark moody with copper accents */
+  /* Midnight Bistro — dark, low-saturation paper-noir with copper accents */
   .theme-midnight {
-    --background: 220 20% 9%;
-    --foreground: 30 25% 92%;
-    --card: 220 18% 13%;
-    --card-foreground: 30 25% 92%;
-    --popover: 220 18% 13%;
-    --popover-foreground: 30 25% 92%;
+    --background: 30 8% 10%;
+    --foreground: 36 20% 90%;
+    --card: 30 7% 14%;
+    --card-foreground: 36 20% 90%;
+    --popover: 30 7% 14%;
+    --popover-foreground: 36 20% 90%;
     --primary: 22 75% 55%;
-    --primary-foreground: 220 20% 9%;
-    --secondary: 220 12% 35%;
-    --secondary-foreground: 30 25% 92%;
-    --muted: 220 14% 18%;
-    --muted-foreground: 30 12% 60%;
-    --accent: 220 14% 22%;
-    --accent-foreground: 30 25% 92%;
+    --primary-foreground: 30 8% 10%;
+    --secondary: 30 8% 38%;
+    --secondary-foreground: 36 20% 90%;
+    --muted: 30 6% 18%;
+    --muted-foreground: 36 10% 60%;
+    --accent: 30 6% 22%;
+    --accent-foreground: 36 20% 90%;
     --destructive: 0 60% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 12% 22%;
-    --input: 220 12% 22%;
+    --border: 30 6% 22%;
+    --input: 30 6% 22%;
     --ring: 22 75% 55%;
-    --sidebar-background: 220 18% 11%;
-    --sidebar-foreground: 30 25% 92%;
+    --sidebar-background: 30 7% 12%;
+    --sidebar-foreground: 36 20% 90%;
     --sidebar-primary: 22 75% 55%;
-    --sidebar-primary-foreground: 220 20% 9%;
-    --sidebar-accent: 220 14% 18%;
-    --sidebar-accent-foreground: 30 25% 92%;
-    --sidebar-border: 220 12% 22%;
+    --sidebar-primary-foreground: 30 8% 10%;
+    --sidebar-accent: 30 6% 18%;
+    --sidebar-accent-foreground: 36 20% 90%;
+    --sidebar-border: 30 6% 22%;
     --sidebar-ring: 22 75% 55%;
   }
 
-  /* Nordic Frost — cool minimal scandinavian */
+  /* Nordic Frost — paper background, cool blue accents */
   .theme-nordic {
-    --background: 210 25% 97%;
-    --foreground: 215 30% 15%;
-    --card: 210 22% 94%;
-    --card-foreground: 215 30% 15%;
-    --popover: 210 22% 94%;
-    --popover-foreground: 215 30% 15%;
-    --primary: 210 75% 45%;
-    --primary-foreground: 210 25% 97%;
-    --secondary: 215 18% 50%;
-    --secondary-foreground: 210 25% 97%;
-    --muted: 210 18% 90%;
-    --muted-foreground: 215 12% 45%;
-    --accent: 210 22% 86%;
-    --accent-foreground: 215 30% 15%;
+    --background: 210 14% 96%;
+    --foreground: 215 28% 16%;
+    --card: 210 12% 93%;
+    --card-foreground: 215 28% 16%;
+    --popover: 210 12% 93%;
+    --popover-foreground: 215 28% 16%;
+    --primary: 210 72% 44%;
+    --primary-foreground: 210 14% 97%;
+    --secondary: 215 16% 48%;
+    --secondary-foreground: 210 14% 97%;
+    --muted: 210 10% 89%;
+    --muted-foreground: 215 10% 45%;
+    --accent: 210 12% 87%;
+    --accent-foreground: 215 28% 16%;
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 16% 84%;
-    --input: 210 16% 84%;
-    --ring: 210 75% 45%;
-    --sidebar-background: 210 22% 94%;
-    --sidebar-foreground: 215 30% 15%;
-    --sidebar-primary: 210 75% 45%;
-    --sidebar-primary-foreground: 210 25% 97%;
-    --sidebar-accent: 210 18% 90%;
-    --sidebar-accent-foreground: 215 30% 15%;
-    --sidebar-border: 210 16% 84%;
-    --sidebar-ring: 210 75% 45%;
+    --border: 210 8% 84%;
+    --input: 210 8% 84%;
+    --ring: 210 72% 44%;
+    --sidebar-background: 210 12% 93%;
+    --sidebar-foreground: 215 28% 16%;
+    --sidebar-primary: 210 72% 44%;
+    --sidebar-primary-foreground: 210 14% 97%;
+    --sidebar-accent: 210 10% 89%;
+    --sidebar-accent-foreground: 215 28% 16%;
+    --sidebar-border: 210 8% 84%;
+    --sidebar-ring: 210 72% 44%;
   }
 
-  /* Berry Patisserie — playful pink/plum */
+  /* Berry Patisserie — paper background, playful berry accents */
   .theme-berry {
-    --background: 340 35% 97%;
-    --foreground: 330 35% 15%;
-    --card: 340 30% 94%;
-    --card-foreground: 330 35% 15%;
-    --popover: 340 30% 94%;
-    --popover-foreground: 330 35% 15%;
-    --primary: 330 65% 50%;
-    --primary-foreground: 340 35% 97%;
-    --secondary: 280 30% 50%;
-    --secondary-foreground: 340 35% 97%;
-    --muted: 340 22% 90%;
-    --muted-foreground: 330 14% 45%;
-    --accent: 340 26% 86%;
-    --accent-foreground: 330 35% 15%;
+    --background: 340 18% 96%;
+    --foreground: 330 30% 16%;
+    --card: 340 16% 93%;
+    --card-foreground: 330 30% 16%;
+    --popover: 340 16% 93%;
+    --popover-foreground: 330 30% 16%;
+    --primary: 330 62% 48%;
+    --primary-foreground: 340 18% 97%;
+    --secondary: 280 28% 48%;
+    --secondary-foreground: 340 18% 97%;
+    --muted: 340 12% 89%;
+    --muted-foreground: 330 12% 45%;
+    --accent: 340 14% 87%;
+    --accent-foreground: 330 30% 16%;
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 340 18% 84%;
-    --input: 340 18% 84%;
-    --ring: 330 65% 50%;
-    --sidebar-background: 340 30% 94%;
-    --sidebar-foreground: 330 35% 15%;
-    --sidebar-primary: 330 65% 50%;
-    --sidebar-primary-foreground: 340 35% 97%;
-    --sidebar-accent: 340 22% 90%;
-    --sidebar-accent-foreground: 330 35% 15%;
-    --sidebar-border: 340 18% 84%;
-    --sidebar-ring: 330 65% 50%;
+    --border: 340 10% 84%;
+    --input: 340 10% 84%;
+    --ring: 330 62% 48%;
+    --sidebar-background: 340 16% 93%;
+    --sidebar-foreground: 330 30% 16%;
+    --sidebar-primary: 330 62% 48%;
+    --sidebar-primary-foreground: 340 18% 97%;
+    --sidebar-accent: 340 12% 89%;
+    --sidebar-accent-foreground: 330 30% 16%;
+    --sidebar-border: 340 10% 84%;
+    --sidebar-ring: 330 62% 48%;
   }
 }
 
