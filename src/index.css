@@ -360,6 +360,68 @@
     --sidebar-border: 34 12% 82%;
     --sidebar-ring: 22 100% 58%;
   }
+
+  /* Midnight Kitchen — deep navy with copper accents (dark) */
+  .theme-midnight-kitchen {
+    --background: 220 30% 8%;
+    --foreground: 30 25% 92%;
+    --card: 220 26% 12%;
+    --card-foreground: 30 25% 92%;
+    --popover: 220 26% 12%;
+    --popover-foreground: 30 25% 92%;
+    --primary: 22 80% 58%;
+    --primary-foreground: 220 30% 8%;
+    --secondary: 215 20% 35%;
+    --secondary-foreground: 30 25% 92%;
+    --muted: 220 20% 16%;
+    --muted-foreground: 215 15% 60%;
+    --accent: 220 22% 20%;
+    --accent-foreground: 30 25% 92%;
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 18% 22%;
+    --input: 220 18% 22%;
+    --ring: 22 80% 58%;
+    --sidebar-background: 220 28% 10%;
+    --sidebar-foreground: 30 25% 92%;
+    --sidebar-primary: 22 80% 58%;
+    --sidebar-primary-foreground: 220 30% 8%;
+    --sidebar-accent: 220 20% 16%;
+    --sidebar-accent-foreground: 30 25% 92%;
+    --sidebar-border: 220 18% 22%;
+    --sidebar-ring: 22 80% 58%;
+  }
+
+  /* Matcha Garden — creamy paper with pastel matcha green accents */
+  .theme-matcha {
+    --background: 50 35% 96%;
+    --foreground: 145 30% 16%;
+    --card: 50 30% 93%;
+    --card-foreground: 145 30% 16%;
+    --popover: 50 30% 93%;
+    --popover-foreground: 145 30% 16%;
+    --primary: 130 38% 48%;
+    --primary-foreground: 50 35% 97%;
+    --secondary: 90 22% 50%;
+    --secondary-foreground: 50 35% 97%;
+    --muted: 60 20% 90%;
+    --muted-foreground: 110 12% 42%;
+    --accent: 100 22% 86%;
+    --accent-foreground: 145 30% 16%;
+    --destructive: 8 60% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 80 14% 82%;
+    --input: 80 14% 82%;
+    --ring: 130 38% 48%;
+    --sidebar-background: 50 30% 93%;
+    --sidebar-foreground: 145 30% 16%;
+    --sidebar-primary: 130 38% 48%;
+    --sidebar-primary-foreground: 50 35% 97%;
+    --sidebar-accent: 60 20% 90%;
+    --sidebar-accent-foreground: 145 30% 16%;
+    --sidebar-border: 80 14% 82%;
+    --sidebar-ring: 130 38% 48%;
+  }
 }
 
 @layer base {
@@ -391,7 +453,8 @@
   /* On dark themes, switch blend mode + slightly higher opacity so grain
      reads as soft highlights instead of getting crushed. */
   .dark body::before,
-  .theme-midnight body::before {
+  .theme-midnight body::before,
+  .theme-midnight-kitchen body::before {
     opacity: 0.08;
     mix-blend-mode: screen;
   }

@@ -352,7 +352,7 @@ export default function RecipeDetail() {
           recipe_id: recipe.id,
         }))
       );
-      toast.success('Added to shopping list!');
+      // Toast handled inside the hook (smart pantry-aware messaging)
     } catch {
       toast.error('Failed to add to list');
     }
