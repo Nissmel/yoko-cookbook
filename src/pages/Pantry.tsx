@@ -170,11 +170,36 @@ export default function Pantry() {
         {/* Bulk import */}
         <Card>
           <CardHeader>
-            <CardTitle className="font-display text-lg flex items-center gap-2">
-              <Package className="h-5 w-5" /> Bulk Import
-            </CardTitle>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Package className="h-5 w-5" /> Bulk Import
+              </CardTitle>
+              <Button
+                onClick={handleExportJson}
+                variant="outline"
+                size="sm"
+                disabled={!pantryItems?.length}
+                className="gap-1.5"
+              >
+                <Download className="h-4 w-4" /> Export current
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/30 px-3 py-2.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <Replace className={`h-4 w-4 shrink-0 ${overwriteMode ? 'text-primary' : 'text-muted-foreground'}`} />
+                <div className="min-w-0">
+                  <Label htmlFor="overwrite-mode" className="font-body text-sm cursor-pointer">
+                    Overwrite mode
+                  </Label>
+                  <p className="text-xs text-muted-foreground font-body">
+                    {overwriteMode ? 'Imported JSON will replace your entire pantry' : 'Imported items will be added to existing pantry'}
+                  </p>
+                </div>
+              </div>
+              <Switch id="overwrite-mode" checked={overwriteMode} onCheckedChange={setOverwriteMode} />
+            </div>
             <Tabs defaultValue="paste" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="paste" className="gap-1.5"><ClipboardPaste className="h-4 w-4" /> Paste JSON</TabsTrigger>
@@ -184,7 +209,7 @@ export default function Pantry() {
               <TabsContent value="paste" className="mt-3 space-y-3">
                 <Textarea value={jsonText} onChange={(e) => setJsonText(e.target.value)} placeholder='["Jajka", "Mleko", "Masło"]' rows={4} className="font-mono text-sm" />
                 <Button onClick={handlePasteJson} disabled={!jsonText.trim()} className="w-full gap-1.5">
-                  <ClipboardPaste className="h-4 w-4" /> Import Items
+                  {overwriteMode ? <><Replace className="h-4 w-4" /> Replace Pantry</> : <><ClipboardPaste className="h-4 w-4" /> Import Items</>}
                 </Button>
               </TabsContent>
               <TabsContent value="file" className="mt-3">
