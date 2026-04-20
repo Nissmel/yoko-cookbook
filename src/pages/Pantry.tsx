@@ -450,6 +450,18 @@ export default function Pantry() {
                       </div>
                     )}
                   </div>
+                  <Button
+                    onClick={() => handleSaveAsRecipe(idea, i)}
+                    disabled={savingIdx !== null}
+                    size="sm"
+                    className="w-full gap-1.5 mt-1"
+                  >
+                    {savingIdx === i ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Generuję pełny przepis...</>
+                    ) : (
+                      <><Save className="h-4 w-4" /> Save as recipe</>
+                    )}
+                  </Button>
                 </CardContent>
               </Card>
             ))}
