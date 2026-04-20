@@ -144,9 +144,10 @@ export default function Pantry() {
           </CardHeader>
           <CardContent className="space-y-4">
             <Tabs defaultValue="paste" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="paste" className="gap-1.5"><ClipboardPaste className="h-4 w-4" /> Paste JSON</TabsTrigger>
                 <TabsTrigger value="file" className="gap-1.5"><FileJson className="h-4 w-4" /> Upload File</TabsTrigger>
+                <TabsTrigger value="ai" className="gap-1.5"><Sparkles className="h-4 w-4" /> AI Prompt</TabsTrigger>
               </TabsList>
               <TabsContent value="paste" className="mt-3 space-y-3">
                 <Textarea value={jsonText} onChange={(e) => setJsonText(e.target.value)} placeholder='["Jajka", "Mleko", "Masło"]' rows={4} className="font-mono text-sm" />
@@ -159,6 +160,22 @@ export default function Pantry() {
                   <FileJson className="h-4 w-4" /> Upload JSON
                 </Button>
                 <input ref={fileRef} type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
+              </TabsContent>
+              <TabsContent value="ai" className="mt-3 space-y-3">
+                <p className="text-sm text-muted-foreground font-body">
+                  Skopiuj poniższy prompt i wklej go do dowolnego asystenta AI (ChatGPT, Claude, Gemini). Następnie skopiuj otrzymany JSON i wklej w zakładce "Paste JSON".
+                </p>
+                <Textarea value={AI_PROMPT_TEMPLATE} readOnly rows={10} className="font-mono text-xs bg-muted/40" />
+                <Button
+                  onClick={() => {
+                    navigator.clipboard.writeText(AI_PROMPT_TEMPLATE);
+                    toast.success('Prompt copied to clipboard');
+                  }}
+                  variant="outline"
+                  className="w-full gap-1.5"
+                >
+                  <Copy className="h-4 w-4" /> Copy AI Prompt
+                </Button>
               </TabsContent>
             </Tabs>
           </CardContent>
