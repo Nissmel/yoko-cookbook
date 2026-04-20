@@ -42,6 +42,15 @@ interface RecipeMatch {
   missingIngredients: string[];
 }
 
+interface AIIdea {
+  title: string;
+  description: string;
+  usedIngredients: string[];
+  missingIngredients: string[];
+  timeMinutes: number;
+  difficulty: string;
+}
+
 export default function Pantry() {
   const { data: recipes } = useRecipes();
   const { data: pantryItems, isLoading: pantryLoading } = usePantryItems();
@@ -49,6 +58,8 @@ export default function Pantry() {
   const deletePantryItem = useDeletePantryItem();
   const clearPantry = useClearPantry();
   const [matches, setMatches] = useState<RecipeMatch[]>([]);
+  const [aiIdeas, setAiIdeas] = useState<AIIdea[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
   const [jsonText, setJsonText] = useState('');
   const [newItemName, setNewItemName] = useState('');
   const [overwriteMode, setOverwriteMode] = useState(false);
