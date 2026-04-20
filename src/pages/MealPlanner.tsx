@@ -192,6 +192,8 @@ export default function MealPlanner() {
       setRerollingSlot(null);
     }
   };
+
+  const handleSavePlan = async () => {
     if (!aiPlan || !user) return;
     setSavingPlan(true);
     let added = 0;
