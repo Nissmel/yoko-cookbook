@@ -61,7 +61,36 @@ export default function Pantry() {
       else if (i.name) items.push({ name: i.name, quantity: i.quantity, unit: i.unit });
     }
     if (items.length === 0) { toast.error('No items found'); return; }
-    addPantryItems.mutate(items, { onSuccess: () => toast.success(`Added ${items.length} items`) });
+
+    const doImport = () => {
+      addPantryItems.mutate(items, {
+        onSuccess: () => toast.success(overwriteMode ? `Replaced pantry with ${items.length} items` : `Added ${items.length} items`),
+      });
+    };
+
+    if (overwriteMode && pantryItems && pantryItems.length > 0) {
+      clearPantry.mutate(undefined, { onSuccess: doImport });
+    } else {
+      doImport();
+    }
+  };
+
+  const handleExportJson = async () => {
+    if (!pantryItems?.length) { toast.error('Pantry is empty'); return; }
+    const exportData = pantryItems.map((i) => {
+      const obj: { name: string; quantity?: string; unit?: string } = { name: i.name };
+      if (i.quantity) obj.quantity = i.quantity;
+      if (i.unit) obj.unit = i.unit;
+      return obj;
+    });
+    const json = JSON.stringify(exportData, null, 2);
+    try {
+      await navigator.clipboard.writeText(json);
+      toast.success(`Copied ${exportData.length} items as JSON`);
+    } catch {
+      setJsonText(json);
+      toast.success('JSON loaded into paste field');
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
