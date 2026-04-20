@@ -28,9 +28,9 @@ const mainNav = [
 ];
 
 const secondaryNav = [
+  { to: '/what-can-i-cook', icon: Sparkles, label: 'What Can I Cook?' },
   { to: '/create', icon: PlusCircle, label: 'Create' },
   { to: '/import', icon: Upload, label: 'Import' },
-  
   { to: '/collections', icon: Folder, label: 'Collections' },
   { to: '/sharing', icon: Share2, label: 'Share' },
 ];
