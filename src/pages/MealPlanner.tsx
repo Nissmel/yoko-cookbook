@@ -260,7 +260,7 @@ export default function MealPlanner() {
                   Day {dayPlan.day} — {days[dayPlan.day - 1]?.dayName} {days[dayPlan.day - 1]?.dayNum}
                 </h2>
                 <div className="space-y-4">
-                  {(['breakfast', 'lunch', 'dinner'] as const).map((mealType) => {
+                  {PLAN_MEAL_TYPES.map((mealType) => {
                     const meal = dayPlan.meals[mealType];
                     if (!meal?.options?.length) return null;
                     const key = `${dayPlan.day}-${mealType}`;
