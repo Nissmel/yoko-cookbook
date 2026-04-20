@@ -52,7 +52,7 @@ Zasady:
 - Dla nowych przepisów dołącz: title, krótki description (1 zdanie), category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), prep_time_minutes, cook_time_minutes.
 - Tytuły nowych przepisów muszą być konkretne i apetyczne, PO POLSKU.
 - WSKAZÓWKA dot. prostoty: większość propozycji powinna być codzienna i prosta (20-40 min), ale od czasu do czasu możesz zaproponować coś bardziej dopracowanego — byle nie cały plan był restauracyjny. Unikaj egzotycznych składników i technik typu sous-vide.
-- Inspiracje codzienne: schabowy z ziemniakami, makaron z sosem pomidorowym, jajecznica, naleśniki, kanapki, sałatka jarzynowa, leniwe pierogi, kotlety mielone, ryż z kurczakiem, zupa pomidorowa z makaronem.
+- RÓŻNORODNOŚĆ KUCHNI: użytkownik lubi nowości i dania z różnych kuchni świata (włoska, azjatycka, meksykańska, bliskowschodnia, indyjska, grecka, amerykańska itd.) — nie ograniczaj się do polskich. Mieszaj kuchnie w propozycjach, ale opisy i tytuły zawsze po polsku.
 - Bądź KREATYWNY i RÓŻNY od wykluczonych tytułów, ale trzymaj się prostoty.
 ${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
 - Zwróć WYŁĄCZNIE poprawny JSON, bez markdown.
