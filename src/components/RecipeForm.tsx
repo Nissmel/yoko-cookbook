@@ -7,6 +7,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Plus, Trash2, ImagePlus, X } from 'lucide-react';
 import { Ingredient, CATEGORIES, COMMON_TAGS } from '@/types/recipe';
 import { useCreateRecipe, useUpdateRecipe, uploadRecipeImage, useRecipes } from '@/hooks/useRecipes';
@@ -63,6 +73,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const [fat, setFat] = useState<number | ''>(initialData?.fat_grams ?? '');
   const [fiber, setFiber] = useState<number | ''>(initialData?.fiber_grams ?? '');
   const [newTag, setNewTag] = useState('');
+  const [tagToDelete, setTagToDelete] = useState<string | null>(null);
+  const [deletingTag, setDeletingTag] = useState(false);
 
   // Merge default tags with all unique tags ever used by the user
   const userTags = Array.from(
@@ -83,6 +95,35 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     }
     setTags((prev) => [...prev, trimmed]);
     setNewTag('');
+  };
+
+  // Recipes that currently use the tag the user wants to delete
+  const recipesUsingTag = tagToDelete
+    ? (allRecipes ?? []).filter((r) => (r.tags ?? []).includes(tagToDelete))
+    : [];
+
+  const confirmDeleteTag = async () => {
+    if (!tagToDelete) return;
+    setDeletingTag(true);
+    try {
+      // Strip the tag from every recipe that has it
+      await Promise.all(
+        recipesUsingTag.map((r) =>
+          updateRecipe.mutateAsync({
+            id: r.id,
+            tags: (r.tags ?? []).filter((t) => t !== tagToDelete),
+          })
+        )
+      );
+      // Also remove from current form selection if present
+      setTags((prev) => prev.filter((t) => t !== tagToDelete));
+      toast.success(`Removed "${tagToDelete}" from ${recipesUsingTag.length} recipe(s)`);
+      setTagToDelete(null);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete tag');
+    } finally {
+      setDeletingTag(false);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -224,17 +265,40 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         <div className="space-y-2">
           <Label>Tags</Label>
           <div className="flex flex-wrap gap-2">
-            {allAvailableTags.map((tag) => (
-              <Badge
-                key={tag}
-                variant={tags.includes(tag) ? 'default' : 'outline'}
-                className="cursor-pointer font-body transition-colors"
-                onClick={() => toggleTag(tag)}
-              >
-                {tag}
-              </Badge>
-            ))}
+            {allAvailableTags.map((tag) => {
+              const isCustom = !COMMON_TAGS.includes(tag as any);
+              const isSelected = tags.includes(tag);
+              return (
+                <Badge
+                  key={tag}
+                  variant={isSelected ? 'default' : 'outline'}
+                  className="cursor-pointer font-body transition-colors gap-1 pr-1.5"
+                  onClick={() => toggleTag(tag)}
+                >
+                  {tag}
+                  {isCustom && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTagToDelete(tag);
+                      }}
+                      className="ml-0.5 -mr-0.5 rounded-full p-0.5 hover:bg-destructive/20 hover:text-destructive transition-colors"
+                      aria-label={`Delete tag ${tag}`}
+                      title="Delete this custom tag from all recipes"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </Badge>
+              );
+            })}
           </div>
+          {userTags.length > 0 && (
+            <p className="text-xs text-muted-foreground font-body">
+              Tip: click × on a custom tag to remove it from all your recipes.
+            </p>
+          )}
           <div className="flex gap-2 pt-1">
             <Input
               value={newTag}
@@ -348,6 +412,32 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       <Button type="submit" className="w-full" size="lg" disabled={saving}>
         {saving ? 'Saving...' : initialData?.id ? 'Update Recipe' : 'Save Recipe'}
       </Button>
+
+      <AlertDialog open={!!tagToDelete} onOpenChange={(open) => !open && setTagToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete tag "{tagToDelete}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {recipesUsingTag.length === 0
+                ? 'This tag is not used by any recipe.'
+                : `This will remove the tag from ${recipesUsingTag.length} recipe(s). The recipes themselves will not be deleted.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingTag}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDeleteTag();
+              }}
+              disabled={deletingTag}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingTag ? 'Deleting...' : 'Delete tag'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </form>
   );
 }
