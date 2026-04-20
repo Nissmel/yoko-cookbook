@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2, ImagePlus, X } from 'lucide-react';
 import { Ingredient, CATEGORIES, COMMON_TAGS } from '@/types/recipe';
-import { useCreateRecipe, useUpdateRecipe, uploadRecipeImage } from '@/hooks/useRecipes';
+import { useCreateRecipe, useUpdateRecipe, uploadRecipeImage, useRecipes } from '@/hooks/useRecipes';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
