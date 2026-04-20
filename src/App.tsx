@@ -51,6 +51,7 @@ const App = () => (
             <Route path="/sharing" element={<ProtectedRoute><Sharing /></ProtectedRoute>} />
             <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
             <Route path="/meal-planner" element={<ProtectedRoute><MealPlanner /></ProtectedRoute>} />
+            <Route path="/what-can-i-cook" element={<ProtectedRoute><WhatCanICook /></ProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
