@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen, RefreshCw } from 'lucide-react';
 import { format, startOfWeek, addDays, addWeeks, subWeeks } from 'date-fns';
 import { Link } from 'react-router-dom';
 
