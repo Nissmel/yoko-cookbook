@@ -156,7 +156,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               })}
             </div>
 
-            <button
+            <div className="mt-3 px-4 py-3 rounded-2xl bg-muted/60 flex items-center justify-between">
+              <span className="font-body text-sm text-foreground">Theme</span>
+              <ThemeSwitcher variant="full" className="!text-foreground" />
+            </div>
+
+
               onClick={() => { setMobileMenuOpen(false); signOut(); }}
               className="flex items-center gap-3 w-full mt-3 px-4 py-3.5 rounded-2xl font-body text-destructive bg-destructive/5 text-sm"
             >
