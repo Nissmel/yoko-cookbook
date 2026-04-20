@@ -51,8 +51,8 @@ Zasady:
 - Mieszaj istniejące przepisy z książki kucharskiej (oznacz "source": "existing", dołącz "recipe_id") z NOWYMI pomysłami (oznacz "source": "new").
 - Dla nowych przepisów dołącz: title, krótki description (1 zdanie), category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), prep_time_minutes, cook_time_minutes.
 - Tytuły nowych przepisów muszą być konkretne i apetyczne, PO POLSKU.
-- PROSTOTA: dania mają być zwykłe, codzienne, łatwe do zrobienia w domu. Łączny czas (prep + cook) MAKS 45 minut, najlepiej 20-30 minut. Bez wymyślnych technik, bez egzotycznych składników, bez wieloskładnikowych sosów.
-- Inspiracje: schabowy z ziemniakami, makaron z sosem pomidorowym, jajecznica, naleśniki, kanapki, sałatka jarzynowa, leniwe pierogi, kotlety mielone, ryż z kurczakiem, zupa pomidorowa z makaronem.
+- WSKAZÓWKA dot. prostoty: większość propozycji powinna być codzienna i prosta (20-40 min), ale od czasu do czasu możesz zaproponować coś bardziej dopracowanego — byle nie cały plan był restauracyjny. Unikaj egzotycznych składników i technik typu sous-vide.
+- Inspiracje codzienne: schabowy z ziemniakami, makaron z sosem pomidorowym, jajecznica, naleśniki, kanapki, sałatka jarzynowa, leniwe pierogi, kotlety mielone, ryż z kurczakiem, zupa pomidorowa z makaronem.
 - Bądź KREATYWNY i RÓŻNY od wykluczonych tytułów, ale trzymaj się prostoty.
 ${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
 - Zwróć WYŁĄCZNIE poprawny JSON, bez markdown.
