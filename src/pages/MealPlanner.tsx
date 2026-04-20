@@ -314,7 +314,22 @@ export default function MealPlanner() {
 
                     return (
                       <div key={mealType}>
-                        <p className="text-sm font-body font-semibold text-muted-foreground mb-2">{mealTypeLabels[mealType] || mealType}</p>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-body font-semibold text-muted-foreground">{mealTypeLabels[mealType] || mealType}</p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-primary"
+                            onClick={() => rerollSlot(dayPlan.day, mealType)}
+                            disabled={rerollingSlot === key}
+                          >
+                            {rerollingSlot === key ? (
+                              <><Loader2 className="h-3 w-3 animate-spin" /> Generowanie...</>
+                            ) : (
+                              <><RefreshCw className="h-3 w-3" /> Nowe propozycje</>
+                            )}
+                          </Button>
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {meal.options.map((option, i) => {
                             const isSelected = selected?.title === option.title && selected?.source === option.source;
