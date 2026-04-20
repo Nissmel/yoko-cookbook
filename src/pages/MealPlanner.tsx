@@ -241,7 +241,7 @@ export default function MealPlanner() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-display text-2xl font-bold text-foreground">Choose Your Meals</h1>
-              <p className="text-muted-foreground font-body text-sm mt-1">Pick one option for each meal slot. New recipes will be added to your cookbook.</p>
+              <p className="text-muted-foreground font-body text-sm mt-1">Kliknij propozycję, by ją wybrać. Kliknij ponownie, by odznaczyć. Możesz pominąć dowolny posiłek.</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => { setAiPlan(null); setSelections({}); }}>
