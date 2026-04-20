@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { useRecipes } from '@/hooks/useRecipes';
+import { useRecipes, useCreateRecipe } from '@/hooks/useRecipes';
 import { usePantryItems, useAddPantryItems, useDeletePantryItem, useClearPantry } from '@/hooks/usePantry';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -11,8 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Package, ChefHat, FileJson, ClipboardPaste, Plus, X, Trash2, Copy, Sparkles, Download, Replace, Loader2, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Package, ChefHat, FileJson, ClipboardPaste, Plus, X, Trash2, Copy, Sparkles, Download, Replace, Loader2, Clock, Save } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
