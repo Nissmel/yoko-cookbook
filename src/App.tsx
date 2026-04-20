@@ -16,6 +16,7 @@ import Pantry from "./pages/Pantry";
 import Sharing from "./pages/Sharing";
 import Collections from "./pages/Collections";
 import MealPlanner from "./pages/MealPlanner";
+import InstallPrompt from "./components/InstallPrompt";
 
 import NotFound from "./pages/NotFound";
 
@@ -35,6 +36,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <InstallPrompt />
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
