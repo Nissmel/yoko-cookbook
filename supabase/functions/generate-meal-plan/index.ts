@@ -79,10 +79,10 @@ Zasady:
 - Tytuły konkretne i apetyczne (np. "Kremowa zupa pomidorowa z grzankami", nie samo "Zupa").
 - Dla deseru: ciasta, mus, lody, tarty, deser na łyżeczce, fit desery itp.
 
-PROSTOTA (BARDZO WAŻNE):
-- Zwykłe, codzienne, polskie dania domowe — NIE restauracyjne.
-- Łączny czas (prep + cook) MAKS 45 minut na większość dań, najlepiej 20-30 min. Wyjątek: batch cooking (patrz niżej) może mieć dłuższy czas gotowania.
-- Bez wymyślnych technik (sous-vide, confit, pianki, redukcje), bez trudno dostępnych składników (trufle, foie gras, świeży tuńczyk).
+WSKAZÓWKI dot. prostoty (NIE sztywne reguły):
+- Większość propozycji niech będzie codzienna i prosta — typowe polskie dania domowe, które da się zrobić w 20-40 minut.
+- Możesz CZASEM (1-2 razy w tygodniu) zaproponować coś bardziej dopracowanego lub dłuższego, jeśli pasuje (np. weekend, batch cooking) — ale unikaj sytuacji, gdzie cały tydzień to fancy restauracyjne dania.
+- Unikaj wymyślnych technik (sous-vide, confit, pianki, redukcje) i trudno dostępnych składników (trufle, foie gras).
 - Inspiracje śniadaniowe: jajecznica, owsianka, kanapki, naleśniki, twarożek, omlet, granola, jajka na miękko.
 - Inspiracje obiadowe/kolacyjne: schabowy z ziemniakami, makaron z sosem pomidorowym/bolońskim, kotlety mielone, ryż z kurczakiem i warzywami, leniwe pierogi, gołąbki w pomidorach, ryba pieczona, sałatka z kurczakiem, naleśniki ze szpinakiem, placki ziemniaczane.
 - Inspiracje deserowe: mus czekoladowy, ciasto marchewkowe, sernik na zimno, owoce z bitą śmietaną, brownie, racuchy z jabłkiem, owsiane ciasteczka.
