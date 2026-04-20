@@ -31,6 +31,8 @@ interface MealOption {
   category?: string;
   prep_time_minutes?: number;
   cook_time_minutes?: number;
+  batch_cooking?: boolean;
+  leftover_from_day?: number;
 }
 
 interface DayPlan {
