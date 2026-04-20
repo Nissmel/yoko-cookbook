@@ -9,9 +9,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipes, days, preferences } = await req.json();
-    if (!days) {
-      return new Response(JSON.stringify({ error: 'Days required' }), {
+    const { recipes, days, preferences, singleSlot, exclude } = await req.json();
+    if (!days && !singleSlot) {
+      return new Response(JSON.stringify({ error: 'Days or singleSlot required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -31,7 +31,38 @@ Deno.serve(async (req) => {
       category: r.category,
     }));
 
-    const systemPrompt = `You are a creative meal planning assistant. Generate a meal plan with MULTIPLE OPTIONS per meal slot so the user can choose.
+    const mealLabelMap: Record<string, string> = {
+      breakfast: 'Śniadanie',
+      lunch: 'Obiad',
+      dinner: 'Kolacja',
+      dessert: 'Deser',
+    };
+
+    const systemPrompt = singleSlot
+      ? `You are a creative meal planning assistant. Generate FRESH options for a SINGLE meal slot.
+
+${existingRecipes.length > 0 ? `The user has these recipes in their cookbook:\n${JSON.stringify(existingRecipes, null, 2)}\n` : 'The user has no recipes yet.'}
+
+Slot: ${mealLabelMap[singleSlot.mealType] || singleSlot.mealType} (day ${singleSlot.day})
+${exclude?.length ? `AVOID these titles (already shown, user did not like them):\n${exclude.map((t: string) => `- ${t}`).join('\n')}\n` : ''}
+
+Rules:
+- Provide exactly 4 NEW options for this single meal slot.
+- Mix existing cookbook recipes (mark "source": "existing", include "recipe_id") with NEW recipe ideas (mark "source": "new").
+- For new recipes include: title, short description (1 sentence), category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), prep_time_minutes, cook_time_minutes.
+- New recipe titles must be specific and appetizing in Polish.
+- Be CREATIVE and DIFFERENT from any excluded titles.
+${preferences ? `- User preferences: ${preferences}` : ''}
+- Return ONLY valid JSON, no markdown.
+
+JSON structure:
+{
+  "options": [
+    { "source": "existing", "recipe_id": "uuid", "title": "name" },
+    { "source": "new", "title": "...", "description": "...", "category": "...", "prep_time_minutes": 10, "cook_time_minutes": 15 }
+  ]
+}`
+      : `You are a creative meal planning assistant. Generate a meal plan with MULTIPLE OPTIONS per meal slot so the user can choose.
 
 ${existingRecipes.length > 0 ? `The user has these recipes in their cookbook:\n${JSON.stringify(existingRecipes, null, 2)}\n` : 'The user has no recipes yet.'}
 
@@ -78,7 +109,7 @@ JSON structure:
         model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: 'Generate the meal plan now with multiple options per meal.' },
+          { role: 'user', content: singleSlot ? 'Generate 4 fresh options for this single meal slot now.' : 'Generate the meal plan now with multiple options per meal.' },
         ],
         response_format: { type: 'json_object' },
       }),

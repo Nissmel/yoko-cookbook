@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen, RefreshCw } from 'lucide-react';
 import { format, startOfWeek, addDays, addWeeks, subWeeks } from 'date-fns';
 import { Link } from 'react-router-dom';
 
@@ -64,6 +64,7 @@ export default function MealPlanner() {
   const [aiPlan, setAiPlan] = useState<DayPlan[] | null>(null);
   const [selections, setSelections] = useState<Record<string, MealOption>>({});
   const [savingPlan, setSavingPlan] = useState(false);
+  const [rerollingSlot, setRerollingSlot] = useState<string | null>(null);
 
   const days = useMemo(() =>
     Array.from({ length: 7 }, (_, i) => {
@@ -145,6 +146,51 @@ export default function MealPlanner() {
       }
       return { ...prev, [key]: option };
     });
+  };
+
+  const rerollSlot = async (dayNum: number, mealType: string) => {
+    if (!aiPlan) return;
+    const slotKey = `${dayNum}-${mealType}`;
+    setRerollingSlot(slotKey);
+    try {
+      const currentOptions = aiPlan.find((d) => d.day === dayNum)?.meals[mealType]?.options || [];
+      const exclude = currentOptions.map((o) => o.title);
+
+      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+        body: {
+          recipes: recipes || [],
+          singleSlot: { day: dayNum, mealType },
+          exclude,
+          preferences: aiPreferences || undefined,
+        },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      const newOptions = data.options as MealOption[];
+      if (!newOptions?.length) throw new Error('No options returned');
+
+      setAiPlan((prev) => {
+        if (!prev) return prev;
+        return prev.map((d) => {
+          if (d.day !== dayNum) return d;
+          return {
+            ...d,
+            meals: { ...d.meals, [mealType]: { options: newOptions } },
+          };
+        });
+      });
+      // Clear any selection for this slot since options changed
+      setSelections((prev) => {
+        const next = { ...prev };
+        delete next[slotKey];
+        return next;
+      });
+      toast.success('Nowe propozycje wygenerowane!');
+    } catch (e: any) {
+      toast.error(e.message || 'Nie udało się odświeżyć slotu');
+    } finally {
+      setRerollingSlot(null);
+    }
   };
 
   const handleSavePlan = async () => {
@@ -268,7 +314,22 @@ export default function MealPlanner() {
 
                     return (
                       <div key={mealType}>
-                        <p className="text-sm font-body font-semibold text-muted-foreground mb-2">{mealTypeLabels[mealType] || mealType}</p>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-body font-semibold text-muted-foreground">{mealTypeLabels[mealType] || mealType}</p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-primary"
+                            onClick={() => rerollSlot(dayPlan.day, mealType)}
+                            disabled={rerollingSlot === key}
+                          >
+                            {rerollingSlot === key ? (
+                              <><Loader2 className="h-3 w-3 animate-spin" /> Generowanie...</>
+                            ) : (
+                              <><RefreshCw className="h-3 w-3" /> Nowe propozycje</>
+                            )}
+                          </Button>
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {meal.options.map((option, i) => {
                             const isSelected = selected?.title === option.title && selected?.source === option.source;
