@@ -233,7 +233,8 @@ export default function MealPlanner() {
 
   // AI Plan Selection view
   if (aiPlan) {
-    const mealTypeLabels: Record<string, string> = { breakfast: '🌅 Breakfast', lunch: '☀️ Lunch', dinner: '🌙 Dinner' };
+    const mealTypeLabels: Record<string, string> = { breakfast: '🌅 Śniadanie', lunch: '☀️ Obiad', dinner: '🌙 Kolacja', dessert: '🍰 Deser' };
+    const selectedCount = Object.keys(selections).length;
     return (
       <AppLayout>
         <div className="max-w-4xl mx-auto px-4 py-6 md:py-10 space-y-6 animate-fade-in">
