@@ -134,7 +134,17 @@ export default function MealPlanner() {
   };
 
   const selectOption = (dayNum: number, mealType: string, option: MealOption) => {
-    setSelections((prev) => ({ ...prev, [`${dayNum}-${mealType}`]: option }));
+    const key = `${dayNum}-${mealType}`;
+    setSelections((prev) => {
+      const current = prev[key];
+      // Toggle off if clicking the same option
+      if (current && current.title === option.title && current.source === option.source) {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      }
+      return { ...prev, [key]: option };
+    });
   };
 
   const handleSavePlan = async () => {
