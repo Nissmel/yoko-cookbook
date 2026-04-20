@@ -10,8 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Package, ChefHat, FileJson, ClipboardPaste, Plus, X, Trash2, Copy, Sparkles } from 'lucide-react';
+import { Package, ChefHat, FileJson, ClipboardPaste, Plus, X, Trash2, Copy, Sparkles, Download, Replace } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const AI_PROMPT_TEMPLATE = `Wygeneruj listę produktów spiżarni w formacie JSON. Użyj poniższego schematu i języka polskiego. Zwróć WYŁĄCZNIE poprawny JSON, bez markdownu i bez komentarzy.
 
