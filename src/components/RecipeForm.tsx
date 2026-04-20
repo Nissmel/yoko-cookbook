@@ -264,8 +264,10 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         </div>
         <div className="space-y-2">
           <Label>Tags</Label>
+
+          {/* Common tag chips + custom tags currently selected on this recipe */}
           <div className="flex flex-wrap gap-2">
-            {allAvailableTags.map((tag) => {
+            {[...COMMON_TAGS, ...tags.filter((t) => !COMMON_TAGS.includes(t as any))].map((tag) => {
               const isCustom = !COMMON_TAGS.includes(tag as any);
               const isSelected = tags.includes(tag);
               return (
@@ -294,39 +296,57 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               );
             })}
           </div>
+
+          {/* Custom tag input with autocomplete from previously-used tags */}
+          <div className="relative pt-1">
+            <div className="flex gap-2">
+              <Input
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onFocus={() => setTagInputFocused(true)}
+                onBlur={() => setTimeout(() => setTagInputFocused(false), 150)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomTag();
+                  } else if (e.key === 'Escape') {
+                    setTagInputFocused(false);
+                  }
+                }}
+                placeholder="Add custom tag (e.g. Italian, Spicy)"
+                className="flex-1"
+              />
+              <Button type="button" variant="outline" onClick={addCustomTag} disabled={!newTag.trim()} className="gap-1.5 shrink-0">
+                <Plus className="h-4 w-4" /> Add Tag
+              </Button>
+            </div>
+
+            {tagInputFocused && newTag.trim().length > 0 && tagSuggestions.length > 0 && (
+              <div className="absolute z-20 left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-56 overflow-y-auto">
+                {tagSuggestions.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      if (!tags.includes(tag)) setTags((prev) => [...prev, tag]);
+                      setNewTag('');
+                      setTagInputFocused(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm font-body hover:bg-accent flex items-center justify-between gap-2"
+                  >
+                    <span className="truncate">{tag}</span>
+                    <span className="text-xs text-muted-foreground shrink-0">used before</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {userTags.length > 0 && (
             <p className="text-xs text-muted-foreground font-body">
-              Tip: click × on a custom tag to remove it from all your recipes.
+              Start typing to see your previously-used tags. Click × on a custom chip to remove it from all recipes.
             </p>
-          )}
-          <div className="flex gap-2 pt-1">
-            <Input
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  addCustomTag();
-                }
-              }}
-              placeholder="Add custom tag (e.g. Italian, Spicy)"
-              className="flex-1"
-            />
-            <Button type="button" variant="outline" onClick={addCustomTag} disabled={!newTag.trim()} className="gap-1.5 shrink-0">
-              <Plus className="h-4 w-4" /> Add Tag
-            </Button>
-          </div>
-          {tags.filter((t) => !allAvailableTags.includes(t as any)).length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {tags
-                .filter((t) => !allAvailableTags.includes(t as any))
-                .map((tag) => (
-                  <Badge key={tag} variant="default" className="cursor-pointer font-body gap-1.5" onClick={() => toggleTag(tag)}>
-                    {tag}
-                    <X className="h-3 w-3" />
-                  </Badge>
-                ))}
-            </div>
           )}
         </div>
       </div>
