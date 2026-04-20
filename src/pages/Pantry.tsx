@@ -191,10 +191,12 @@ export default function Pantry() {
                 <Replace className={`h-4 w-4 shrink-0 ${overwriteMode ? 'text-primary' : 'text-muted-foreground'}`} />
                 <div className="min-w-0">
                   <Label htmlFor="overwrite-mode" className="font-body text-sm cursor-pointer">
-                    Overwrite mode
+                    {overwriteMode ? 'Overwrite mode: ON' : 'Overwrite mode: OFF'}
                   </Label>
                   <p className="text-xs text-muted-foreground font-body">
-                    {overwriteMode ? 'Imported JSON will replace your entire pantry' : 'Imported items will be added to existing pantry'}
+                    {overwriteMode
+                      ? 'Next import will DELETE current pantry and replace it with JSON contents'
+                      : 'Next import will ADD items on top of your current pantry'}
                   </p>
                 </div>
               </div>
