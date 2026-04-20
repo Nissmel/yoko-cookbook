@@ -76,6 +76,14 @@ Rules:
 - New recipe titles should be specific and appetizing (e.g. "Kremowa zupa z pieczonych pomidorów" not just "Soup").
 - For dessert slot, suggest things like ciasta, mus, lody, tarty, deser na łyżeczce, fit desery itp.
 - Keep names in Polish.
+
+BATCH COOKING / LEFTOVERS (IMPORTANT):
+- For lunch (Obiad) and dinner (Kolacja) slots, INCLUDE 1-2 "batch cooking" suggestions across the week — bigger dishes that naturally yield 2 servings worth and taste great reheated the next day.
+- Good batch examples: gulasz, bigos, lasagne, zapiekanki, zupy (pomidorowa, gulaszowa, rosół), pieczeń, curry, chili con carne, risotto na większą porcję, leczo, makarony zapiekane.
+- When you propose such a dish on day N, ALSO include the SAME option in day N+1 in the same meal slot (lunch or dinner) — but mark it with "leftover_from_day": N and prefix the title with "♻️ " and add a short note in description like "Z wczorajszego obiadu — odgrzej i podawaj.".
+- The leftover option can be "source": "new" with the same title (without ♻️) referenced via "leftover_title", OR "source": "existing" with the same recipe_id. Either way set "leftover_from_day".
+- Don't overdo it: at most 2 leftover pairs per week. Other 2-3 options in the slot should still be fresh ideas so user can choose.
+- Never put leftovers in breakfast or dessert.
 ${preferences ? `- User preferences: ${preferences}` : ''}
 - Return ONLY valid JSON, no markdown.
 
@@ -91,9 +99,19 @@ JSON structure:
             { "source": "new", "title": "New Recipe Name", "description": "Short desc", "category": "Śniadanie", "prep_time_minutes": 10, "cook_time_minutes": 15 }
           ]
         },
-        "lunch": { "options": [...] },
+        "lunch": { "options": [
+          { "source": "new", "title": "Gulasz wołowy z papryką", "description": "Duża porcja na 2 dni", "category": "Obiad", "prep_time_minutes": 20, "cook_time_minutes": 90, "batch_cooking": true }
+        ] },
         "dinner": { "options": [...] },
         "dessert": { "options": [...] }
+      }
+    },
+    {
+      "day": 2,
+      "meals": {
+        "lunch": { "options": [
+          { "source": "new", "title": "♻️ Gulasz wołowy z papryką", "description": "Z wczorajszego obiadu — odgrzej i podawaj.", "category": "Obiad", "leftover_from_day": 1 }
+        ] }
       }
     }
   ]
