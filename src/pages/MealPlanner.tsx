@@ -88,10 +88,12 @@ export default function MealPlanner() {
 
   // AI plan selection state
   const [aiPlan, setAiPlan] = useState<DayPlan[] | null>(null);
+  const [singleDayDate, setSingleDayDate] = useState<string | null>(null); // when set, aiPlan is for ONE specific date
   const [selections, setSelections] = useState<Record<string, MealOption>>({});
   const [savingPlan, setSavingPlan] = useState(false);
   const [rerollingSlot, setRerollingSlot] = useState<string | null>(null);
   const [rerollingDay, setRerollingDay] = useState<number | null>(null);
+  const [generatingDayDate, setGeneratingDayDate] = useState<string | null>(null);
 
   const days = useMemo(() =>
     Array.from({ length: 7 }, (_, i) => {
