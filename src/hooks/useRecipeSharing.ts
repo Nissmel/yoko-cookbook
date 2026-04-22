@@ -27,6 +27,54 @@ export function useMyShares() {
   });
 }
 
+// Shares where the CURRENT user is the recipient (i.e. people who shared with me).
+// Joins to profiles to surface the owner's display_name + email for the UI.
+export interface ReceivedShare {
+  id: string;
+  recipe_owner_id: string;
+  owner_email: string | null;
+  owner_display_name: string | null;
+}
+
+export function useSharedWithMe() {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['recipe-shares-received', user?.id],
+    queryFn: async () => {
+      const { data: sharesData, error } = await supabase
+        .from('recipe_shares')
+        .select('id, recipe_owner_id')
+        .eq('shared_with_user_id', user!.id);
+      if (error) throw error;
+
+      const shares = sharesData ?? [];
+      if (shares.length === 0) return [] as ReceivedShare[];
+
+      const ownerIds = Array.from(new Set(shares.map((s) => s.recipe_owner_id)));
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, email, display_name')
+        .in('user_id', ownerIds);
+
+      const profileMap = new Map(
+        (profiles ?? []).map((p) => [p.user_id, p]),
+      );
+
+      return shares.map((s) => {
+        const p = profileMap.get(s.recipe_owner_id);
+        return {
+          id: s.id,
+          recipe_owner_id: s.recipe_owner_id,
+          owner_email: p?.email ?? null,
+          owner_display_name: p?.display_name ?? null,
+        } as ReceivedShare;
+      });
+    },
+    enabled: !!user,
+  });
+}
+
 export function useShareRecipes() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
