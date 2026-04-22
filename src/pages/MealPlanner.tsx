@@ -530,13 +530,15 @@ export default function MealPlanner() {
   if (aiPlan) {
     const mealTypeLabels: Record<string, string> = { breakfast: '🌅 Śniadanie', lunch: '☀️ Obiad', dinner: '🌙 Kolacja', dessert: '🍰 Deser' };
     const selectedCount = Object.keys(selections).length;
+    const activeSelected = activeSelectionKey ? selections[activeSelectionKey] : null;
     return (
       <AppLayout>
+        <DndContext sensors={sensors} onDragStart={onSelectionDragStart} onDragEnd={onSelectionDragEnd} onDragCancel={() => setActiveSelectionKey(null)}>
         <div className="max-w-4xl mx-auto px-4 py-6 md:py-10 space-y-6 animate-fade-in">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-display text-2xl font-bold text-foreground">Choose Your Meals</h1>
-              <p className="text-muted-foreground font-body text-sm mt-1">Kliknij propozycję, by ją wybrać. Kliknij ponownie, by odznaczyć. Możesz pominąć dowolny posiłek.</p>
+              <p className="text-muted-foreground font-body text-sm mt-1">Kliknij propozycję, by ją wybrać. Przeciągnij wybrany posiłek na inny slot, by go przenieść.</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => { setAiPlan(null); setSingleDayDate(null); setSelections({}); }}>
@@ -579,9 +581,25 @@ export default function MealPlanner() {
                     const selected = selections[key];
 
                     return (
-                      <div key={mealType}>
+                      <Droppable
+                        key={mealType}
+                        id={`selslot:${key}`}
+                        className="rounded-lg border-2 border-transparent transition-colors p-1 -m-1"
+                        activeClassName="!border-primary !bg-primary/5"
+                      >
                         <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm font-body font-semibold text-muted-foreground">{mealTypeLabels[mealType] || mealType}</p>
+                          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                            <p className="text-sm font-body font-semibold text-muted-foreground">{mealTypeLabels[mealType] || mealType}</p>
+                            {selected && (
+                              <Draggable
+                                id={`sel:${key}`}
+                                className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium border border-primary/30 max-w-[180px]"
+                              >
+                                <GripVertical className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{selected.title}</span>
+                              </Draggable>
+                            )}
+                          </div>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -642,7 +660,7 @@ export default function MealPlanner() {
                             );
                           })}
                         </div>
-                      </div>
+                      </Droppable>
                     );
                   })}
                 </div>
