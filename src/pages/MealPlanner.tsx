@@ -443,15 +443,15 @@ export default function MealPlanner() {
                                 }`}
                               >
                                 <div className="flex items-start justify-between gap-2">
-                                  <div className="min-w-0">
-                                    <p className={`text-sm font-semibold truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                                  <div className="min-w-0 flex-1">
+                                    <p className={`text-sm font-semibold break-words ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                                       {option.title}
                                     </p>
                                     {option.description && (
-                                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{option.description}</p>
+                                      <p className="text-xs text-muted-foreground mt-0.5 break-words">{option.description}</p>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-1 shrink-0">
+                                  <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end max-w-[40%]">
                                     {option.leftover_from_day && (
                                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium" title={`Z dnia ${option.leftover_from_day}`}>
                                         ♻️ Wczorajsze
