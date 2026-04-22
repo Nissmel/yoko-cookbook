@@ -94,17 +94,25 @@ export default function MealPlanner() {
     }
   };
 
-  // Drag & drop state for moving planned meals between slots
-  const [draggedMealId, setDraggedMealId] = useState<string | null>(null);
-  const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
+  // Drag & drop (planned meals): use @dnd-kit so it works on mobile/touch
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
+  const [activeMealId, setActiveMealId] = useState<string | null>(null);
 
-  const handleDragStart = (mealId: string) => setDraggedMealId(mealId);
-  const handleDragEnd = () => { setDraggedMealId(null); setDragOverSlot(null); };
-  const handleDropOnSlot = async (planDate: string, mealType: string) => {
-    const id = draggedMealId;
-    setDraggedMealId(null);
-    setDragOverSlot(null);
-    if (!id) return;
+  const onPlannedDragStart = (e: DragStartEvent) => {
+    const id = String(e.active.id);
+    if (id.startsWith('planned:')) setActiveMealId(id.slice('planned:'.length));
+  };
+  const onPlannedDragEnd = async (e: DragEndEvent) => {
+    const activeId = String(e.active.id);
+    setActiveMealId(null);
+    if (!activeId.startsWith('planned:')) return;
+    const id = activeId.slice('planned:'.length);
+    const overId = e.over?.id ? String(e.over.id) : '';
+    if (!overId.startsWith('slot:')) return;
+    const [, planDate, mealType] = overId.split(':');
     const meal = mealPlans?.find((m) => m.id === id);
     if (!meal) return;
     if (meal.plan_date === planDate && meal.meal_type === mealType) return;
@@ -115,6 +123,33 @@ export default function MealPlanner() {
       if (err?.message?.includes('duplicate')) toast.error('Ten przepis już jest w tym slocie');
       else toast.error('Nie udało się przenieść');
     }
+  };
+
+  // Drag & drop (AI selection view): move/swap selected options between slots
+  const [activeSelectionKey, setActiveSelectionKey] = useState<string | null>(null);
+  const onSelectionDragStart = (e: DragStartEvent) => {
+    const id = String(e.active.id);
+    if (id.startsWith('sel:')) setActiveSelectionKey(id.slice('sel:'.length));
+  };
+  const onSelectionDragEnd = (e: DragEndEvent) => {
+    const activeId = String(e.active.id);
+    setActiveSelectionKey(null);
+    if (!activeId.startsWith('sel:')) return;
+    const fromKey = activeId.slice('sel:'.length);
+    const overId = e.over?.id ? String(e.over.id) : '';
+    if (!overId.startsWith('selslot:')) return;
+    const toKey = overId.slice('selslot:'.length);
+    if (fromKey === toKey) return;
+    setSelections((prev) => {
+      const moved = prev[fromKey];
+      if (!moved) return prev;
+      const next = { ...prev };
+      const target = next[toKey];
+      delete next[fromKey];
+      next[toKey] = moved;
+      if (target) next[fromKey] = target; // swap
+      return next;
+    });
   };
 
   const [dialogOpen, setDialogOpen] = useState(false);
