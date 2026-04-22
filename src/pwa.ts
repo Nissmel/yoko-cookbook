@@ -38,12 +38,35 @@ export async function setupPWA() {
   }
 
   try {
-    const { registerSW } = await import("virtual:pwa-register");
-    registerSW({
+    const [{ registerSW }, { toast }] = await Promise.all([
+      import("virtual:pwa-register"),
+      import("sonner"),
+    ]);
+
+    const updateSW = registerSW({
       immediate: true,
-      onRegisteredSW(swUrl) {
+      onRegisteredSW(swUrl, registration) {
         // eslint-disable-next-line no-console
         console.log("[PWA] Service worker registered:", swUrl);
+        // Poll for updates every 60s so long-running tabs notice new builds.
+        if (registration) {
+          setInterval(() => {
+            registration.update().catch(() => {});
+          }, 60 * 1000);
+        }
+      },
+      onNeedRefresh() {
+        // New SW waiting. With skipWaiting + clientsClaim it takes over
+        // automatically, but we still nudge the user to reload so React state
+        // matches the new bundle.
+        toast("Dostępna nowa wersja", {
+          description: "Odśwież, aby zobaczyć najnowsze zmiany.",
+          duration: Infinity,
+          action: {
+            label: "Odśwież",
+            onClick: () => updateSW(true),
+          },
+        });
       },
       onOfflineReady() {
         // eslint-disable-next-line no-console
