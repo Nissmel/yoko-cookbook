@@ -53,6 +53,29 @@ interface DayPlan {
   meals: Record<string, { options: MealOption[] }>;
 }
 
+function Draggable({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={`${className ?? ''} ${isDragging ? 'opacity-40' : ''} touch-none cursor-grab active:cursor-grabbing`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Droppable({ id, children, className, activeClassName }: { id: string; children: React.ReactNode; className?: string; activeClassName?: string }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <div ref={setNodeRef} className={`${className ?? ''} ${isOver ? activeClassName ?? '' : ''}`}>
+      {children}
+    </div>
+  );
+}
+
 export default function MealPlanner() {
   const { user } = useAuth();
   // Plan window starts tomorrow — picking meals for past days makes no sense.
