@@ -67,6 +67,7 @@ export default function MealPlanner() {
   const [selections, setSelections] = useState<Record<string, MealOption>>({});
   const [savingPlan, setSavingPlan] = useState(false);
   const [rerollingSlot, setRerollingSlot] = useState<string | null>(null);
+  const [rerollingDay, setRerollingDay] = useState<number | null>(null);
 
   const days = useMemo(() =>
     Array.from({ length: 7 }, (_, i) => {
@@ -195,6 +196,50 @@ export default function MealPlanner() {
     }
   };
 
+  const rerollDay = async (dayNum: number) => {
+    if (!aiPlan) return;
+    setRerollingDay(dayNum);
+    try {
+      const dayPlan = aiPlan.find((d) => d.day === dayNum);
+      const excludeByMeal: Record<string, string[]> = {};
+      if (dayPlan) {
+        for (const mt of PLAN_MEAL_TYPES) {
+          const titles = (dayPlan.meals[mt]?.options || []).map((o) => o.title);
+          if (titles.length) excludeByMeal[mt] = titles;
+        }
+      }
+
+      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+        body: {
+          recipes: recipes || [],
+          singleDay: { day: dayNum },
+          excludeByMeal,
+          preferences: aiPreferences || undefined,
+        },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      const newMeals = data.meals as Record<string, { options: MealOption[] }>;
+      if (!newMeals) throw new Error('No meals returned');
+
+      setAiPlan((prev) => {
+        if (!prev) return prev;
+        return prev.map((d) => (d.day === dayNum ? { ...d, meals: newMeals } : d));
+      });
+      // Clear all selections for this day
+      setSelections((prev) => {
+        const next = { ...prev };
+        for (const mt of PLAN_MEAL_TYPES) delete next[`${dayNum}-${mt}`];
+        return next;
+      });
+      toast.success(`Dzień ${dayNum} — nowe propozycje wygenerowane!`);
+    } catch (e: any) {
+      toast.error(e.message || 'Nie udało się odświeżyć dnia');
+    } finally {
+      setRerollingDay(null);
+    }
+  };
+
   const handleSavePlan = async () => {
     if (!aiPlan || !user) return;
     setSavingPlan(true);
@@ -317,9 +362,24 @@ export default function MealPlanner() {
           {aiPlan.map((dayPlan) => (
             <Card key={dayPlan.day}>
               <CardContent className="p-4">
-                <h2 className="font-display font-semibold text-lg mb-3">
-                  Day {dayPlan.day} — {days[dayPlan.day - 1]?.dayName} {days[dayPlan.day - 1]?.dayNum}
-                </h2>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-display font-semibold text-lg">
+                    Day {dayPlan.day} — {days[dayPlan.day - 1]?.dayName} {days[dayPlan.day - 1]?.dayNum}
+                  </h2>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1.5 text-xs"
+                    onClick={() => rerollDay(dayPlan.day)}
+                    disabled={rerollingDay === dayPlan.day}
+                  >
+                    {rerollingDay === dayPlan.day ? (
+                      <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Generowanie dnia...</>
+                    ) : (
+                      <><RefreshCw className="h-3.5 w-3.5" /> Reroll dnia</>
+                    )}
+                  </Button>
+                </div>
                 <div className="space-y-4">
                   {PLAN_MEAL_TYPES.map((mealType) => {
                     const meal = dayPlan.meals[mealType];

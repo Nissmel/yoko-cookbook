@@ -9,9 +9,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipes, days, preferences, singleSlot, exclude } = await req.json();
-    if (!days && !singleSlot) {
-      return new Response(JSON.stringify({ error: 'Days or singleSlot required' }), {
+    const { recipes, days, preferences, singleSlot, singleDay, exclude, excludeByMeal } = await req.json();
+    if (!days && !singleSlot && !singleDay) {
+      return new Response(JSON.stringify({ error: 'Days, singleSlot or singleDay required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -38,7 +38,35 @@ Deno.serve(async (req) => {
       dessert: 'Deser',
     };
 
-    const systemPrompt = singleSlot
+    const systemPrompt = singleDay
+      ? `Jesteś kreatywnym asystentem planowania posiłków. Wygeneruj ŚWIEŻE propozycje dla CAŁEGO JEDNEGO DNIA (4 sloty: śniadanie, obiad, kolacja, deser).
+
+${existingRecipes.length > 0 ? `Użytkownik ma w swojej książce kucharskiej te przepisy:\n${JSON.stringify(existingRecipes, null, 2)}\n` : 'Użytkownik nie ma jeszcze żadnych przepisów.'}
+
+Dzień: ${singleDay.day}
+${excludeByMeal ? `UNIKAJ tych tytułów dla danych slotów (już pokazane, użytkownikowi się nie spodobały):\n${Object.entries(excludeByMeal).map(([m, titles]: any) => `${mealLabelMap[m] || m}: ${(titles as string[]).join(', ')}`).join('\n')}\n` : ''}
+
+Zasady:
+- Podaj dokładnie 4 NOWE propozycje dla KAŻDEGO z 4 slotów: breakfast, lunch, dinner, dessert.
+- Mieszaj istniejące przepisy z książki kucharskiej (oznacz "source": "existing", dołącz "recipe_id") z NOWYMI pomysłami (oznacz "source": "new").
+- Dla nowych przepisów dołącz: title, krótki description (1 zdanie), category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), prep_time_minutes, cook_time_minutes.
+- Tytuły konkretne i apetyczne, PO POLSKU.
+- WSKAZÓWKA dot. prostoty: większość propozycji codzienna i prosta (20-40 min); od czasu do czasu coś bardziej dopracowanego — bez restauracyjnej fancy. Unikaj sous-vide, trufli itp.
+- RÓŻNORODNOŚĆ KUCHNI: aktywnie mieszaj kuchnie świata (włoska, azjatycka, meksykańska, bliskowschodnia, indyjska, grecka, amerykańska, francuska, polska itd.). Tytuły zawsze po polsku.
+- Bądź KREATYWNY i RÓŻNY od wykluczonych tytułów.
+${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
+- Zwróć WYŁĄCZNIE poprawny JSON, bez markdown.
+
+Struktura JSON:
+{
+  "meals": {
+    "breakfast": { "options": [ { "source": "existing", "recipe_id": "uuid", "title": "..." }, { "source": "new", "title": "...", "description": "...", "category": "...", "prep_time_minutes": 5, "cook_time_minutes": 5 } ] },
+    "lunch": { "options": [...] },
+    "dinner": { "options": [...] },
+    "dessert": { "options": [...] }
+  }
+}`
+      : singleSlot
       ? `Jesteś kreatywnym asystentem planowania posiłków. Wygeneruj ŚWIEŻE propozycje dla JEDNEGO slotu posiłkowego.
 
 ${existingRecipes.length > 0 ? `Użytkownik ma w swojej książce kucharskiej te przepisy:\n${JSON.stringify(existingRecipes, null, 2)}\n` : 'Użytkownik nie ma jeszcze żadnych przepisów.'}
@@ -140,7 +168,11 @@ Struktura JSON:
         model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: singleSlot ? 'Wygeneruj teraz 4 świeże, proste propozycje na ten slot.' : 'Wygeneruj teraz plan posiłków z wieloma prostymi opcjami na każdy posiłek.' },
+          { role: 'user', content: singleDay
+            ? `Wygeneruj teraz 4 świeże propozycje dla każdego z 4 slotów na dzień ${singleDay.day}.`
+            : singleSlot
+            ? 'Wygeneruj teraz 4 świeże, proste propozycje na ten slot.'
+            : 'Wygeneruj teraz plan posiłków z wieloma prostymi opcjami na każdy posiłek.' },
         ],
         response_format: { type: 'json_object' },
       }),
