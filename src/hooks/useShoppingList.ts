@@ -133,10 +133,40 @@ export interface NewShoppingItem {
 
 // ---- Queries ----------------------------------------------------------------
 
+function useShoppingListRealtime(targetId?: string) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!targetId) return;
+
+    const channel = supabase
+      .channel(`shopping-list:${targetId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'shopping_list_items',
+          filter: `user_id=eq.${targetId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['shopping-list', targetId] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient, targetId]);
+}
+
 export function useShoppingList(ownerId?: string) {
   const { user } = useAuth();
   // When ownerId is provided we're viewing someone else's (shared) list.
   const targetId = ownerId ?? user?.id;
+
+  useShoppingListRealtime(targetId);
 
   return useQuery({
     queryKey: ['shopping-list', targetId],
@@ -150,6 +180,11 @@ export function useShoppingList(ownerId?: string) {
       return data as ShoppingListItem[];
     },
     enabled: !!targetId,
+    staleTime: 0,
+    gcTime: 1000 * 60 * 5,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
