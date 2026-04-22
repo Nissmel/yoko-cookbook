@@ -154,22 +154,25 @@ export function useShoppingList(ownerId?: string) {
 
 // ---- Smart add: merge duplicates + pantry-aware subtraction ----------------
 
-export function useAddToShoppingList() {
+// Optional `ownerId` — when provided, items are added to that owner's list/pantry
+// (used when a shared user adds ingredients from a recipe owned by someone else).
+export function useAddToShoppingList(ownerId?: string) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (items: NewShoppingItem[]) => {
       if (!user || items.length === 0) return { inserted: 0, merged: 0, skipped: 0 };
+      const targetUserId = ownerId ?? user.id;
 
-      // Fetch current pantry & current shopping list (unchecked only — checked
+      // Fetch target owner's pantry & current shopping list (unchecked only — checked
       // items are "history" and shouldn't be merged into).
       const [{ data: pantry }, { data: existingList }] = await Promise.all([
-        supabase.from('pantry_items').select('name, quantity, unit'),
+        supabase.from('pantry_items').select('name, quantity, unit').eq('user_id', targetUserId),
         supabase
           .from('shopping_list_items')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', targetUserId)
           .eq('checked', false),
       ]);
 
@@ -275,7 +278,7 @@ export function useAddToShoppingList() {
           merged++;
         } else {
           toInsert.push({
-            user_id: user.id,
+            user_id: targetUserId,
             ingredient_name: b.name,
             quantity: qtyStr,
             unit: b.rawUnit,
