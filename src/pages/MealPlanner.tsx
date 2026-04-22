@@ -678,6 +678,15 @@ export default function MealPlanner() {
             </Button>
           </div>
         </div>
+        <DragOverlay>
+          {activeSelected ? (
+            <div className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-medium shadow-lg">
+              <GripVertical className="h-3 w-3" />
+              <span className="truncate max-w-[160px]">{activeSelected.title}</span>
+            </div>
+          ) : null}
+        </DragOverlay>
+        </DndContext>
       </AppLayout>
     );
   }
