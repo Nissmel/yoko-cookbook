@@ -686,14 +686,32 @@ export default function MealPlanner() {
               </p>
               <div>
                 <label className="text-sm font-body text-muted-foreground mb-1.5 block">Days to plan</label>
-                <Input
-                  type="number"
-                  min={1}
-                  max={7}
-                  value={aiDays}
-                  onChange={(e) => setAiDays(Math.min(7, Math.max(1, Number(e.target.value))))}
-                  className="rounded-xl"
-                />
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 rounded-xl shrink-0"
+                    onClick={() => setAiDays((d) => Math.max(1, d - 1))}
+                    disabled={aiDays <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <div className="flex-1 text-center">
+                    <span className="font-display text-2xl font-bold">{aiDays}</span>
+                    <span className="text-sm text-muted-foreground font-body ml-1">{aiDays === 1 ? 'dzień' : aiDays < 5 ? 'dni' : 'dni'}</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 rounded-xl shrink-0"
+                    onClick={() => setAiDays((d) => Math.min(7, d + 1))}
+                    disabled={aiDays >= 7}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div>
                 <label className="text-sm font-body text-muted-foreground mb-1.5 block">Preferences (optional)</label>
