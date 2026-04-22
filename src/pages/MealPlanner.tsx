@@ -87,7 +87,7 @@ export default function MealPlanner() {
   const [weekStart, setWeekStart] = useState<Date>(tomorrow);
   const startDate = format(weekStart, 'yyyy-MM-dd');
   const endDate = format(addDays(weekStart, 6), 'yyyy-MM-dd');
-  const canGoPrev = weekStart.getTime() > tomorrow.getTime();
+  
 
   const { data: mealPlans, isLoading } = useMealPlans(startDate, endDate);
   const { data: recipes } = useRecipes();
@@ -709,22 +709,22 @@ export default function MealPlanner() {
           </Button>
         </div>
 
-        {/* Window navigation (7-day rolling, starting tomorrow) */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setWeekStart((w) => {
-              const next = addDays(w, -7);
-              return next.getTime() < tomorrow.getTime() ? tomorrow : next;
-            })}
-            disabled={!canGoPrev}
-          >
+        {/* Window navigation (7-day rolling). Default starts tomorrow, but
+            user can browse freely backward to view/edit historical plans. */}
+        <div className="flex items-center justify-between gap-2">
+          <Button variant="outline" size="sm" onClick={() => setWeekStart((w) => addDays(w, -7))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="font-display font-semibold text-sm">
-            {format(weekStart, 'd MMM')} – {format(addDays(weekStart, 6), 'd MMM yyyy')}
-          </span>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="font-display font-semibold text-sm truncate">
+              {format(weekStart, 'd MMM')} – {format(addDays(weekStart, 6), 'd MMM yyyy')}
+            </span>
+            {weekStart.getTime() !== tomorrow.getTime() && (
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setWeekStart(tomorrow)}>
+                Dziś
+              </Button>
+            )}
+          </div>
           <Button variant="outline" size="sm" onClick={() => setWeekStart((w) => addDays(w, 7))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
