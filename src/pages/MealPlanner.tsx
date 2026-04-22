@@ -50,6 +50,30 @@ export default function MealPlanner() {
   const { data: recipes } = useRecipes();
   const addMealPlan = useAddMealPlan();
   const removeMealPlan = useRemoveMealPlan();
+  const moveMealPlan = useMoveMealPlan();
+
+  // Drag & drop state for moving planned meals between slots
+  const [draggedMealId, setDraggedMealId] = useState<string | null>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
+
+  const handleDragStart = (mealId: string) => setDraggedMealId(mealId);
+  const handleDragEnd = () => { setDraggedMealId(null); setDragOverSlot(null); };
+  const handleDropOnSlot = async (planDate: string, mealType: string) => {
+    const id = draggedMealId;
+    setDraggedMealId(null);
+    setDragOverSlot(null);
+    if (!id) return;
+    const meal = mealPlans?.find((m) => m.id === id);
+    if (!meal) return;
+    if (meal.plan_date === planDate && meal.meal_type === mealType) return;
+    try {
+      await moveMealPlan.mutateAsync({ id, planDate, mealType });
+      toast.success('Posiłek przeniesiony');
+    } catch (err: any) {
+      if (err?.message?.includes('duplicate')) toast.error('Ten przepis już jest w tym slocie');
+      else toast.error('Nie udało się przenieść');
+    }
+  };
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState('');
