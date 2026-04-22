@@ -2,16 +2,25 @@ import { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useShoppingList, useToggleShoppingItem, useDeleteShoppingItem, useClearCheckedItems, useClearAllItems } from '@/hooks/useShoppingList';
 import { useRecipes } from '@/hooks/useRecipes';
+import { useSharedWithMe } from '@/hooks/useRecipeSharing';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trash2, ShoppingCart, CheckCheck, Share2, XCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Trash2, ShoppingCart, CheckCheck, Share2, XCircle, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { getStoreSection } from '@/types/recipe';
 
 export default function ShoppingList() {
-  const { data: items, isLoading } = useShoppingList();
+  const { user } = useAuth();
+  const { data: sharedOwners } = useSharedWithMe();
+  const [viewingOwnerId, setViewingOwnerId] = useState<string>('me');
+  const isViewingOwn = viewingOwnerId === 'me';
+  const targetOwnerId = isViewingOwn ? undefined : viewingOwnerId;
+
+  const { data: items, isLoading } = useShoppingList(targetOwnerId);
   const { data: recipes } = useRecipes();
   const toggleItem = useToggleShoppingItem();
   const deleteItem = useDeleteShoppingItem();
