@@ -55,6 +55,7 @@ Zasady:
 - WSKAZÓWKA dot. prostoty: większość propozycji codzienna i prosta (śniadania/kolacje 10-25 min, obiady 20-40 min); od czasu do czasu coś bardziej dopracowanego na obiad — bez restauracyjnej fancy. Unikaj sous-vide, trufli itp.
 - RÓŻNORODNOŚĆ KUCHNI: aktywnie mieszaj kuchnie świata (włoska, azjatycka, meksykańska, bliskowschodnia, indyjska, grecka, amerykańska, francuska, polska itd.). Tytuły zawsze po polsku.
 - Bądź KREATYWNY i RÓŻNY od wykluczonych tytułów.
+- BATCH COOKING dla obiadu: warto zaproponować 1-2 opcje obiadu z polem "batch_cooking": true (większa porcja na 2 dni, np. gulasz, lasagne, curry, chili con carne, zupa, pieczeń) — żeby użytkownik mógł zjeść resztki następnego dnia. Reszta opcji świeża.
 ${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
 - Zwróć WYŁĄCZNIE poprawny JSON, bez markdown.
 
