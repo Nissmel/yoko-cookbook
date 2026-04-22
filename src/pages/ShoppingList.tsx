@@ -116,23 +116,30 @@ export default function ShoppingList() {
   };
 
   const renderItem = (item: typeof unchecked[0], isChecked = false) => (
-    <div key={item.id} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted/50 transition-colors group">
+    <div
+      key={item.id}
+      className="flex items-start gap-3 px-3 py-3 rounded-lg hover:bg-muted/50 transition-colors group cursor-pointer"
+      onClick={() => toggleItem.mutate({ id: item.id, checked: !isChecked })}
+    >
       <Checkbox
         checked={isChecked}
         onCheckedChange={() => toggleItem.mutate({ id: item.id, checked: !isChecked })}
+        onClick={(e) => e.stopPropagation()}
+        className="mt-0.5"
       />
-      <div className={cn('flex-1 font-body', isChecked && 'line-through text-muted-foreground')}>
-        <span className={isChecked ? '' : 'text-foreground'}>{item.ingredient_name}</span>
+      <div className={cn('flex-1 min-w-0 font-body', isChecked && 'line-through text-muted-foreground')}>
+        <span className={cn('block break-words', isChecked ? '' : 'text-foreground')}>{item.ingredient_name}</span>
         {(item.quantity || item.unit) && (
-          <span className="text-muted-foreground ml-2 text-sm">{item.quantity} {item.unit}</span>
+          <span className="block text-muted-foreground text-xs mt-0.5">{item.quantity} {item.unit}</span>
         )}
       </div>
       <Button
         variant="ghost" size="icon"
-        onClick={() => deleteItem.mutate(item.id)}
-        className="opacity-0 group-hover:opacity-100 text-destructive h-8 w-8"
+        onClick={(e) => { e.stopPropagation(); deleteItem.mutate(item.id); }}
+        className="md:opacity-0 md:group-hover:opacity-100 text-destructive h-8 w-8 shrink-0 -mt-0.5"
+        aria-label="Delete item"
       >
-        <Trash2 className="h-3.5 w-3.5" />
+        <Trash2 className="h-4 w-4" />
       </Button>
     </div>
   );
