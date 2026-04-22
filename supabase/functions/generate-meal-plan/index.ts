@@ -51,7 +51,8 @@ Zasady:
 - Mieszaj istniejące przepisy z książki kucharskiej (oznacz "source": "existing", dołącz "recipe_id") z NOWYMI pomysłami (oznacz "source": "new").
 - Dla nowych przepisów dołącz: title, krótki description (1 zdanie), category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), prep_time_minutes, cook_time_minutes.
 - Tytuły konkretne i apetyczne, PO POLSKU.
-- WSKAZÓWKA dot. prostoty: większość propozycji codzienna i prosta (20-40 min); od czasu do czasu coś bardziej dopracowanego — bez restauracyjnej fancy. Unikaj sous-vide, trufli itp.
+- CHARAKTER: Śniadanie = lekkie i szybkie. Obiad = główne ciepłe danie dnia (mięso/ryba + skrobia + warzywa, makarony, curry, gulasze). Kolacja = LEKKA, 10-25 min (sałatki, kanapki/tosty, omlety, wraps, lekkie zupy, twarożki, quiche, frittata) — UNIKAJ kotletów, pieczeni, gulaszy, ciężkich mięsnych dań na kolację. Deser = słodkie.
+- WSKAZÓWKA dot. prostoty: większość propozycji codzienna i prosta (śniadania/kolacje 10-25 min, obiady 20-40 min); od czasu do czasu coś bardziej dopracowanego na obiad — bez restauracyjnej fancy. Unikaj sous-vide, trufli itp.
 - RÓŻNORODNOŚĆ KUCHNI: aktywnie mieszaj kuchnie świata (włoska, azjatycka, meksykańska, bliskowschodnia, indyjska, grecka, amerykańska, francuska, polska itd.). Tytuły zawsze po polsku.
 - Bądź KREATYWNY i RÓŻNY od wykluczonych tytułów.
 ${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
@@ -79,7 +80,8 @@ Zasady:
 - Mieszaj istniejące przepisy z książki kucharskiej (oznacz "source": "existing", dołącz "recipe_id") z NOWYMI pomysłami (oznacz "source": "new").
 - Dla nowych przepisów dołącz: title, krótki description (1 zdanie), category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), prep_time_minutes, cook_time_minutes.
 - Tytuły nowych przepisów muszą być konkretne i apetyczne, PO POLSKU.
-- WSKAZÓWKA dot. prostoty: większość propozycji powinna być codzienna i prosta (20-40 min), ale od czasu do czasu możesz zaproponować coś bardziej dopracowanego — byle nie cały plan był restauracyjny. Unikaj egzotycznych składników i technik typu sous-vide.
+- CHARAKTER SLOTU: ${singleSlot.mealType === 'breakfast' ? 'Śniadanie — lekkie i szybkie (jajka, owsianka, kanapki, naleśniki, omlet, jogurt z owocami, shakshuka).' : singleSlot.mealType === 'lunch' ? 'Obiad — GŁÓWNE ciepłe danie dnia: mięso/ryba/strączki + skrobia + warzywa, makarony, curry, gulasze, zupy obiadowe, dania jednogarnkowe.' : singleSlot.mealType === 'dinner' ? 'Kolacja — LEKKA, prosta, sycąca ale NIE objadowa, 10-25 min: sałatki, kanapki/tosty (avocado toast, croque-monsieur, panini), wraps, omlety/jajecznice, twarożki, lekkie zupy kremy, miski (poke bowl, grain bowl), placuszki warzywne, quiche, frittata, jajka po benedyktyńsku. UNIKAJ kotletów, pieczeni, gulaszy, ciężkich mięs z ziemniakami, BBQ, smażonych panierowanych dań.' : 'Deser — ciasta, mus, lody, tarty, fit desery.'}
+- WSKAZÓWKA dot. prostoty: większość propozycji powinna być codzienna i prosta (śniadania/kolacje 10-25 min, obiady 20-40 min). Unikaj egzotycznych składników i technik typu sous-vide.
 - RÓŻNORODNOŚĆ KUCHNI: użytkownik lubi nowości i dania z różnych kuchni świata (włoska, azjatycka, meksykańska, bliskowschodnia, indyjska, grecka, amerykańska itd.) — nie ograniczaj się do polskich. Mieszaj kuchnie w propozycjach, ale opisy i tytuły zawsze po polsku.
 - Bądź KREATYWNY i RÓŻNY od wykluczonych tytułów, ale trzymaj się prostoty.
 ${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
@@ -107,24 +109,30 @@ Zasady:
 - Tytuły konkretne i apetyczne (np. "Kremowa zupa pomidorowa z grzankami", nie samo "Zupa").
 - Dla deseru: ciasta, mus, lody, tarty, deser na łyżeczce, fit desery itp.
 
+CHARAKTER POSIŁKÓW (BARDZO WAŻNE — nie myl obiadu z kolacją):
+- Śniadanie: lekkie, szybkie — owsianka, jajka, kanapki, naleśniki, jogurt z owocami, omlet, smoothie bowl, pancakes, shakshuka, tosty francuskie.
+- Obiad: GŁÓWNE, najedzeniowe, ciepłe danie dnia — mięso/ryba/strączki + skrobia (ziemniaki/ryż/makaron/kasza) + warzywa, zupy obiadowe, makarony, curry, gulasze, pieczenie, dania jednogarnkowe. Tutaj idą cięższe i bardziej rozbudowane dania.
+- Kolacja: LEKKA, prosta, sycąca ale NIE objadowa. Szybka (10-25 min), bez ciężkich mięs i tłustych potraw. Przykłady: sałatki (z kurczakiem grillowanym, tuńczykiem, fetą, jajkiem), kanapki/tosty (avocado toast, zapiekanki, croque-monsieur, tosty z hummusem, panini), wraps i tortille, omlety i jajecznice, twarożki/serki ze szczypiorkiem, pasty kanapkowe, lekkie zupy kremy, lekkie miski (poke bowl, grain bowl, sałatka makaronowa), placuszki warzywne (cukinia, dyniowe), leczo, jajka po benedyktyńsku, quiche, sałatka grecka z pieczywem, kanapki z rybą wędzoną, ramen warzywny, bruschetta, frittata. UNIKAJ NA KOLACJĘ: kotletów schabowych, pieczeni, gulaszy, ciężkich mięs z ziemniakami, dużych talerzy makaronu z mięsem mielonym, fast foodów, BBQ, smażonych panierowanych mięs, pierogów na ciężko.
+- Deser: ciasta, mus, lody, tarty, fit desery itp.
+
 WSKAZÓWKI dot. prostoty (NIE sztywne reguły):
-- Większość propozycji niech będzie codzienna i prosta — dania, które da się zrobić w 20-40 minut.
-- Możesz CZASEM (1-2 razy w tygodniu) zaproponować coś bardziej dopracowanego lub dłuższego, jeśli pasuje (np. weekend, batch cooking) — ale unikaj sytuacji, gdzie cały tydzień to fancy restauracyjne dania.
+- Większość propozycji niech będzie codzienna i prosta — śniadania i kolacje 10-25 min, obiady 20-40 min.
+- Możesz CZASEM (1-2 razy w tygodniu) zaproponować coś bardziej dopracowanego lub dłuższego NA OBIAD (nie na kolację), jeśli pasuje (np. weekend, batch cooking) — ale unikaj sytuacji, gdzie cały tydzień to fancy restauracyjne dania.
 - Unikaj wymyślnych technik (sous-vide, confit, pianki, redukcje) i trudno dostępnych składników (trufle, foie gras).
 
 RÓŻNORODNOŚĆ KUCHNI (WAŻNE):
 - Użytkownik LUBI NOWOŚCI i dania z różnych kuchni świata. Nie ograniczaj się do polskich dań domowych.
-- Aktywnie mieszaj kuchnie: włoska (pasta, risotto, pizza, panini), azjatycka (stir-fry, ramen, pad thai, curry tajskie, sushi bowls, bibimbap, gyoza), meksykańska (tacos, quesadilla, burrito bowl, fajitas), bliskowschodnia (hummus, shakshuka, falafel, kofta), indyjska (curry, dal, biryani, masala), grecka (gyros, sałatka grecka, mussaka), amerykańska (burger, mac&cheese, BBQ), francuska (omlet, quiche, croque-monsieur), polska (pierogi, schabowy, gołąbki) — i inne.
+- Aktywnie mieszaj kuchnie: włoska (pasta, risotto, pizza, panini), azjatycka (stir-fry, ramen, pad thai, curry tajskie, sushi bowls, bibimbap, gyoza), meksykańska (tacos, quesadilla, burrito bowl, fajitas), bliskowschodnia (hummus, shakshuka, falafel, kofta), indyjska (curry, dal, biryani, masala), grecka (gyros, sałatka grecka, mussaka), amerykańska (burger, mac&cheese, BBQ — TYLKO na obiad, nie kolację), francuska (omlet, quiche, croque-monsieur), polska (pierogi, schabowy, gołąbki — na obiad) — i inne.
 - Tytuły, opisy, kategorie ZAWSZE po polsku, ale samo danie może być z dowolnej kuchni (np. "Kurczak teriyaki z ryżem", "Tacos z wołowiną", "Shakshuka z fetą", "Pad thai z krewetkami").
 - Zaskakuj — nie powtarzaj tych samych typów dań w tygodniu.
 
 BATCH COOKING / RESZTKI (WAŻNE):
-- Dla obiadu i kolacji DODAJ w tygodniu 1-2 propozycje "batch cooking" — większe dania, które naturalnie starczą na 2 porcje i smakują odgrzane.
+- TYLKO dla OBIADU (nie kolacji, nie śniadania) DODAJ w tygodniu 1-2 propozycje "batch cooking" — większe dania, które naturalnie starczą na 2 porcje i smakują odgrzane.
 - Przykłady: gulasz, bigos, lasagne, zapiekanka makaronowa, zupa pomidorowa, zupa gulaszowa, rosół, pieczeń, curry z kurczakiem, chili con carne, leczo, spaghetti bolognese.
-- Gdy proponujesz takie danie w dniu N, DODAJ TĘ SAMĄ opcję w dniu N+1 w tym samym slocie (obiad lub kolacja) — oznacz polem "leftover_from_day": N i poprzedź tytuł "♻️ ", a w description dodaj krótką notkę "Z wczorajszego obiadu — odgrzej i podawaj." (lub odpowiednio "z wczorajszej kolacji").
+- Gdy proponujesz takie danie w dniu N na obiad, DODAJ TĘ SAMĄ opcję w dniu N+1 w slocie OBIAD — oznacz polem "leftover_from_day": N i poprzedź tytuł "♻️ ", a w description dodaj krótką notkę "Z wczorajszego obiadu — odgrzej i podawaj.".
 - Opcja resztek może być "source": "new" z tym samym tytułem (bez ♻️) jako "leftover_title", ALBO "source": "existing" z tym samym recipe_id. W obu przypadkach ustaw "leftover_from_day".
-- Bez przesady: maksymalnie 2 pary resztek na tydzień. Pozostałe 2-3 opcje w slocie nadal świeże, żeby użytkownik miał wybór.
-- Nigdy nie dawaj resztek w śniadaniu ani deserze.
+- Bez przesady: maksymalnie 2 pary resztek na tydzień. Pozostałe 2-3 opcje w slocie obiadowym nadal świeże, żeby użytkownik miał wybór.
+- NIGDY nie dawaj resztek w śniadaniu, kolacji ani deserze.
 ${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
 - Zwróć WYŁĄCZNIE poprawny JSON, bez markdown.
 

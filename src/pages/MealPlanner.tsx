@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { useMealPlans, useAddMealPlan, useRemoveMealPlan } from '@/hooks/useMealPlanner';
+import { useMealPlans, useAddMealPlan, useRemoveMealPlan, useMoveMealPlan } from '@/hooks/useMealPlanner';
 import { useRecipes } from '@/hooks/useRecipes';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen, RefreshCw, Minus, GripVertical } from 'lucide-react';
 import { format, startOfWeek, addDays, addWeeks, subWeeks } from 'date-fns';
 import { Link } from 'react-router-dom';
 
@@ -50,6 +50,30 @@ export default function MealPlanner() {
   const { data: recipes } = useRecipes();
   const addMealPlan = useAddMealPlan();
   const removeMealPlan = useRemoveMealPlan();
+  const moveMealPlan = useMoveMealPlan();
+
+  // Drag & drop state for moving planned meals between slots
+  const [draggedMealId, setDraggedMealId] = useState<string | null>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
+
+  const handleDragStart = (mealId: string) => setDraggedMealId(mealId);
+  const handleDragEnd = () => { setDraggedMealId(null); setDragOverSlot(null); };
+  const handleDropOnSlot = async (planDate: string, mealType: string) => {
+    const id = draggedMealId;
+    setDraggedMealId(null);
+    setDragOverSlot(null);
+    if (!id) return;
+    const meal = mealPlans?.find((m) => m.id === id);
+    if (!meal) return;
+    if (meal.plan_date === planDate && meal.meal_type === mealType) return;
+    try {
+      await moveMealPlan.mutateAsync({ id, planDate, mealType });
+      toast.success('Posiłek przeniesiony');
+    } catch (err: any) {
+      if (err?.message?.includes('duplicate')) toast.error('Ten przepis już jest w tym slocie');
+      else toast.error('Nie udało się przenieść');
+    }
+  };
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState('');
@@ -419,15 +443,15 @@ export default function MealPlanner() {
                                 }`}
                               >
                                 <div className="flex items-start justify-between gap-2">
-                                  <div className="min-w-0">
-                                    <p className={`text-sm font-semibold truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                                  <div className="min-w-0 flex-1">
+                                    <p className={`text-sm font-semibold break-words ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                                       {option.title}
                                     </p>
                                     {option.description && (
-                                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{option.description}</p>
+                                      <p className="text-xs text-muted-foreground mt-0.5 break-words">{option.description}</p>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-1 shrink-0">
+                                  <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end max-w-[40%]">
                                     {option.leftover_from_day && (
                                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium" title={`Z dnia ${option.leftover_from_day}`}>
                                         ♻️ Wczorajsze
@@ -509,9 +533,19 @@ export default function MealPlanner() {
           <div className="space-y-2">{[...Array(7)].map((_, i) => <div key={i} className="h-20 bg-muted rounded animate-pulse" />)}</div>
         ) : (
           <div className="space-y-2">
+            <p className="text-xs text-muted-foreground font-body -mb-1">
+              💡 Wskazówka: przeciągnij posiłek na inny slot lub dzień, by go przenieść.
+            </p>
             {days.map((day) => {
               const meals = mealsByDay[day.dateStr] || [];
               const isToday = day.dateStr === format(new Date(), 'yyyy-MM-dd');
+              const mealsBySlot: Record<string, typeof meals> = {
+                breakfast: [], lunch: [], dinner: [], dessert: [],
+              };
+              meals.forEach((m) => {
+                if (mealsBySlot[m.meal_type]) mealsBySlot[m.meal_type].push(m);
+                else mealsBySlot.dinner.push(m);
+              });
               return (
                 <Card key={day.dateStr} className={isToday ? 'border-primary/50 bg-primary/5' : ''}>
                   <CardContent className="p-3">
@@ -526,30 +560,74 @@ export default function MealPlanner() {
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                    {meals.length > 0 ? (
-                      <div className="space-y-1.5">
-                        {meals.map((meal) => (
-                          <div key={meal.id} className="flex items-center justify-between rounded-md bg-muted/50 px-2.5 py-1.5 group">
-                            <Link to={`/recipe/${meal.recipe_id}`} className="flex items-center gap-2 min-w-0 flex-1">
-                              {meal.recipe?.image_url && (
-                                <img src={meal.recipe.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
-                              )}
-                              <div className="min-w-0">
-                                <p className="text-sm font-body truncate">{meal.recipe?.title || 'Recipe'}</p>
-                                <p className="text-xs text-muted-foreground">{MEAL_TYPE_LABELS[meal.meal_type] || meal.meal_type}</p>
-                              </div>
-                            </Link>
-                            <button
-                              onClick={() => handleRemove(meal.id)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive ml-1"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        ))}
+                    {meals.length === 0 ? (
+                      <div
+                        onDragOver={(e) => { if (draggedMealId) { e.preventDefault(); setDragOverSlot(`${day.dateStr}-empty`); } }}
+                        onDragLeave={() => setDragOverSlot(null)}
+                        onDrop={(e) => { e.preventDefault(); handleDropOnSlot(day.dateStr, 'dinner'); }}
+                        className={`text-xs text-muted-foreground font-body py-2 px-2 rounded-md border-2 border-dashed transition-colors ${
+                          dragOverSlot === `${day.dateStr}-empty` ? 'border-primary bg-primary/5 text-primary' : 'border-transparent'
+                        }`}
+                      >
+                        {draggedMealId ? 'Upuść tutaj' : 'No meals planned'}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground font-body">No meals planned</p>
+                      <div className="space-y-2">
+                        {MEAL_TYPES.map((slot) => {
+                          const slotMeals = mealsBySlot[slot];
+                          const slotKey = `${day.dateStr}-${slot}`;
+                          const isDragOver = dragOverSlot === slotKey;
+                          const showSlot = slotMeals.length > 0 || draggedMealId;
+                          if (!showSlot) return null;
+                          return (
+                            <div
+                              key={slot}
+                              onDragOver={(e) => { if (draggedMealId) { e.preventDefault(); setDragOverSlot(slotKey); } }}
+                              onDragLeave={() => setDragOverSlot(null)}
+                              onDrop={(e) => { e.preventDefault(); handleDropOnSlot(day.dateStr, slot); }}
+                              className={`rounded-md border-2 transition-colors ${
+                                isDragOver ? 'border-primary bg-primary/5' : 'border-transparent'
+                              } ${slotMeals.length === 0 && draggedMealId ? 'border-dashed border-border p-1.5' : ''}`}
+                            >
+                              {slotMeals.length === 0 && draggedMealId ? (
+                                <p className="text-[11px] text-muted-foreground font-body text-center">{MEAL_TYPE_LABELS[slot]}</p>
+                              ) : (
+                                <div className="space-y-1.5">
+                                  {slotMeals.map((meal) => (
+                                    <div
+                                      key={meal.id}
+                                      draggable
+                                      onDragStart={() => handleDragStart(meal.id)}
+                                      onDragEnd={handleDragEnd}
+                                      className={`flex items-center justify-between rounded-md bg-muted/50 px-2 py-1.5 group cursor-grab active:cursor-grabbing transition-opacity ${
+                                        draggedMealId === meal.id ? 'opacity-40' : ''
+                                      }`}
+                                    >
+                                      <GripVertical className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0 mr-1" />
+                                      <Link to={`/recipe/${meal.recipe_id}`} className="flex items-center gap-2 min-w-0 flex-1">
+                                        {meal.recipe?.image_url && (
+                                          <img src={meal.recipe.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                                        )}
+                                        <div className="min-w-0">
+                                          <p className="text-sm font-body break-words">{meal.recipe?.title || 'Recipe'}</p>
+                                          <p className="text-xs text-muted-foreground">{MEAL_TYPE_LABELS[meal.meal_type] || meal.meal_type}</p>
+                                        </div>
+                                      </Link>
+                                      <button
+                                        onClick={() => handleRemove(meal.id)}
+                                        className="opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive ml-1 p-1"
+                                        aria-label="Remove"
+                                      >
+                                        <X className="h-3.5 w-3.5" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -608,14 +686,32 @@ export default function MealPlanner() {
               </p>
               <div>
                 <label className="text-sm font-body text-muted-foreground mb-1.5 block">Days to plan</label>
-                <Input
-                  type="number"
-                  min={1}
-                  max={7}
-                  value={aiDays}
-                  onChange={(e) => setAiDays(Math.min(7, Math.max(1, Number(e.target.value))))}
-                  className="rounded-xl"
-                />
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 rounded-xl shrink-0"
+                    onClick={() => setAiDays((d) => Math.max(1, d - 1))}
+                    disabled={aiDays <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <div className="flex-1 text-center">
+                    <span className="font-display text-2xl font-bold">{aiDays}</span>
+                    <span className="text-sm text-muted-foreground font-body ml-1">{aiDays === 1 ? 'dzień' : aiDays < 5 ? 'dni' : 'dni'}</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 rounded-xl shrink-0"
+                    onClick={() => setAiDays((d) => Math.min(7, d + 1))}
+                    disabled={aiDays >= 7}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div>
                 <label className="text-sm font-body text-muted-foreground mb-1.5 block">Preferences (optional)</label>
