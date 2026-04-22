@@ -87,7 +87,7 @@ export default function MealPlanner() {
   const [weekStart, setWeekStart] = useState<Date>(tomorrow);
   const startDate = format(weekStart, 'yyyy-MM-dd');
   const endDate = format(addDays(weekStart, 6), 'yyyy-MM-dd');
-  const canGoPrev = weekStart.getTime() > tomorrow.getTime();
+  
 
   const { data: mealPlans, isLoading } = useMealPlans(startDate, endDate);
   const { data: recipes } = useRecipes();
