@@ -51,7 +51,8 @@ Zasady:
 - Mieszaj istniejące przepisy z książki kucharskiej (oznacz "source": "existing", dołącz "recipe_id") z NOWYMI pomysłami (oznacz "source": "new").
 - Dla nowych przepisów dołącz: title, krótki description (1 zdanie), category (Śniadanie/Obiad/Kolacja/Zupa/Sałatka/Deser/Przekąska/Przystawka), prep_time_minutes, cook_time_minutes.
 - Tytuły konkretne i apetyczne, PO POLSKU.
-- WSKAZÓWKA dot. prostoty: większość propozycji codzienna i prosta (20-40 min); od czasu do czasu coś bardziej dopracowanego — bez restauracyjnej fancy. Unikaj sous-vide, trufli itp.
+- CHARAKTER: Śniadanie = lekkie i szybkie. Obiad = główne ciepłe danie dnia (mięso/ryba + skrobia + warzywa, makarony, curry, gulasze). Kolacja = LEKKA, 10-25 min (sałatki, kanapki/tosty, omlety, wraps, lekkie zupy, twarożki, quiche, frittata) — UNIKAJ kotletów, pieczeni, gulaszy, ciężkich mięsnych dań na kolację. Deser = słodkie.
+- WSKAZÓWKA dot. prostoty: większość propozycji codzienna i prosta (śniadania/kolacje 10-25 min, obiady 20-40 min); od czasu do czasu coś bardziej dopracowanego na obiad — bez restauracyjnej fancy. Unikaj sous-vide, trufli itp.
 - RÓŻNORODNOŚĆ KUCHNI: aktywnie mieszaj kuchnie świata (włoska, azjatycka, meksykańska, bliskowschodnia, indyjska, grecka, amerykańska, francuska, polska itd.). Tytuły zawsze po polsku.
 - Bądź KREATYWNY i RÓŻNY od wykluczonych tytułów.
 ${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
