@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useMealPlans, useAddMealPlan, useRemoveMealPlan, useMoveMealPlan } from '@/hooks/useMealPlanner';
 import { useRecipes } from '@/hooks/useRecipes';
+import { useAddToShoppingList } from '@/hooks/useShoppingList';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,28 @@ export default function MealPlanner() {
   const addMealPlan = useAddMealPlan();
   const removeMealPlan = useRemoveMealPlan();
   const moveMealPlan = useMoveMealPlan();
+  const addToShoppingList = useAddToShoppingList();
+
+  // After a meal is planned, push its ingredients into the shopping list.
+  // The hook handles merging duplicates AND subtracting pantry stock from
+  // the combined demand across recipes.
+  const pushRecipeToShoppingList = async (recipeId: string) => {
+    const recipe = recipes?.find((r) => r.id === recipeId);
+    if (!recipe?.ingredients?.length) return;
+    try {
+      await addToShoppingList.mutateAsync(
+        recipe.ingredients.map((ing: any) => ({
+          ingredient_name: ing.name,
+          quantity: ing.quantity,
+          unit: ing.unit,
+          recipe_id: recipeId,
+        })),
+      );
+    } catch (e) {
+      // Non-fatal — meal is still planned, we just couldn't update list.
+      console.error('Failed to push ingredients to shopping list', e);
+    }
+  };
 
   // Drag & drop state for moving planned meals between slots
   const [draggedMealId, setDraggedMealId] = useState<string | null>(null);
@@ -123,6 +146,7 @@ export default function MealPlanner() {
     if (!selectedRecipeId || !selectedDay) return;
     try {
       await addMealPlan.mutateAsync({ recipeId: selectedRecipeId, planDate: selectedDay, mealType: selectedMealType });
+      await pushRecipeToShoppingList(selectedRecipeId);
       toast.success('Added to meal plan!');
       setDialogOpen(false);
     } catch (err: any) {
@@ -300,6 +324,11 @@ export default function MealPlanner() {
     let newRecipesCreated = 0;
     // Cache: title -> recipe_id, so leftovers reuse the same recipe as the original day
     const titleToRecipeId: Record<string, string> = {};
+    // Cache: recipe_id -> ingredients (works for both pre-existing and freshly-created recipes)
+    const recipeIngredients: Record<string, any[]> = {};
+    // Track which recipes were newly added to the plan, to avoid pushing
+    // ingredients twice when the same recipe (e.g. leftover) appears on two days.
+    const plannedRecipeIds = new Set<string>();
 
     try {
       for (const dayPlan of aiPlan) {
@@ -356,6 +385,7 @@ export default function MealPlanner() {
               if (insertError) throw insertError;
               recipeId = inserted.id;
               titleToRecipeId[normalizedTitle] = recipeId;
+              recipeIngredients[recipeId] = newRecipe.ingredients || [];
               newRecipesCreated++;
             } catch (e: any) {
               console.error('Failed to create recipe:', selected.title, e);
@@ -365,19 +395,48 @@ export default function MealPlanner() {
           } else if (recipeId) {
             // Cache existing recipe id by title too, so leftovers can find it
             titleToRecipeId[normalizedTitle] = recipeId;
+            if (!recipeIngredients[recipeId]) {
+              const existing = recipes?.find((r) => r.id === recipeId);
+              if (existing?.ingredients) recipeIngredients[recipeId] = existing.ingredients;
+            }
           }
 
           if (recipeId) {
             try {
               await addMealPlan.mutateAsync({ recipeId, planDate: dateStr, mealType });
               added++;
+              plannedRecipeIds.add(recipeId);
             } catch { /* skip duplicates */ }
           }
         }
       }
 
+      // Push all planned recipes' ingredients to the shopping list in ONE call,
+      // so duplicates merge AND pantry is subtracted from total demand.
+      const allIngredients: { ingredient_name: string; quantity?: string; unit?: string; recipe_id?: string }[] = [];
+      for (const rid of plannedRecipeIds) {
+        const ings = recipeIngredients[rid];
+        if (!ings) continue;
+        for (const ing of ings) {
+          if (!ing?.name) continue;
+          allIngredients.push({
+            ingredient_name: ing.name,
+            quantity: ing.quantity,
+            unit: ing.unit,
+            recipe_id: rid,
+          });
+        }
+      }
+      if (allIngredients.length > 0) {
+        try {
+          await addToShoppingList.mutateAsync(allIngredients);
+        } catch (e) {
+          console.error('Failed to update shopping list', e);
+        }
+      }
+
       const msg = newRecipesCreated > 0
-        ? `Plan saved! ${added} meals added, ${newRecipesCreated} new recipes created in your cookbook.`
+        ? `Plan saved! ${added} meals added, ${newRecipesCreated} new recipes created.`
         : `Plan saved! ${added} meals added.`;
       toast.success(msg);
       setAiPlan(null);
