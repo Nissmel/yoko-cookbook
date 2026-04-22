@@ -303,9 +303,8 @@ export default function MealPlanner() {
 
     try {
       for (const dayPlan of aiPlan) {
-        const dayIndex = dayPlan.day - 1;
-        if (dayIndex >= 7) continue;
-        const dateStr = days[dayIndex]?.dateStr;
+        // Single-day mode: use the explicitly chosen date; otherwise map by index in current week
+        const dateStr = singleDayDate ?? days[dayPlan.day - 1]?.dateStr;
         if (!dateStr) continue;
 
         for (const mealType of PLAN_MEAL_TYPES) {
