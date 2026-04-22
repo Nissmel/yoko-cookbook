@@ -15,6 +15,51 @@ function normalize(s: string): string {
     .replace(/\s+/g, ' ');
 }
 
+// Common Polish descriptive adjectives that should NOT prevent merging.
+// "świeży szczypiorek" ≡ "szczypiorek", "drobno posiekana cebula" ≡ "cebula", etc.
+const STOPWORDS = new Set([
+  // freshness / state
+  'swiezy', 'swieza', 'swieze', 'swiezo',
+  'suszony', 'suszona', 'suszone',
+  'mrozony', 'mrozona', 'mrozone', 'mrozonego',
+  'surowy', 'surowa', 'surowe',
+  'gotowany', 'gotowana', 'gotowane',
+  'pieczony', 'pieczona', 'pieczone',
+  'wedzony', 'wedzona', 'wedzone',
+  'marynowany', 'marynowana', 'marynowane',
+  'kiszony', 'kiszona', 'kiszone',
+  // size / cut
+  'duzy', 'duza', 'duze', 'maly', 'mala', 'male', 'sredni', 'srednia', 'srednie',
+  'drobno', 'grubo', 'cienko', 'mielony', 'mielona', 'mielone',
+  'posiekany', 'posiekana', 'posiekane',
+  'pokrojony', 'pokrojona', 'pokrojone',
+  'starty', 'starta', 'starte',
+  'obrany', 'obrana', 'obrane',
+  // color
+  'czerwony', 'czerwona', 'czerwone',
+  'zielony', 'zielona', 'zielone',
+  'zolty', 'zolta', 'zolte',
+  'bialy', 'biala', 'biale',
+  'czarny', 'czarna', 'czarne',
+  // generic
+  'naturalny', 'naturalna', 'naturalne',
+  'dojrzaly', 'dojrzala', 'dojrzale',
+  'caly', 'cala', 'cale',
+  'ekologiczny', 'ekologiczna', 'ekologiczne',
+  'bio',
+  // fillers
+  'do', 'na', 'z', 'ze', 'w', 'i',
+]);
+
+// Strip stopwords / adjectives so descriptive variants merge.
+function canonicalName(name: string): string {
+  const words = normalize(name)
+    .replace(/[(),.;:]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w && !STOPWORDS.has(w));
+  return words.join(' ').trim();
+}
+
 // Canonicalize a unit so "g" and "gram" (etc.) merge.
 function normalizeUnit(unit?: string | null): string {
   if (!unit) return '';
@@ -64,14 +109,18 @@ function formatQty(n: number): string {
 }
 
 function ingredientKey(name: string): string {
-  return normalize(name);
+  // Use canonical form so "świeży szczypiorek" === "szczypiorek".
+  // Fall back to plain normalized name if canonicalization strips everything.
+  const canon = canonicalName(name);
+  return canon || normalize(name);
 }
 
-// True if a pantry name matches an ingredient name (fuzzy substring on normalized text).
+// True if a pantry name matches an ingredient name (fuzzy match on canonicalized text).
 function pantryMatchesIngredient(pantryName: string, ingredientName: string): boolean {
-  const ing = normalize(ingredientName);
-  const pn = normalize(pantryName);
-  return ing.includes(pn) || pn.includes(ing);
+  const ing = ingredientKey(ingredientName);
+  const pn = ingredientKey(pantryName);
+  if (!ing || !pn) return false;
+  return ing === pn || ing.includes(pn) || pn.includes(ing);
 }
 
 export interface NewShoppingItem {
