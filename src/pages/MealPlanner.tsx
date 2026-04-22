@@ -624,15 +624,23 @@ export default function MealPlanner() {
           </Button>
         </div>
 
-        {/* Week navigation */}
+        {/* Window navigation (7-day rolling, starting tomorrow) */}
         <div className="flex items-center justify-between">
-          <Button variant="outline" size="sm" onClick={() => setWeekStart(subWeeks(weekStart, 1))}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setWeekStart((w) => {
+              const next = addDays(w, -7);
+              return next.getTime() < tomorrow.getTime() ? tomorrow : next;
+            })}
+            disabled={!canGoPrev}
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="font-display font-semibold text-sm">
             {format(weekStart, 'd MMM')} – {format(addDays(weekStart, 6), 'd MMM yyyy')}
           </span>
-          <Button variant="outline" size="sm" onClick={() => setWeekStart(addWeeks(weekStart, 1))}>
+          <Button variant="outline" size="sm" onClick={() => setWeekStart((w) => addDays(w, 7))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
