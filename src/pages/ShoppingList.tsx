@@ -184,9 +184,9 @@ export default function ShoppingList() {
             )}
 
             <Tabs defaultValue="store" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="store">By Store Section</TabsTrigger>
-                <TabsTrigger value="recipe">By Recipe</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 h-auto">
+                <TabsTrigger value="store" className="text-xs sm:text-sm whitespace-normal py-2 leading-tight">Wg sklepu</TabsTrigger>
+                <TabsTrigger value="recipe" className="text-xs sm:text-sm whitespace-normal py-2 leading-tight">Wg przepisu</TabsTrigger>
               </TabsList>
 
               <TabsContent value="store" className="mt-3 space-y-1">
