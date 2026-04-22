@@ -146,6 +146,7 @@ export default function MealPlanner() {
     if (!selectedRecipeId || !selectedDay) return;
     try {
       await addMealPlan.mutateAsync({ recipeId: selectedRecipeId, planDate: selectedDay, mealType: selectedMealType });
+      await pushRecipeToShoppingList(selectedRecipeId);
       toast.success('Added to meal plan!');
       setDialogOpen(false);
     } catch (err: any) {
