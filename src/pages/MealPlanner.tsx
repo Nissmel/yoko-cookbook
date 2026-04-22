@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useMealPlans, useAddMealPlan, useRemoveMealPlan, useMoveMealPlan } from '@/hooks/useMealPlanner';
 import { useRecipes } from '@/hooks/useRecipes';
+import { useAddToShoppingList } from '@/hooks/useShoppingList';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,28 @@ export default function MealPlanner() {
   const addMealPlan = useAddMealPlan();
   const removeMealPlan = useRemoveMealPlan();
   const moveMealPlan = useMoveMealPlan();
+  const addToShoppingList = useAddToShoppingList();
+
+  // After a meal is planned, push its ingredients into the shopping list.
+  // The hook handles merging duplicates AND subtracting pantry stock from
+  // the combined demand across recipes.
+  const pushRecipeToShoppingList = async (recipeId: string) => {
+    const recipe = recipes?.find((r) => r.id === recipeId);
+    if (!recipe?.ingredients?.length) return;
+    try {
+      await addToShoppingList.mutateAsync(
+        recipe.ingredients.map((ing: any) => ({
+          ingredient_name: ing.name,
+          quantity: ing.quantity,
+          unit: ing.unit,
+          recipe_id: recipeId,
+        })),
+      );
+    } catch (e) {
+      // Non-fatal — meal is still planned, we just couldn't update list.
+      console.error('Failed to push ingredients to shopping list', e);
+    }
+  };
 
   // Drag & drop state for moving planned meals between slots
   const [draggedMealId, setDraggedMealId] = useState<string | null>(null);
