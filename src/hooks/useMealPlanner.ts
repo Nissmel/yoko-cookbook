@@ -74,3 +74,17 @@ export function useRemoveMealPlan() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['meal-plans'] }),
   });
 }
+
+export function useMoveMealPlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, planDate, mealType }: { id: string; planDate: string; mealType: string }) => {
+      const { error } = await supabase
+        .from('meal_plans')
+        .update({ plan_date: planDate, meal_type: mealType })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['meal-plans'] }),
+  });
+}
