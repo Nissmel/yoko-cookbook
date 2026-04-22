@@ -3,6 +3,7 @@ import AppLayout from '@/components/AppLayout';
 import { useMealPlans, useAddMealPlan, useRemoveMealPlan, useMoveMealPlan } from '@/hooks/useMealPlanner';
 import { useRecipes } from '@/hooks/useRecipes';
 import { useAddToShoppingList } from '@/hooks/useShoppingList';
+import { useSharedWithMe } from '@/hooks/useRecipeSharing';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
