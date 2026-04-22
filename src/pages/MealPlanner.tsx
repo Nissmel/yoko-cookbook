@@ -196,6 +196,50 @@ export default function MealPlanner() {
     }
   };
 
+  const rerollDay = async (dayNum: number) => {
+    if (!aiPlan) return;
+    setRerollingDay(dayNum);
+    try {
+      const dayPlan = aiPlan.find((d) => d.day === dayNum);
+      const excludeByMeal: Record<string, string[]> = {};
+      if (dayPlan) {
+        for (const mt of PLAN_MEAL_TYPES) {
+          const titles = (dayPlan.meals[mt]?.options || []).map((o) => o.title);
+          if (titles.length) excludeByMeal[mt] = titles;
+        }
+      }
+
+      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+        body: {
+          recipes: recipes || [],
+          singleDay: { day: dayNum },
+          excludeByMeal,
+          preferences: aiPreferences || undefined,
+        },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      const newMeals = data.meals as Record<string, { options: MealOption[] }>;
+      if (!newMeals) throw new Error('No meals returned');
+
+      setAiPlan((prev) => {
+        if (!prev) return prev;
+        return prev.map((d) => (d.day === dayNum ? { ...d, meals: newMeals } : d));
+      });
+      // Clear all selections for this day
+      setSelections((prev) => {
+        const next = { ...prev };
+        for (const mt of PLAN_MEAL_TYPES) delete next[`${dayNum}-${mt}`];
+        return next;
+      });
+      toast.success(`Dzień ${dayNum} — nowe propozycje wygenerowane!`);
+    } catch (e: any) {
+      toast.error(e.message || 'Nie udało się odświeżyć dnia');
+    } finally {
+      setRerollingDay(null);
+    }
+  };
+
   const handleSavePlan = async () => {
     if (!aiPlan || !user) return;
     setSavingPlan(true);
