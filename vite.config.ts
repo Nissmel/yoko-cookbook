@@ -24,6 +24,9 @@ export default defineConfig(({ mode }) => ({
         enabled: false,
       },
       includeAssets: ["favicon.ico", "pwa-icon.png"],
+      // Force the new SW to activate immediately and take over open tabs,
+      // so users (especially on installed PWAs) don't stay stuck on a stale UI.
+      injectRegister: "auto",
       manifest: {
         name: "Yoko Cookbook",
         short_name: "Yoko",
@@ -57,6 +60,11 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
+        // Take control of any open clients (tabs / installed PWA) as soon as
+        // the new SW activates — no need for the user to close all tabs first.
+        clientsClaim: true,
+        skipWaiting: true,
+        cleanupOutdatedCaches: true,
         // Never cache OAuth callback or Supabase function responses
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/, /supabase\.co/],
         // Cache app shell + static assets, but always go network-first for HTML
