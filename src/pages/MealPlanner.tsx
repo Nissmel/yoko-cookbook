@@ -403,7 +403,7 @@ export default function MealPlanner() {
               <p className="text-muted-foreground font-body text-sm mt-1">Kliknij propozycję, by ją wybrać. Kliknij ponownie, by odznaczyć. Możesz pominąć dowolny posiłek.</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => { setAiPlan(null); setSelections({}); }}>
+              <Button variant="outline" size="sm" onClick={() => { setAiPlan(null); setSingleDayDate(null); setSelections({}); }}>
                 Cancel
               </Button>
               <Button size="sm" onClick={handleSavePlan} disabled={savingPlan || selectedCount === 0} className="gap-1.5">
