@@ -79,6 +79,11 @@ function Droppable({ id, children, className, activeClassName }: { id: string; c
 
 export default function MealPlanner() {
   const { user } = useAuth();
+  const { data: sharedOwners } = useSharedWithMe();
+  const [viewingOwnerId, setViewingOwnerId] = useState<string>('me');
+  const isViewingOwn = viewingOwnerId === 'me';
+  const targetOwnerId = isViewingOwn ? undefined : viewingOwnerId;
+
   // Plan window starts tomorrow — picking meals for past days makes no sense.
   const tomorrow = useMemo(() => {
     const d = new Date();
@@ -90,12 +95,12 @@ export default function MealPlanner() {
   const endDate = format(addDays(weekStart, 6), 'yyyy-MM-dd');
   
 
-  const { data: mealPlans, isLoading } = useMealPlans(startDate, endDate);
+  const { data: mealPlans, isLoading } = useMealPlans(startDate, endDate, targetOwnerId);
   const { data: recipes } = useRecipes();
-  const addMealPlan = useAddMealPlan();
+  const addMealPlan = useAddMealPlan(targetOwnerId);
   const removeMealPlan = useRemoveMealPlan();
   const moveMealPlan = useMoveMealPlan();
-  const addToShoppingList = useAddToShoppingList();
+  const addToShoppingList = useAddToShoppingList(targetOwnerId);
 
   // After a meal is planned, push its ingredients into the shopping list.
   // The hook handles merging duplicates AND subtracting pantry stock from
