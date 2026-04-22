@@ -362,9 +362,24 @@ export default function MealPlanner() {
           {aiPlan.map((dayPlan) => (
             <Card key={dayPlan.day}>
               <CardContent className="p-4">
-                <h2 className="font-display font-semibold text-lg mb-3">
-                  Day {dayPlan.day} — {days[dayPlan.day - 1]?.dayName} {days[dayPlan.day - 1]?.dayNum}
-                </h2>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-display font-semibold text-lg">
+                    Day {dayPlan.day} — {days[dayPlan.day - 1]?.dayName} {days[dayPlan.day - 1]?.dayNum}
+                  </h2>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1.5 text-xs"
+                    onClick={() => rerollDay(dayPlan.day)}
+                    disabled={rerollingDay === dayPlan.day}
+                  >
+                    {rerollingDay === dayPlan.day ? (
+                      <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Generowanie dnia...</>
+                    ) : (
+                      <><RefreshCw className="h-3.5 w-3.5" /> Reroll dnia</>
+                    )}
+                  </Button>
+                </div>
                 <div className="space-y-4">
                   {PLAN_MEAL_TYPES.map((mealType) => {
                     const meal = dayPlan.meals[mealType];
