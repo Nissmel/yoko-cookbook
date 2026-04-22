@@ -587,9 +587,24 @@ export default function MealPlanner() {
                         </span>
                         <span className="text-xs text-muted-foreground">{day.dayNum}</span>
                       </div>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openAddDialog(day.dateStr)}>
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 gap-1 text-xs"
+                          onClick={() => aiGenerateDay(day.dateStr)}
+                          disabled={generatingDayDate === day.dateStr}
+                          title="Wygeneruj propozycje AI dla tego dnia"
+                        >
+                          {generatingDayDate === day.dateStr
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            : <Sparkles className="h-3.5 w-3.5" />}
+                          <span className="hidden xs:inline">AI</span>
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openAddDialog(day.dateStr)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     {meals.length === 0 ? (
                       <div
