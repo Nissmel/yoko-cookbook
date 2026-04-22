@@ -125,17 +125,13 @@ export default function ShoppingList() {
   const renderItem = (item: typeof unchecked[0], isChecked = false) => (
     <div
       key={item.id}
-      className={cn(
-        "flex items-start gap-3 px-3 py-3 rounded-lg transition-colors group",
-        isViewingOwn ? "hover:bg-muted/50 cursor-pointer" : "cursor-default",
-      )}
-      onClick={() => isViewingOwn && toggleItem.mutate({ id: item.id, checked: !isChecked })}
+      className="flex items-start gap-3 px-3 py-3 rounded-lg transition-colors group hover:bg-muted/50 cursor-pointer"
+      onClick={() => toggleItem.mutate({ id: item.id, checked: !isChecked })}
     >
       <Checkbox
         checked={isChecked}
-        onCheckedChange={() => isViewingOwn && toggleItem.mutate({ id: item.id, checked: !isChecked })}
+        onCheckedChange={() => toggleItem.mutate({ id: item.id, checked: !isChecked })}
         onClick={(e) => e.stopPropagation()}
-        disabled={!isViewingOwn}
         className="mt-0.5"
       />
       <div className={cn('flex-1 min-w-0 font-body', isChecked && 'line-through text-muted-foreground')}>
@@ -144,16 +140,14 @@ export default function ShoppingList() {
           <span className="block text-muted-foreground text-xs mt-0.5">{item.quantity} {item.unit}</span>
         )}
       </div>
-      {isViewingOwn && (
-        <Button
-          variant="ghost" size="icon"
-          onClick={(e) => { e.stopPropagation(); deleteItem.mutate(item.id); }}
-          className="md:opacity-0 md:group-hover:opacity-100 text-destructive h-8 w-8 shrink-0 -mt-0.5"
-          aria-label="Delete item"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      )}
+      <Button
+        variant="ghost" size="icon"
+        onClick={(e) => { e.stopPropagation(); deleteItem.mutate(item.id); }}
+        className="md:opacity-0 md:group-hover:opacity-100 text-destructive h-8 w-8 shrink-0 -mt-0.5"
+        aria-label="Delete item"
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
     </div>
   );
 
@@ -170,7 +164,7 @@ export default function ShoppingList() {
           <div>
             <h1 className="font-display text-3xl font-bold text-foreground">Shopping List</h1>
             <p className="text-muted-foreground font-body text-sm mt-1 flex items-center gap-1">
-              {ownerLabel ? <><Eye className="h-3 w-3" />Viewing {ownerLabel} · {items?.length ?? 0} items</> : `${items?.length ?? 0} items`}
+              {ownerLabel ? <><Eye className="h-3 w-3" />{ownerLabel} · {items?.length ?? 0} items</> : `${items?.length ?? 0} items`}
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -192,13 +186,13 @@ export default function ShoppingList() {
             <Button variant="outline" size="sm" onClick={shareShoppingList} className="gap-1.5">
               <Share2 className="h-4 w-4" /> Share {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
             </Button>
-            {isViewingOwn && checked.length > 0 && (
-              <Button variant="outline" size="sm" onClick={() => clearChecked.mutate()} className="gap-1.5">
+            {checked.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => clearChecked.mutate(targetOwnerId)} className="gap-1.5">
                 <CheckCheck className="h-4 w-4" /> Clear checked
               </Button>
             )}
-            {isViewingOwn && items && items.length > 0 && (
-              <Button variant="outline" size="sm" onClick={() => clearAll.mutate()} className="gap-1.5 text-destructive hover:text-destructive">
+            {items && items.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => clearAll.mutate(targetOwnerId)} className="gap-1.5 text-destructive hover:text-destructive">
                 <XCircle className="h-4 w-4" /> Clear all
               </Button>
             )}

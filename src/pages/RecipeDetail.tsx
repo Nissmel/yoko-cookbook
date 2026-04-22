@@ -286,7 +286,9 @@ export default function RecipeDetail() {
   const { data: recipe, isLoading } = useRecipe(id);
   const deleteRecipe = useDeleteRecipe();
   const updateRecipe = useUpdateRecipe();
-  const addToList = useAddToShoppingList();
+  // Add to the recipe owner's shopping list — when viewing a shared recipe,
+  // ingredients land on the owner's list (sharing = same-account semantics).
+  const addToList = useAddToShoppingList(recipe?.user_id);
   const [scaledServings, setScaledServings] = useState<number | null>(null);
   const [pendingCategory, setPendingCategory] = useState<string>('');
 
