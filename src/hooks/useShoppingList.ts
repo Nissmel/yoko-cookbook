@@ -348,14 +348,19 @@ export function useDeleteShoppingItem() {
   });
 }
 
+// Clear-checked / clear-all accept an optional ownerId so the action targets the
+// list currently being viewed (own list or a shared owner's list).
 export function useClearCheckedItems() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (ownerId?: string) => {
+      const targetId = ownerId ?? user!.id;
       const { error } = await supabase
         .from('shopping_list_items')
         .delete()
+        .eq('user_id', targetId)
         .eq('checked', true);
       if (error) throw error;
     },
@@ -370,11 +375,12 @@ export function useClearAllItems() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (ownerId?: string) => {
+      const targetId = ownerId ?? user!.id;
       const { error } = await supabase
         .from('shopping_list_items')
         .delete()
-        .eq('user_id', user!.id);
+        .eq('user_id', targetId);
       if (error) throw error;
     },
     onSuccess: () => {
