@@ -55,9 +55,16 @@ interface DayPlan {
 
 export default function MealPlanner() {
   const { user } = useAuth();
-  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  // Plan window starts tomorrow — picking meals for past days makes no sense.
+  const tomorrow = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return addDays(d, 1);
+  }, []);
+  const [weekStart, setWeekStart] = useState<Date>(tomorrow);
   const startDate = format(weekStart, 'yyyy-MM-dd');
   const endDate = format(addDays(weekStart, 6), 'yyyy-MM-dd');
+  const canGoPrev = weekStart.getTime() > tomorrow.getTime();
 
   const { data: mealPlans, isLoading } = useMealPlans(startDate, endDate);
   const { data: recipes } = useRecipes();
