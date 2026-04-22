@@ -707,123 +707,123 @@ export default function MealPlanner() {
         {isLoading ? (
           <div className="space-y-2">{[...Array(7)].map((_, i) => <div key={i} className="h-20 bg-muted rounded animate-pulse" />)}</div>
         ) : (
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground font-body -mb-1">
-              💡 Wskazówka: przeciągnij posiłek na inny slot lub dzień, by go przenieść.
-            </p>
-            {days.map((day) => {
-              const meals = mealsByDay[day.dateStr] || [];
-              const isToday = day.dateStr === format(new Date(), 'yyyy-MM-dd');
-              const mealsBySlot: Record<string, typeof meals> = {
-                breakfast: [], lunch: [], dinner: [], dessert: [],
-              };
-              meals.forEach((m) => {
-                if (mealsBySlot[m.meal_type]) mealsBySlot[m.meal_type].push(m);
-                else mealsBySlot.dinner.push(m);
-              });
-              return (
-                <Card key={day.dateStr} className={isToday ? 'border-primary/50 bg-primary/5' : ''}>
-                  <CardContent className="p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`font-display font-semibold text-sm ${isToday ? 'text-primary' : ''}`}>
-                          {day.dayName}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{day.dayNum}</span>
+          <DndContext sensors={sensors} onDragStart={onPlannedDragStart} onDragEnd={onPlannedDragEnd} onDragCancel={() => setActiveMealId(null)}>
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground font-body -mb-1">
+                💡 Wskazówka: przeciągnij posiłek na inny slot lub dzień, by go przenieść.
+              </p>
+              {days.map((day) => {
+                const meals = mealsByDay[day.dateStr] || [];
+                const isToday = day.dateStr === format(new Date(), 'yyyy-MM-dd');
+                const mealsBySlot: Record<string, typeof meals> = {
+                  breakfast: [], lunch: [], dinner: [], dessert: [],
+                };
+                meals.forEach((m) => {
+                  if (mealsBySlot[m.meal_type]) mealsBySlot[m.meal_type].push(m);
+                  else mealsBySlot.dinner.push(m);
+                });
+                return (
+                  <Card key={day.dateStr} className={isToday ? 'border-primary/50 bg-primary/5' : ''}>
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-display font-semibold text-sm ${isToday ? 'text-primary' : ''}`}>
+                            {day.dayName}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{day.dayNum}</span>
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 gap-1 text-xs"
+                            onClick={() => aiGenerateDay(day.dateStr)}
+                            disabled={generatingDayDate === day.dateStr}
+                            title="Wygeneruj propozycje AI dla tego dnia"
+                          >
+                            {generatingDayDate === day.dateStr
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              : <Sparkles className="h-3.5 w-3.5" />}
+                            <span className="hidden xs:inline">AI</span>
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openAddDialog(day.dateStr)}>
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-0.5">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 gap-1 text-xs"
-                          onClick={() => aiGenerateDay(day.dateStr)}
-                          disabled={generatingDayDate === day.dateStr}
-                          title="Wygeneruj propozycje AI dla tego dnia"
+                      {meals.length === 0 ? (
+                        <Droppable
+                          id={`slot:${day.dateStr}:dinner`}
+                          className="text-xs text-muted-foreground font-body py-2 px-2 rounded-md border-2 border-dashed transition-colors border-transparent"
+                          activeClassName="!border-primary !bg-primary/5 !text-primary"
                         >
-                          {generatingDayDate === day.dateStr
-                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            : <Sparkles className="h-3.5 w-3.5" />}
-                          <span className="hidden xs:inline">AI</span>
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openAddDialog(day.dateStr)}>
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    {meals.length === 0 ? (
-                      <div
-                        onDragOver={(e) => { if (draggedMealId) { e.preventDefault(); setDragOverSlot(`${day.dateStr}-empty`); } }}
-                        onDragLeave={() => setDragOverSlot(null)}
-                        onDrop={(e) => { e.preventDefault(); handleDropOnSlot(day.dateStr, 'dinner'); }}
-                        className={`text-xs text-muted-foreground font-body py-2 px-2 rounded-md border-2 border-dashed transition-colors ${
-                          dragOverSlot === `${day.dateStr}-empty` ? 'border-primary bg-primary/5 text-primary' : 'border-transparent'
-                        }`}
-                      >
-                        {draggedMealId ? 'Upuść tutaj' : 'No meals planned'}
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {MEAL_TYPES.map((slot) => {
-                          const slotMeals = mealsBySlot[slot];
-                          const slotKey = `${day.dateStr}-${slot}`;
-                          const isDragOver = dragOverSlot === slotKey;
-                          const showSlot = slotMeals.length > 0 || draggedMealId;
-                          if (!showSlot) return null;
-                          return (
-                            <div
-                              key={slot}
-                              onDragOver={(e) => { if (draggedMealId) { e.preventDefault(); setDragOverSlot(slotKey); } }}
-                              onDragLeave={() => setDragOverSlot(null)}
-                              onDrop={(e) => { e.preventDefault(); handleDropOnSlot(day.dateStr, slot); }}
-                              className={`rounded-md border-2 transition-colors ${
-                                isDragOver ? 'border-primary bg-primary/5' : 'border-transparent'
-                              } ${slotMeals.length === 0 && draggedMealId ? 'border-dashed border-border p-1.5' : ''}`}
-                            >
-                              {slotMeals.length === 0 && draggedMealId ? (
-                                <p className="text-[11px] text-muted-foreground font-body text-center">{MEAL_TYPE_LABELS[slot]}</p>
-                              ) : (
-                                <div className="space-y-1.5">
-                                  {slotMeals.map((meal) => (
-                                    <div
-                                      key={meal.id}
-                                      draggable
-                                      onDragStart={() => handleDragStart(meal.id)}
-                                      onDragEnd={handleDragEnd}
-                                      className={`flex items-center justify-between rounded-md bg-muted/50 px-2 py-1.5 group cursor-grab active:cursor-grabbing transition-opacity ${
-                                        draggedMealId === meal.id ? 'opacity-40' : ''
-                                      }`}
-                                    >
-                                      <GripVertical className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0 mr-1" />
-                                      <Link to={`/recipe/${meal.recipe_id}`} className="flex items-center gap-2 min-w-0 flex-1">
-                                        {meal.recipe?.image_url && (
-                                          <img src={meal.recipe.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
-                                        )}
-                                        <div className="min-w-0">
-                                          <p className="text-sm font-body break-words">{meal.recipe?.title || 'Recipe'}</p>
-                                          <p className="text-xs text-muted-foreground">{MEAL_TYPE_LABELS[meal.meal_type] || meal.meal_type}</p>
-                                        </div>
-                                      </Link>
-                                      <button
-                                        onClick={() => handleRemove(meal.id)}
-                                        className="opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive ml-1 p-1"
-                                        aria-label="Remove"
+                          {activeMealId ? 'Upuść tutaj' : 'No meals planned'}
+                        </Droppable>
+                      ) : (
+                        <div className="space-y-2">
+                          {MEAL_TYPES.map((slot) => {
+                            const slotMeals = mealsBySlot[slot];
+                            const showSlot = slotMeals.length > 0 || !!activeMealId;
+                            if (!showSlot) return null;
+                            return (
+                              <Droppable
+                                key={slot}
+                                id={`slot:${day.dateStr}:${slot}`}
+                                className={`rounded-md border-2 transition-colors border-transparent ${
+                                  slotMeals.length === 0 && activeMealId ? 'border-dashed border-border p-1.5' : ''
+                                }`}
+                                activeClassName="!border-primary !bg-primary/5"
+                              >
+                                {slotMeals.length === 0 && activeMealId ? (
+                                  <p className="text-[11px] text-muted-foreground font-body text-center">{MEAL_TYPE_LABELS[slot]}</p>
+                                ) : (
+                                  <div className="space-y-1.5">
+                                    {slotMeals.map((meal) => (
+                                      <Draggable
+                                        key={meal.id}
+                                        id={`planned:${meal.id}`}
+                                        className="flex items-center justify-between rounded-md bg-muted/50 px-2 py-1.5 group transition-opacity"
                                       >
-                                        <X className="h-3.5 w-3.5" />
-                                      </button>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                                        <GripVertical className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0 mr-1" />
+                                        <Link to={`/recipe/${meal.recipe_id}`} className="flex items-center gap-2 min-w-0 flex-1" onPointerDown={(e) => e.stopPropagation()}>
+                                          {meal.recipe?.image_url && (
+                                            <img src={meal.recipe.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                                          )}
+                                          <div className="min-w-0">
+                                            <p className="text-sm font-body break-words">{meal.recipe?.title || 'Recipe'}</p>
+                                            <p className="text-xs text-muted-foreground">{MEAL_TYPE_LABELS[meal.meal_type] || meal.meal_type}</p>
+                                          </div>
+                                        </Link>
+                                        <button
+                                          onPointerDown={(e) => e.stopPropagation()}
+                                          onClick={() => handleRemove(meal.id)}
+                                          className="opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive ml-1 p-1"
+                                          aria-label="Remove"
+                                        >
+                                          <X className="h-3.5 w-3.5" />
+                                        </button>
+                                      </Draggable>
+                                    ))}
+                                  </div>
+                                )}
+                              </Droppable>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+            <DragOverlay>
+              {activeMealId ? (
+                <div className="rounded-md bg-card border border-primary shadow-lg px-2 py-1.5 text-sm font-body">
+                  {mealPlans?.find((m) => m.id === activeMealId)?.recipe?.title || 'Posiłek'}
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         )}
 
         {/* Add meal dialog */}
