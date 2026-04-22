@@ -153,6 +153,7 @@ export default function MealPlanner() {
       if (!plan?.length) throw new Error('Empty plan returned');
 
       setAiPlan(plan);
+      setSingleDayDate(null);
       // Start with NO selections — user picks what they want, can skip slots
       setSelections({});
       setAiDialogOpen(false);
@@ -160,6 +161,32 @@ export default function MealPlanner() {
       toast.error(e.message || 'Failed to generate meal plan');
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const aiGenerateDay = async (dateStr: string) => {
+    setGeneratingDayDate(dateStr);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+        body: {
+          recipes: recipes || [],
+          singleDay: { day: 1 },
+          preferences: aiPreferences || undefined,
+        },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      const meals = data.meals as Record<string, { options: MealOption[] }>;
+      if (!meals) throw new Error('Empty plan returned');
+
+      setAiPlan([{ day: 1, meals }]);
+      setSingleDayDate(dateStr);
+      setSelections({});
+      toast.success('Propozycje dnia wygenerowane!');
+    } catch (e: any) {
+      toast.error(e.message || 'Nie udało się wygenerować dnia');
+    } finally {
+      setGeneratingDayDate(null);
     }
   };
 
