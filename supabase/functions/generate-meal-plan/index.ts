@@ -126,12 +126,14 @@ RÓŻNORODNOŚĆ KUCHNI (WAŻNE):
 - Tytuły, opisy, kategorie ZAWSZE po polsku, ale samo danie może być z dowolnej kuchni (np. "Kurczak teriyaki z ryżem", "Tacos z wołowiną", "Shakshuka z fetą", "Pad thai z krewetkami").
 - Zaskakuj — nie powtarzaj tych samych typów dań w tygodniu.
 
-BATCH COOKING / RESZTKI (WAŻNE):
-- TYLKO dla OBIADU (nie kolacji, nie śniadania) DODAJ w tygodniu 1-2 propozycje "batch cooking" — większe dania, które naturalnie starczą na 2 porcje i smakują odgrzane.
-- Przykłady: gulasz, bigos, lasagne, zapiekanka makaronowa, zupa pomidorowa, zupa gulaszowa, rosół, pieczeń, curry z kurczakiem, chili con carne, leczo, spaghetti bolognese.
-- Gdy proponujesz takie danie w dniu N na obiad, DODAJ TĘ SAMĄ opcję w dniu N+1 w slocie OBIAD — oznacz polem "leftover_from_day": N i poprzedź tytuł "♻️ ", a w description dodaj krótką notkę "Z wczorajszego obiadu — odgrzej i podawaj.".
+BATCH COOKING / RESZTKI (BARDZO WAŻNE — użytkownik tego chce, kładź na to mocny nacisk):
+- DOMYŚLNIE staraj się, żeby OBIADY były dwudniowe. Cel: w tygodniu 2-3 PARY obiadów (dzień N + dzień N+1) z większej porcji jednego dania. To oszczędza czas gotowania i ogranicza marnowanie jedzenia.
+- Tylko slot OBIAD (nie kolacja, nie śniadanie).
+- W slocie obiadowym dnia N OZNACZ minimum jedną opcję jako "batch_cooking": true — większa porcja, na 2 dni. Przykłady: gulasz, bigos, lasagne, zapiekanka makaronowa, zupa pomidorowa/gulaszowa, rosół, pieczeń, curry z kurczakiem, chili con carne, leczo, spaghetti bolognese, risotto z kurczakiem, klopsy w sosie, ragù, dal, mussaka, pulled pork, łazanki, fasolka po bretońsku, golonka.
+- W slocie obiadowym dnia N+1 DODAJ TĘ SAMĄ opcję — oznacz polem "leftover_from_day": N i poprzedź tytuł "♻️ ", a w description dodaj krótką notkę "Z wczorajszego obiadu — odgrzej i podawaj.".
 - Opcja resztek może być "source": "new" z tym samym tytułem (bez ♻️) jako "leftover_title", ALBO "source": "existing" z tym samym recipe_id. W obu przypadkach ustaw "leftover_from_day".
-- Bez przesady: maksymalnie 2 pary resztek na tydzień. Pozostałe 2-3 opcje w slocie obiadowym nadal świeże, żeby użytkownik miał wybór.
+- Pozostałe 2-3 opcje w slocie obiadowym nadal świeże, żeby użytkownik miał wybór, jeśli akurat nie chce resztek.
+- Cel: 2-3 pary resztek w tygodniu (czyli ~4-6 z 7 obiadów to dania z batch cookingu lub resztki). Reszta świeża.
 - NIGDY nie dawaj resztek w śniadaniu, kolacji ani deserze.
 ${preferences ? `- Preferencje użytkownika: ${preferences}` : ''}
 - Zwróć WYŁĄCZNIE poprawny JSON, bez markdown.
