@@ -132,20 +132,23 @@ export interface NewShoppingItem {
 
 // ---- Queries ----------------------------------------------------------------
 
-export function useShoppingList() {
+export function useShoppingList(ownerId?: string) {
   const { user } = useAuth();
+  // When ownerId is provided we're viewing someone else's (shared) list.
+  const targetId = ownerId ?? user?.id;
 
   return useQuery({
-    queryKey: ['shopping-list', user?.id],
+    queryKey: ['shopping-list', targetId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('shopping_list_items')
         .select('*')
+        .eq('user_id', targetId!)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as ShoppingListItem[];
     },
-    enabled: !!user,
+    enabled: !!targetId,
   });
 }
 
