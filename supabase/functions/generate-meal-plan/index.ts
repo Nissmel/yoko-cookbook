@@ -168,7 +168,11 @@ Struktura JSON:
         model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: singleSlot ? 'Wygeneruj teraz 4 świeże, proste propozycje na ten slot.' : 'Wygeneruj teraz plan posiłków z wieloma prostymi opcjami na każdy posiłek.' },
+          { role: 'user', content: singleDay
+            ? `Wygeneruj teraz 4 świeże propozycje dla każdego z 4 slotów na dzień ${singleDay.day}.`
+            : singleSlot
+            ? 'Wygeneruj teraz 4 świeże, proste propozycje na ten slot.'
+            : 'Wygeneruj teraz plan posiłków z wieloma prostymi opcjami na każdy posiłek.' },
         ],
         response_format: { type: 'json_object' },
       }),
