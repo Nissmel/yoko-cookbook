@@ -16,14 +16,18 @@ export interface MealPlan {
   };
 }
 
-export function useMealPlans(startDate: string, endDate: string) {
+// Optional `ownerId` — when provided, plans are read/written against that owner's
+// account (used when a shared user is viewing/editing someone else's planner).
+export function useMealPlans(startDate: string, endDate: string, ownerId?: string) {
   const { user } = useAuth();
+  const targetId = ownerId ?? user?.id;
   return useQuery({
-    queryKey: ['meal-plans', user?.id, startDate, endDate],
+    queryKey: ['meal-plans', targetId, startDate, endDate],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('meal_plans')
         .select('*')
+        .eq('user_id', targetId!)
         .gte('plan_date', startDate)
         .lte('plan_date', endDate)
         .order('plan_date');
@@ -46,18 +50,19 @@ export function useMealPlans(startDate: string, endDate: string) {
         recipe: recipeMap[mp.recipe_id] || null,
       })) as MealPlan[];
     },
-    enabled: !!user,
+    enabled: !!targetId,
   });
 }
 
-export function useAddMealPlan() {
+export function useAddMealPlan(ownerId?: string) {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
     mutationFn: async ({ recipeId, planDate, mealType }: { recipeId: string; planDate: string; mealType: string }) => {
+      const targetId = ownerId ?? user!.id;
       const { error } = await supabase
         .from('meal_plans')
-        .insert({ user_id: user!.id, recipe_id: recipeId, plan_date: planDate, meal_type: mealType });
+        .insert({ user_id: targetId, recipe_id: recipeId, plan_date: planDate, meal_type: mealType });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['meal-plans'] }),
