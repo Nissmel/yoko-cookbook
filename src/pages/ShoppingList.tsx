@@ -3,7 +3,6 @@ import AppLayout from '@/components/AppLayout';
 import { useShoppingList, useToggleShoppingItem, useDeleteShoppingItem, useClearCheckedItems, useClearAllItems } from '@/hooks/useShoppingList';
 import { useRecipes } from '@/hooks/useRecipes';
 import { useSharedWithMe } from '@/hooks/useRecipeSharing';
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +13,6 @@ import { toast } from 'sonner';
 import { getStoreSection } from '@/types/recipe';
 
 export default function ShoppingList() {
-  const { user } = useAuth();
   const { data: sharedOwners } = useSharedWithMe();
   const [viewingOwnerId, setViewingOwnerId] = useState<string>('me');
   const isViewingOwn = viewingOwnerId === 'me';
