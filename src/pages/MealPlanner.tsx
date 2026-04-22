@@ -417,7 +417,9 @@ export default function MealPlanner() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-display font-semibold text-lg">
-                    Day {dayPlan.day} — {days[dayPlan.day - 1]?.dayName} {days[dayPlan.day - 1]?.dayNum}
+                    {singleDayDate
+                      ? format(new Date(singleDayDate + 'T12:00:00'), 'EEE, d MMM')
+                      : `Day ${dayPlan.day} — ${days[dayPlan.day - 1]?.dayName} ${days[dayPlan.day - 1]?.dayNum}`}
                   </h2>
                   <Button
                     variant="outline"
