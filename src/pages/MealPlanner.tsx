@@ -697,22 +697,49 @@ export default function MealPlanner() {
     );
   }
 
+  const ownerLabel = (() => {
+    if (isViewingOwn) return null;
+    const owner = sharedOwners?.find((o) => o.recipe_owner_id === viewingOwnerId);
+    return owner?.owner_display_name || owner?.owner_email || 'Wspólny planer';
+  })();
+
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto px-4 py-6 md:py-10 space-y-6 animate-fade-in">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="min-w-0">
             <h1 className="font-display text-3xl font-bold text-foreground">Meal Planner</h1>
-            <p className="text-muted-foreground font-body text-sm mt-1">Plan your meals for the week.</p>
+            <p className="text-muted-foreground font-body text-sm mt-1 truncate">
+              {ownerLabel ? `Planer: ${ownerLabel}` : 'Plan your meals for the week.'}
+            </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5 rounded-xl"
-            onClick={() => setAiDialogOpen(true)}
-          >
-            <Sparkles className="h-4 w-4" /> AI Generate
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            {sharedOwners && sharedOwners.length > 0 && (
+              <Select value={viewingOwnerId} onValueChange={setViewingOwnerId}>
+                <SelectTrigger className="h-9 w-auto min-w-[140px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="me">Mój planer</SelectItem>
+                  {sharedOwners.map((o) => (
+                    <SelectItem key={o.recipe_owner_id} value={o.recipe_owner_id}>
+                      {o.owner_display_name || o.owner_email || 'Shared'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            {isViewingOwn && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 rounded-xl"
+                onClick={() => setAiDialogOpen(true)}
+              >
+                <Sparkles className="h-4 w-4" /> AI Generate
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Window navigation (7-day rolling). Default starts tomorrow, but
