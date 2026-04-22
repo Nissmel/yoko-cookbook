@@ -88,10 +88,12 @@ export default function MealPlanner() {
 
   // AI plan selection state
   const [aiPlan, setAiPlan] = useState<DayPlan[] | null>(null);
+  const [singleDayDate, setSingleDayDate] = useState<string | null>(null); // when set, aiPlan is for ONE specific date
   const [selections, setSelections] = useState<Record<string, MealOption>>({});
   const [savingPlan, setSavingPlan] = useState(false);
   const [rerollingSlot, setRerollingSlot] = useState<string | null>(null);
   const [rerollingDay, setRerollingDay] = useState<number | null>(null);
+  const [generatingDayDate, setGeneratingDayDate] = useState<string | null>(null);
 
   const days = useMemo(() =>
     Array.from({ length: 7 }, (_, i) => {
@@ -151,6 +153,7 @@ export default function MealPlanner() {
       if (!plan?.length) throw new Error('Empty plan returned');
 
       setAiPlan(plan);
+      setSingleDayDate(null);
       // Start with NO selections — user picks what they want, can skip slots
       setSelections({});
       setAiDialogOpen(false);
@@ -158,6 +161,32 @@ export default function MealPlanner() {
       toast.error(e.message || 'Failed to generate meal plan');
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const aiGenerateDay = async (dateStr: string) => {
+    setGeneratingDayDate(dateStr);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+        body: {
+          recipes: recipes || [],
+          singleDay: { day: 1 },
+          preferences: aiPreferences || undefined,
+        },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      const meals = data.meals as Record<string, { options: MealOption[] }>;
+      if (!meals) throw new Error('Empty plan returned');
+
+      setAiPlan([{ day: 1, meals }]);
+      setSingleDayDate(dateStr);
+      setSelections({});
+      toast.success('Propozycje dnia wygenerowane!');
+    } catch (e: any) {
+      toast.error(e.message || 'Nie udało się wygenerować dnia');
+    } finally {
+      setGeneratingDayDate(null);
     }
   };
 
@@ -274,9 +303,8 @@ export default function MealPlanner() {
 
     try {
       for (const dayPlan of aiPlan) {
-        const dayIndex = dayPlan.day - 1;
-        if (dayIndex >= 7) continue;
-        const dateStr = days[dayIndex]?.dateStr;
+        // Single-day mode: use the explicitly chosen date; otherwise map by index in current week
+        const dateStr = singleDayDate ?? days[dayPlan.day - 1]?.dateStr;
         if (!dateStr) continue;
 
         for (const mealType of PLAN_MEAL_TYPES) {
@@ -353,6 +381,7 @@ export default function MealPlanner() {
         : `Plan saved! ${added} meals added.`;
       toast.success(msg);
       setAiPlan(null);
+      setSingleDayDate(null);
       setSelections({});
     } catch (e: any) {
       toast.error(e.message || 'Failed to save plan');
@@ -374,7 +403,7 @@ export default function MealPlanner() {
               <p className="text-muted-foreground font-body text-sm mt-1">Kliknij propozycję, by ją wybrać. Kliknij ponownie, by odznaczyć. Możesz pominąć dowolny posiłek.</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => { setAiPlan(null); setSelections({}); }}>
+              <Button variant="outline" size="sm" onClick={() => { setAiPlan(null); setSingleDayDate(null); setSelections({}); }}>
                 Cancel
               </Button>
               <Button size="sm" onClick={handleSavePlan} disabled={savingPlan || selectedCount === 0} className="gap-1.5">
@@ -388,7 +417,9 @@ export default function MealPlanner() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-display font-semibold text-lg">
-                    Day {dayPlan.day} — {days[dayPlan.day - 1]?.dayName} {days[dayPlan.day - 1]?.dayNum}
+                    {singleDayDate
+                      ? format(new Date(singleDayDate + 'T12:00:00'), 'EEE, d MMM')
+                      : `Day ${dayPlan.day} — ${days[dayPlan.day - 1]?.dayName} ${days[dayPlan.day - 1]?.dayNum}`}
                   </h2>
                   <Button
                     variant="outline"
@@ -556,9 +587,24 @@ export default function MealPlanner() {
                         </span>
                         <span className="text-xs text-muted-foreground">{day.dayNum}</span>
                       </div>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openAddDialog(day.dateStr)}>
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 gap-1 text-xs"
+                          onClick={() => aiGenerateDay(day.dateStr)}
+                          disabled={generatingDayDate === day.dateStr}
+                          title="Wygeneruj propozycje AI dla tego dnia"
+                        >
+                          {generatingDayDate === day.dateStr
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            : <Sparkles className="h-3.5 w-3.5" />}
+                          <span className="hidden xs:inline">AI</span>
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openAddDialog(day.dateStr)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     {meals.length === 0 ? (
                       <div
