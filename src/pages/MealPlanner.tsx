@@ -12,8 +12,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen, RefreshCw, Minus, GripVertical } from 'lucide-react';
-import { format, startOfWeek, addDays, addWeeks, subWeeks } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { Link } from 'react-router-dom';
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  useDraggable,
+  useDroppable,
+  DragOverlay,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core';
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert'];
 const MEAL_TYPE_LABELS: Record<string, string> = {
