@@ -54,8 +54,25 @@ interface DayPlan {
   meals: Record<string, { options: MealOption[] }>;
 }
 
-function Draggable({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
+function Draggable({
+  id,
+  children,
+  className,
+  handleOnly,
+}: {
+  id: string;
+  children: React.ReactNode | ((handleProps: Record<string, any>) => React.ReactNode);
+  className?: string;
+  handleOnly?: boolean;
+}) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id });
+  if (handleOnly && typeof children === 'function') {
+    return (
+      <div ref={setNodeRef} className={`${className ?? ''} ${isDragging ? 'opacity-40' : ''}`}>
+        {children({ ...listeners, ...attributes, style: { touchAction: 'none', cursor: 'grab' } })}
+      </div>
+    );
+  }
   return (
     <div
       ref={setNodeRef}
@@ -63,7 +80,7 @@ function Draggable({ id, children, className }: { id: string; children: React.Re
       {...attributes}
       className={`${className ?? ''} ${isDragging ? 'opacity-40' : ''} touch-none cursor-grab active:cursor-grabbing`}
     >
-      {children}
+      {children as React.ReactNode}
     </div>
   );
 }
@@ -844,26 +861,36 @@ export default function MealPlanner() {
                                       <Draggable
                                         key={meal.id}
                                         id={`planned:${meal.id}`}
+                                        handleOnly
                                         className="flex items-center justify-between rounded-md bg-muted/50 px-2 py-1.5 group transition-opacity"
                                       >
-                                        <GripVertical className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0 mr-1" />
-                                        <Link to={`/recipe/${meal.recipe_id}`} className="flex items-center gap-2 min-w-0 flex-1" onPointerDown={(e) => e.stopPropagation()}>
-                                          {meal.recipe?.image_url && (
-                                            <img src={meal.recipe.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
-                                          )}
-                                          <div className="min-w-0">
-                                            <p className="text-sm font-body break-words">{meal.recipe?.title || 'Recipe'}</p>
-                                            <p className="text-xs text-muted-foreground">{MEAL_TYPE_LABELS[meal.meal_type] || meal.meal_type}</p>
-                                          </div>
-                                        </Link>
-                                        <button
-                                          onPointerDown={(e) => e.stopPropagation()}
-                                          onClick={() => handleRemove(meal.id)}
-                                          className="opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive ml-1 p-1"
-                                          aria-label="Remove"
-                                        >
-                                          <X className="h-3.5 w-3.5" />
-                                        </button>
+                                        {(handleProps) => (
+                                          <>
+                                            <button
+                                              {...handleProps}
+                                              aria-label="Przeciągnij"
+                                              className="shrink-0 mr-1 p-1 -m-1 text-muted-foreground/60 hover:text-foreground active:cursor-grabbing cursor-grab"
+                                            >
+                                              <GripVertical className="h-3.5 w-3.5" />
+                                            </button>
+                                            <Link to={`/recipe/${meal.recipe_id}`} className="flex items-center gap-2 min-w-0 flex-1">
+                                              {meal.recipe?.image_url && (
+                                                <img src={meal.recipe.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                                              )}
+                                              <div className="min-w-0">
+                                                <p className="text-sm font-body break-words">{meal.recipe?.title || 'Recipe'}</p>
+                                                <p className="text-xs text-muted-foreground">{MEAL_TYPE_LABELS[meal.meal_type] || meal.meal_type}</p>
+                                              </div>
+                                            </Link>
+                                            <button
+                                              onClick={() => handleRemove(meal.id)}
+                                              className="opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive ml-1 p-1"
+                                              aria-label="Remove"
+                                            >
+                                              <X className="h-3.5 w-3.5" />
+                                            </button>
+                                          </>
+                                        )}
                                       </Draggable>
                                     ))}
                                   </div>
