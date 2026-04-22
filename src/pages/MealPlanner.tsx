@@ -54,8 +54,25 @@ interface DayPlan {
   meals: Record<string, { options: MealOption[] }>;
 }
 
-function Draggable({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
+function Draggable({
+  id,
+  children,
+  className,
+  handleOnly,
+}: {
+  id: string;
+  children: React.ReactNode | ((handleProps: Record<string, any>) => React.ReactNode);
+  className?: string;
+  handleOnly?: boolean;
+}) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id });
+  if (handleOnly && typeof children === 'function') {
+    return (
+      <div ref={setNodeRef} className={`${className ?? ''} ${isDragging ? 'opacity-40' : ''}`}>
+        {children({ ...listeners, ...attributes, style: { touchAction: 'none', cursor: 'grab' } })}
+      </div>
+    );
+  }
   return (
     <div
       ref={setNodeRef}
@@ -63,7 +80,7 @@ function Draggable({ id, children, className }: { id: string; children: React.Re
       {...attributes}
       className={`${className ?? ''} ${isDragging ? 'opacity-40' : ''} touch-none cursor-grab active:cursor-grabbing`}
     >
-      {children}
+      {children as React.ReactNode}
     </div>
   );
 }
