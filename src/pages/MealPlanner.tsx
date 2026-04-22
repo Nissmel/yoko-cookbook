@@ -381,6 +381,7 @@ export default function MealPlanner() {
         : `Plan saved! ${added} meals added.`;
       toast.success(msg);
       setAiPlan(null);
+      setSingleDayDate(null);
       setSelections({});
     } catch (e: any) {
       toast.error(e.message || 'Failed to save plan');
