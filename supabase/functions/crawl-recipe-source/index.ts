@@ -111,8 +111,9 @@ async function firecrawlScrapeLinks(apiKey: string, url: string): Promise<string
         url,
         formats: ['links'],
         onlyMainContent: false,
-        waitFor: 3000,
-        timeout: 30000,
+        // Category/tag listing pages render server-side — no JS wait needed.
+        waitFor: 0,
+        timeout: 20000,
       }),
     });
     if (!res.ok) return [];
