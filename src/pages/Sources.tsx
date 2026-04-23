@@ -48,9 +48,15 @@ export default function Sources() {
     setCrawlingId(sourceId);
     try {
       const result = await crawl.mutateAsync(sourceId);
-      toast.success(
-        `${sourceName}: znaleziono ${result.candidates_found} kandydatów, ${result.new_indexed} nowych przepisów (łącznie ${result.total_in_source})`,
-      );
+      if (result.started) {
+        toast.success(
+          `${sourceName}: crawl uruchomiony w tle. Odśwież listę za 1–2 minuty, by zobaczyć nowe przepisy.`,
+        );
+      } else {
+        toast.success(
+          `${sourceName}: znaleziono ${result.candidates_found ?? 0} kandydatów, ${result.new_indexed ?? 0} nowych (łącznie ${result.total_in_source ?? 0})`,
+        );
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Błąd crawla';
       toast.error(msg);

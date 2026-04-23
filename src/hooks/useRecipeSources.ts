@@ -69,15 +69,23 @@ export function useCrawlSource() {
       if (!data?.success) throw new Error(data?.error || 'Crawl failed');
       return data as {
         success: true;
+        started?: boolean;
         source: string;
-        candidates_found: number;
-        new_indexed: number;
-        total_in_source: number;
+        strategy?: string;
+        message?: string;
+        candidates_found?: number;
+        new_indexed?: number;
+        total_in_source?: number;
       };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recipe-sources'] });
       queryClient.invalidateQueries({ queryKey: ['scraped-recipes'] });
+      // Re-check after a delay so the UI picks up background-crawl progress.
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['recipe-sources'] });
+        queryClient.invalidateQueries({ queryKey: ['scraped-recipes'] });
+      }, 60_000);
     },
   });
 }

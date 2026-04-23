@@ -9,7 +9,10 @@
 //
 // Auth: requires logged-in user. Idempotent via unique source_url.
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+
+// Background-task API exposed by Supabase Edge Runtime
+declare const EdgeRuntime: { waitUntil: (p: Promise<unknown>) => void } | undefined;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -138,17 +141,44 @@ async function firecrawlScrapeMarkdown(apiKey: string, url: string): Promise<{ m
   return { markdown: d.markdown || '', links: (d.links || []).filter((l: unknown) => typeof l === 'string') };
 }
 
+// ---------- Incremental upsert helper ----------
+
+async function upsertBatch(
+  admin: SupabaseClient,
+  sourceId: string,
+  urls: string[],
+): Promise<number> {
+  if (urls.length === 0) return 0;
+  const rows = urls.map((u) => ({
+    source_id: sourceId,
+    source_url: u,
+    title: deriveTitleFromUrl(u),
+  }));
+  let inserted = 0;
+  for (let i = 0; i < rows.length; i += 500) {
+    const chunk = rows.slice(i, i + 500);
+    const { error, count } = await admin
+      .from('scraped_recipes')
+      .upsert(chunk, { onConflict: 'source_url', ignoreDuplicates: true, count: 'exact' });
+    if (error) console.error('Upsert error:', error);
+    else if (count) inserted += count;
+  }
+  return inserted;
+}
+
 // ---------- Deep-nav crawl (kwestiasmaku-style sites) ----------
+// Streams results to DB as it goes so progress survives timeouts.
 
 async function deepNavCrawl(
   apiKey: string,
   baseUrl: string,
   maxSeeds: number,
-): Promise<Array<{ url: string; title: string }>> {
+  admin: SupabaseClient,
+  sourceId: string,
+): Promise<{ found: number; inserted: number }> {
   const base = new URL(baseUrl);
   const host = base.hostname.replace(/^www\./, '');
 
-  // 1. Scrape homepage to discover category/tag seed pages
   const home = await firecrawlScrapeMarkdown(apiKey, baseUrl);
 
   const seedSet = new Set<string>();
@@ -174,25 +204,33 @@ async function deepNavCrawl(
   const seeds = Array.from(seedSet).slice(0, maxSeeds);
   console.log(`Deep crawl: ${seeds.length} seed pages discovered for ${host}`);
 
-  // 2. Scrape each seed in parallel batches, collecting recipe URLs
-  const recipeMap = new Map<string, string>(); // url -> title (derived later)
-  const BATCH = 6;
+  const seenAll = new Set<string>();
+  let totalInserted = 0;
+  const BATCH = 10;
+
   for (let i = 0; i < seeds.length; i += BATCH) {
     const batch = seeds.slice(i, i + BATCH);
     const results = await Promise.all(batch.map((s) => firecrawlScrapeLinks(apiKey, s)));
+    const newUrls: string[] = [];
     for (const links of results) {
       for (const l of links) {
         const clean = l.split('#')[0].split('?')[0];
-        if (isRecipeUrl(clean, baseUrl)) {
-          const norm = clean.replace(/\/$/, '');
-          if (!recipeMap.has(norm)) recipeMap.set(norm, '');
-        }
+        if (!isRecipeUrl(clean, baseUrl)) continue;
+        const norm = clean.replace(/\/$/, '');
+        if (seenAll.has(norm)) continue;
+        seenAll.add(norm);
+        newUrls.push(norm);
       }
     }
-    console.log(`  [${Math.min(i + BATCH, seeds.length)}/${seeds.length}] recipes so far: ${recipeMap.size}`);
+    // Stream batch to DB so partial progress is preserved.
+    const inserted = await upsertBatch(admin, sourceId, newUrls);
+    totalInserted += inserted;
+    console.log(
+      `  [${Math.min(i + BATCH, seeds.length)}/${seeds.length}] found=${seenAll.size} new=${inserted} total_new=${totalInserted}`,
+    );
   }
 
-  return Array.from(recipeMap.entries()).map(([url, title]) => ({ url, title }));
+  return { found: seenAll.size, inserted: totalInserted };
 }
 
 // ---------- Main handler ----------
@@ -258,71 +296,70 @@ Deno.serve(async (req) => {
 
     const mapLimit = Math.min(Math.max(Number(limit) || 5000, 50), 30000);
     const host = new URL(source.base_url).hostname.replace(/^www\./, '');
-
-    // Choose strategy: deep-nav crawl for kwestiasmaku, sitemap map for others.
     const useDeepCrawl = host === 'kwestiasmaku.com';
 
-    let candidates: Array<{ url: string; title: string }> = [];
+    // Run the heavy work in the background so the request returns immediately
+    // (avoids the 150s edge-function idle timeout). Progress is streamed to the
+    // DB inside deepNavCrawl, so partial results survive even if the worker is
+    // killed early.
+    const work = (async () => {
+      try {
+        let inserted = 0;
+        let found = 0;
 
-    if (useDeepCrawl) {
-      candidates = await deepNavCrawl(firecrawlKey, source.base_url, 100);
-    } else {
-      const links = await firecrawlMap(firecrawlKey, source.base_url, mapLimit);
-      const seen = new Set<string>();
-      for (const url of links) {
-        if (!isRecipeUrl(url, source.base_url)) continue;
-        const norm = url.split('#')[0].split('?')[0].replace(/\/$/, '');
-        if (seen.has(norm)) continue;
-        seen.add(norm);
-        candidates.push({ url: norm, title: '' });
-      }
-    }
-
-    // Build rows and upsert
-    const rows = candidates.map((c) => ({
-      source_id: source.id,
-      source_url: c.url,
-      title: (c.title && c.title.trim()) || deriveTitleFromUrl(c.url),
-    }));
-
-    let inserted = 0;
-    if (rows.length > 0) {
-      for (let i = 0; i < rows.length; i += 500) {
-        const chunk = rows.slice(i, i + 500);
-        const { error: upErr, count } = await admin
-          .from('scraped_recipes')
-          .upsert(chunk, { onConflict: 'source_url', ignoreDuplicates: true, count: 'exact' });
-        if (upErr) {
-          console.error('Upsert error:', upErr);
-        } else if (count) {
-          inserted += count;
+        if (useDeepCrawl) {
+          const res = await deepNavCrawl(firecrawlKey, source.base_url, 100, admin, source.id);
+          inserted = res.inserted;
+          found = res.found;
+        } else {
+          const links = await firecrawlMap(firecrawlKey, source.base_url, mapLimit);
+          const seen = new Set<string>();
+          const urls: string[] = [];
+          for (const url of links) {
+            if (!isRecipeUrl(url, source.base_url)) continue;
+            const norm = url.split('#')[0].split('?')[0].replace(/\/$/, '');
+            if (seen.has(norm)) continue;
+            seen.add(norm);
+            urls.push(norm);
+          }
+          found = urls.length;
+          inserted = await upsertBatch(admin, source.id, urls);
         }
+
+        const { count: totalCount } = await admin
+          .from('scraped_recipes')
+          .select('id', { count: 'exact', head: true })
+          .eq('source_id', source.id);
+
+        await admin
+          .from('recipe_sources')
+          .update({
+            last_crawled_at: new Date().toISOString(),
+            recipe_count: totalCount || 0,
+          })
+          .eq('id', source.id);
+
+        console.log(
+          `Crawl finished for ${source.name}: found=${found} new=${inserted} total=${totalCount || 0}`,
+        );
+      } catch (err) {
+        console.error('Background crawl failed:', err);
       }
+    })();
+
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime?.waitUntil) {
+      EdgeRuntime.waitUntil(work);
     }
-
-    const { count: totalCount } = await admin
-      .from('scraped_recipes')
-      .select('id', { count: 'exact', head: true })
-      .eq('source_id', source.id);
-
-    await admin
-      .from('recipe_sources')
-      .update({
-        last_crawled_at: new Date().toISOString(),
-        recipe_count: totalCount || 0,
-      })
-      .eq('id', source.id);
 
     return new Response(
       JSON.stringify({
         success: true,
+        started: true,
         source: source.name,
         strategy: useDeepCrawl ? 'deep-nav-crawl' : 'sitemap-map',
-        candidates_found: candidates.length,
-        new_indexed: inserted,
-        total_in_source: totalCount || 0,
+        message: 'Crawl started in background. Refresh the source list in 1-2 minutes to see updated counts.',
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 202, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
