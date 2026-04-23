@@ -13,6 +13,7 @@ import {
   Share2,
   Folder,
   CalendarDays,
+  Globe,
   Menu,
   X,
   RefreshCw,
@@ -31,6 +32,7 @@ const mainNav = [
 const secondaryNav = [
   { to: '/create', icon: PlusCircle, label: 'Create' },
   { to: '/import', icon: Upload, label: 'Import' },
+  { to: '/sources', icon: Globe, label: 'Sources' },
   { to: '/collections', icon: Folder, label: 'Collections' },
   { to: '/sharing', icon: Share2, label: 'Share' },
 ];
