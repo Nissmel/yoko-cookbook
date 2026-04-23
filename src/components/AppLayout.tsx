@@ -66,7 +66,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Desktop header */}
       <header className="hidden md:flex items-center justify-between border-b border-border/60 px-6 py-3 bg-card/60 backdrop-blur-md sticky top-0 z-40">
         <Link to="/" className="flex items-center gap-3 group">
@@ -112,7 +112,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </header>
 
       {/* Content */}
-      <main className="pb-24 md:pb-8">{children}</main>
+      <main className="pb-24 md:pb-8 overflow-x-hidden">{children}</main>
 
       {/* Mobile bottom nav — 4 main items + "More" menu */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-card/95 backdrop-blur-md md:hidden pb-safe">
