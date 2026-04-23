@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen, RefreshCw, Minus, GripVertical } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen, RefreshCw, Minus, GripVertical, Dice5, ExternalLink } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { Link } from 'react-router-dom';
 import {
@@ -222,6 +222,12 @@ export default function MealPlanner() {
   const [rerollingDay, setRerollingDay] = useState<number | null>(null);
   const [generatingDayDate, setGeneratingDayDate] = useState<string | null>(null);
 
+  // Random meal picker (no save) — for "what should I eat now?" moments
+  const [randomDialogOpen, setRandomDialogOpen] = useState(false);
+  const [randomMealType, setRandomMealType] = useState<string>('dinner');
+  const [randomLoading, setRandomLoading] = useState(false);
+  const [randomOptions, setRandomOptions] = useState<MealOption[] | null>(null);
+
   const days = useMemo(() =>
     Array.from({ length: 7 }, (_, i) => {
       const date = addDays(weekStart, i);
@@ -315,6 +321,58 @@ export default function MealPlanner() {
       toast.error(e.message || 'Nie udało się wygenerować dnia');
     } finally {
       setGeneratingDayDate(null);
+    }
+  };
+
+  // Generate a few options for ONE meal type, just to pick something to eat now.
+  // Does NOT touch the planner — purely a "give me ideas" feature.
+  const generateRandomMeal = async (mealType: string, exclude?: string[]) => {
+    setRandomLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+        body: {
+          recipes: recipes || [],
+          singleSlot: { day: 1, mealType },
+          exclude: exclude || [],
+          preferences: aiPreferences || undefined,
+        },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      const options = data.options as MealOption[];
+      if (!options?.length) throw new Error('Brak propozycji');
+      setRandomOptions(options);
+    } catch (e: any) {
+      toast.error(e.message || 'Nie udało się wylosować');
+    } finally {
+      setRandomLoading(false);
+    }
+  };
+
+  const openRandomDialog = () => {
+    setRandomOptions(null);
+    setRandomMealType('dinner');
+    setRandomDialogOpen(true);
+  };
+
+  const rerollRandom = () => {
+    const exclude = (randomOptions || []).map((o) => o.title);
+    generateRandomMeal(randomMealType, exclude);
+  };
+
+  // Open scraped recipe source in new tab so the user can cook from the blog directly,
+  // without us doing a full scrape+import dance for a one-off meal.
+  const openScrapedSource = async (scrapedId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('scraped_recipes')
+        .select('source_url')
+        .eq('id', scrapedId)
+        .maybeSingle();
+      if (error || !data?.source_url) throw new Error('Brak linku');
+      window.open(data.source_url, '_blank', 'noopener,noreferrer');
+    } catch (e: any) {
+      toast.error(e.message || 'Nie udało się otworzyć przepisu');
     }
   };
 
@@ -832,14 +890,25 @@ export default function MealPlanner() {
               </Select>
             )}
             {isViewingOwn && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 rounded-xl"
-                onClick={() => setAiDialogOpen(true)}
-              >
-                <Sparkles className="h-4 w-4" /> AI Generate
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 rounded-xl"
+                  onClick={openRandomDialog}
+                  title="Wylosuj jeden posiłek — bez zapisu do planera"
+                >
+                  <Dice5 className="h-4 w-4" /> Co zjeść?
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 rounded-xl"
+                  onClick={() => setAiDialogOpen(true)}
+                >
+                  <Sparkles className="h-4 w-4" /> AI Generate
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -1032,6 +1101,125 @@ export default function MealPlanner() {
               <Button onClick={handleAdd} disabled={!selectedRecipeId || addMealPlan.isPending} className="w-full">
                 Add to Plan
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Random meal dialog — "what should I eat now?" without saving to planner */}
+        <Dialog open={randomDialogOpen} onOpenChange={setRandomDialogOpen}>
+          <DialogContent className="rounded-2xl max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-display flex items-center gap-2">
+                <Dice5 className="h-5 w-5 text-primary" /> Co dziś zjeść?
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              {!randomOptions ? (
+                <>
+                  <p className="text-sm text-muted-foreground font-body">
+                    Wybierz typ posiłku — AI wylosuje 4 propozycje. Nic nie zostanie zapisane do planera.
+                  </p>
+                  <div>
+                    <label className="text-sm font-body text-muted-foreground mb-1.5 block">Typ posiłku</label>
+                    <Select value={randomMealType} onValueChange={setRandomMealType}>
+                      <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {MEAL_TYPES.map((t) => (
+                          <SelectItem key={t} value={t}>{MEAL_TYPE_LABELS[t] || t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    onClick={() => generateRandomMeal(randomMealType)}
+                    disabled={randomLoading}
+                    className="w-full gap-2 rounded-xl"
+                  >
+                    {randomLoading ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Losowanie...</>
+                    ) : (
+                      <><Dice5 className="h-4 w-4" /> Wylosuj propozycje</>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground font-body">
+                    {MEAL_TYPE_LABELS[randomMealType]} — wybierz coś, na co masz ochotę:
+                  </p>
+                  <div className="space-y-2">
+                    {randomOptions.map((option, i) => (
+                      <div
+                        key={i}
+                        className="p-3 rounded-xl border-2 border-border bg-card hover:border-primary/40 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <p className="text-sm font-semibold text-foreground break-words flex-1">
+                            {option.title}
+                          </p>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {option.source === 'existing' && <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />}
+                            {option.source === 'scraped' && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-medium">📚</span>
+                            )}
+                            {option.source === 'new' && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground font-medium">NEW</span>
+                            )}
+                          </div>
+                        </div>
+                        {option.description && (
+                          <p className="text-xs text-muted-foreground mb-2 break-words">{option.description}</p>
+                        )}
+                        <div className="flex gap-1.5">
+                          {option.source === 'existing' && option.recipe_id && (
+                            <Link
+                              to={`/recipe/${option.recipe_id}`}
+                              className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 inline-flex items-center gap-1"
+                              onClick={() => setRandomDialogOpen(false)}
+                            >
+                              <BookOpen className="h-3 w-3" /> Otwórz przepis
+                            </Link>
+                          )}
+                          {option.source === 'scraped' && option.scraped_id && (
+                            <button
+                              onClick={() => openScrapedSource(option.scraped_id!)}
+                              className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 inline-flex items-center gap-1"
+                            >
+                              <ExternalLink className="h-3 w-3" /> Zobacz przepis
+                            </button>
+                          )}
+                          {option.source === 'new' && (
+                            <span className="text-xs text-muted-foreground italic px-1">
+                              Pomysł AI — bez gotowego przepisu
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={rerollRandom}
+                      disabled={randomLoading}
+                      className="flex-1 gap-2 rounded-xl"
+                    >
+                      {randomLoading ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Losowanie...</>
+                      ) : (
+                        <><RefreshCw className="h-4 w-4" /> Wylosuj ponownie</>
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setRandomOptions(null)}
+                      className="rounded-xl"
+                    >
+                      Zmień typ
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           </DialogContent>
         </Dialog>
