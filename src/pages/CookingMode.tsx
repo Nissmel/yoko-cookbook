@@ -175,20 +175,22 @@ export default function CookingMode() {
           <div className="flex items-center justify-center gap-4 mt-6 shrink-0">
             <Button
               variant="outline"
-              size="lg"
+              size="icon"
               onClick={() => setCurrentStep((s) => Math.max(s - 1, 0))}
               disabled={currentStep === 0}
-              className="gap-2"
+              aria-label="Previous step"
+              className="h-14 w-14 rounded-full"
             >
-              <ChevronLeft className="h-5 w-5" /> Previous
+              <ChevronLeft className="h-6 w-6" />
             </Button>
             <Button
-              size="lg"
+              size="icon"
               onClick={() => setCurrentStep((s) => Math.min(s + 1, recipe.instructions.length - 1))}
               disabled={currentStep === recipe.instructions.length - 1}
-              className="gap-2"
+              aria-label="Next step"
+              className="h-14 w-14 rounded-full"
             >
-              Next <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-6 w-6" />
             </Button>
           </div>
 
