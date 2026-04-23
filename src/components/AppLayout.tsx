@@ -112,7 +112,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </header>
 
       {/* Content */}
-      <main className="pb-24 md:pb-8">{children}</main>
+      <main className="pb-24 md:pb-8 overflow-x-hidden">{children}</main>
 
       {/* Mobile bottom nav — 4 main items + "More" menu */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-card/95 backdrop-blur-md md:hidden pb-safe">
