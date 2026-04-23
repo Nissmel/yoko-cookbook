@@ -772,8 +772,8 @@ export default function MealPlanner() {
             <span className="font-display font-semibold text-sm truncate">
               {format(weekStart, 'd MMM')} – {format(addDays(weekStart, 6), 'd MMM yyyy')}
             </span>
-            {weekStart.getTime() !== tomorrow.getTime() && (
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setWeekStart(tomorrow)}>
+            {weekStart.getTime() !== currentWeekMonday.getTime() && (
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setWeekStart(currentWeekMonday)}>
                 Dziś
               </Button>
             )}
