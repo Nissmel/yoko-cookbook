@@ -677,6 +677,11 @@ export default function MealPlanner() {
                                     {option.source === 'new' && !option.leftover_from_day && (
                                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground font-medium">NEW</span>
                                     )}
+                                    {option.source === 'scraped' && !option.leftover_from_day && (
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-medium" title="Z biblioteki przepisów (zostanie zaimportowany przy zapisie)">
+                                        📚 Z BIBLIOTEKI
+                                      </span>
+                                    )}
                                     {option.source === 'existing' && (
                                       <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
                                     )}
