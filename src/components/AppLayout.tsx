@@ -15,6 +15,7 @@ import {
   CalendarDays,
   Menu,
   X,
+  RefreshCw,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
