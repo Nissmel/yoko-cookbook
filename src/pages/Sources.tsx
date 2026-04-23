@@ -130,7 +130,7 @@ export default function Sources() {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto px-4 py-6 md:py-10 space-y-6 animate-fade-in">
+      <div className="max-w-4xl mx-auto px-4 py-6 md:py-10 space-y-6 animate-fade-in overflow-x-hidden">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground flex items-center gap-2">
             <Globe className="h-7 w-7 text-primary" /> Recipe Sources
