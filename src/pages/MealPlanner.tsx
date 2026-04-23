@@ -324,6 +324,58 @@ export default function MealPlanner() {
     }
   };
 
+  // Generate a few options for ONE meal type, just to pick something to eat now.
+  // Does NOT touch the planner — purely a "give me ideas" feature.
+  const generateRandomMeal = async (mealType: string, exclude?: string[]) => {
+    setRandomLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+        body: {
+          recipes: recipes || [],
+          singleSlot: { day: 1, mealType },
+          exclude: exclude || [],
+          preferences: aiPreferences || undefined,
+        },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      const options = data.options as MealOption[];
+      if (!options?.length) throw new Error('Brak propozycji');
+      setRandomOptions(options);
+    } catch (e: any) {
+      toast.error(e.message || 'Nie udało się wylosować');
+    } finally {
+      setRandomLoading(false);
+    }
+  };
+
+  const openRandomDialog = () => {
+    setRandomOptions(null);
+    setRandomMealType('dinner');
+    setRandomDialogOpen(true);
+  };
+
+  const rerollRandom = () => {
+    const exclude = (randomOptions || []).map((o) => o.title);
+    generateRandomMeal(randomMealType, exclude);
+  };
+
+  // Open scraped recipe source in new tab so the user can cook from the blog directly,
+  // without us doing a full scrape+import dance for a one-off meal.
+  const openScrapedSource = async (scrapedId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('scraped_recipes')
+        .select('source_url')
+        .eq('id', scrapedId)
+        .maybeSingle();
+      if (error || !data?.source_url) throw new Error('Brak linku');
+      window.open(data.source_url, '_blank', 'noopener,noreferrer');
+    } catch (e: any) {
+      toast.error(e.message || 'Nie udało się otworzyć przepisu');
+    }
+  };
+
   const selectOption = (dayNum: number, mealType: string, option: MealOption) => {
     const key = `${dayNum}-${mealType}`;
     setSelections((prev) => {
