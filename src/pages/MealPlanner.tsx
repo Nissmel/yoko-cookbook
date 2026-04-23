@@ -222,6 +222,12 @@ export default function MealPlanner() {
   const [rerollingDay, setRerollingDay] = useState<number | null>(null);
   const [generatingDayDate, setGeneratingDayDate] = useState<string | null>(null);
 
+  // Random meal picker (no save) — for "what should I eat now?" moments
+  const [randomDialogOpen, setRandomDialogOpen] = useState(false);
+  const [randomMealType, setRandomMealType] = useState<string>('dinner');
+  const [randomLoading, setRandomLoading] = useState(false);
+  const [randomOptions, setRandomOptions] = useState<MealOption[] | null>(null);
+
   const days = useMemo(() =>
     Array.from({ length: 7 }, (_, i) => {
       const date = addDays(weekStart, i);
