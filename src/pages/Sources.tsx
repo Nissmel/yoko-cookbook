@@ -27,7 +27,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { pl } from 'date-fns/locale';
 
 export default function Sources() {
   const navigate = useNavigate();
@@ -50,15 +49,15 @@ export default function Sources() {
       const result = await crawl.mutateAsync(sourceId);
       if (result.started) {
         toast.success(
-          `${sourceName}: crawl uruchomiony w tle. Odśwież listę za 1–2 minuty, by zobaczyć nowe przepisy.`,
+          `${sourceName}: crawl started in the background. Refresh in 1–2 minutes to see new recipes.`,
         );
       } else {
         toast.success(
-          `${sourceName}: znaleziono ${result.candidates_found ?? 0} kandydatów, ${result.new_indexed ?? 0} nowych (łącznie ${result.total_in_source ?? 0})`,
+          `${sourceName}: found ${result.candidates_found ?? 0} candidates, ${result.new_indexed ?? 0} new (total ${result.total_in_source ?? 0})`,
         );
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Błąd crawla';
+      const msg = err instanceof Error ? err.message : 'Crawl failed';
       toast.error(msg);
     } finally {
       setCrawlingId(null);
@@ -74,7 +73,7 @@ export default function Sources() {
         { body: { url: item.source_url } },
       );
       if (scrapeError) throw new Error(scrapeError.message);
-      if (!scrapeData?.success) throw new Error(scrapeData?.error || 'Scrape nieudany');
+      if (!scrapeData?.success) throw new Error(scrapeData?.error || 'Scrape failed');
 
       // 2. AI parse to our JSON format
       const { data: parseData, error: parseError } = await supabase.functions.invoke(
@@ -88,7 +87,7 @@ export default function Sources() {
         },
       );
       if (parseError) throw new Error(parseError.message);
-      if (!parseData?.success) throw new Error(parseData?.error || 'Parse nieudany');
+      if (!parseData?.success) throw new Error(parseData?.error || 'Parse failed');
 
       const recipe = parseData.recipe;
       await createRecipe.mutateAsync({
@@ -118,10 +117,10 @@ export default function Sources() {
       });
 
       await incrementScrapedImportCount(item.id);
-      toast.success('Przepis zaimportowany!');
+      toast.success('Recipe imported!');
       navigate('/');
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Import nieudany';
+      const msg = err instanceof Error ? err.message : 'Import failed';
       toast.error(msg);
     } finally {
       setImportingId(null);
@@ -136,14 +135,14 @@ export default function Sources() {
             <Globe className="h-7 w-7 text-primary" /> Recipe Sources
           </h1>
           <p className="text-muted-foreground font-body mt-1">
-            Biblioteka inspiracji z polskich blogów kulinarnych. Crawluj, przeglądaj, importuj.
+            Library of inspiration from Polish cooking blogs. Crawl, browse, import.
           </p>
         </div>
 
         {/* Sources list */}
         <section className="space-y-3">
-          <h2 className="font-display text-xl font-semibold">Źródła</h2>
-          {sourcesLoading && <p className="text-sm text-muted-foreground">Wczytywanie…</p>}
+          <h2 className="font-display text-xl font-semibold">Sources</h2>
+          {sourcesLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
           <div className="grid gap-3 md:grid-cols-2">
             {sources?.map((s) => (
               <Card key={s.id} className="border-border/60">
@@ -151,7 +150,7 @@ export default function Sources() {
                   <CardTitle className="font-display text-base flex items-center justify-between gap-2">
                     <span className="truncate">{s.name}</span>
                     <Badge variant="secondary" className="font-body shrink-0">
-                      {s.recipe_count} przepisów
+                      {s.recipe_count} recipes
                     </Badge>
                   </CardTitle>
                 </CardHeader>
@@ -171,8 +170,8 @@ export default function Sources() {
                   <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
                     <span className="text-xs text-muted-foreground font-body">
                       {s.last_crawled_at
-                        ? `Ostatnio: ${formatDistanceToNow(new Date(s.last_crawled_at), { addSuffix: true, locale: pl })}`
-                        : 'Nigdy nie crawlowane'}
+                        ? `Last: ${formatDistanceToNow(new Date(s.last_crawled_at), { addSuffix: true })}`
+                        : 'Never crawled'}
                     </span>
                     <Button
                       size="sm"
@@ -186,7 +185,7 @@ export default function Sources() {
                       ) : (
                         <RefreshCw className="h-3.5 w-3.5" />
                       )}
-                      Crawluj
+                      Crawl
                     </Button>
                   </div>
                 </CardContent>
@@ -198,14 +197,14 @@ export default function Sources() {
         {/* Browse / search scraped */}
         <section className="space-y-3">
           <h2 className="font-display text-xl font-semibold flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" /> Biblioteka inspiracji
+            <Sparkles className="h-5 w-5 text-primary" /> Inspiration library
           </h2>
 
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Szukaj po tytule…"
+                placeholder="Search by title…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -216,10 +215,10 @@ export default function Sources() {
               onValueChange={(v) => setSelectedSource(v === 'all' ? undefined : v)}
             >
               <SelectTrigger className="sm:w-56">
-                <SelectValue placeholder="Wszystkie źródła" />
+                <SelectValue placeholder="All sources" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Wszystkie źródła</SelectItem>
+                <SelectItem value="all">All sources</SelectItem>
                 {sources?.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.name}
@@ -229,12 +228,12 @@ export default function Sources() {
             </Select>
           </div>
 
-          {scrapedLoading && <p className="text-sm text-muted-foreground">Wczytywanie…</p>}
+          {scrapedLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
 
           {!scrapedLoading && scraped && scraped.length === 0 && (
             <Card className="border-dashed">
               <CardContent className="py-10 text-center text-muted-foreground font-body">
-                Brak zaindeksowanych przepisów. Kliknij "Crawluj" przy źródle, aby je pobrać.
+                No indexed recipes yet. Click "Crawl" on a source to fetch them.
               </CardContent>
             </Card>
           )}
@@ -266,7 +265,7 @@ export default function Sources() {
                         rel="noopener noreferrer"
                         className="hover:text-primary truncate inline-flex items-center gap-1 min-w-0"
                       >
-                        <span className="truncate">Zobacz</span>
+                        <span className="truncate">View</span>
                         <ExternalLink className="h-3 w-3 shrink-0" />
                       </a>
                     </div>
@@ -279,11 +278,11 @@ export default function Sources() {
                   >
                     {isImporting ? (
                       <>
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Importowanie…
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Importing…
                       </>
                     ) : (
                       <>
-                        <Download className="h-3.5 w-3.5" /> Importuj
+                        <Download className="h-3.5 w-3.5" /> Import
                       </>
                     )}
                   </Button>
