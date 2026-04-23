@@ -15,6 +15,7 @@ import {
   CalendarDays,
   Menu,
   X,
+  RefreshCw,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -42,6 +43,25 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || '';
+
+  const handleResetSiteData = async () => {
+    if (!confirm('Wyczyścić cache i service worker, a potem przeładować stronę?')) return;
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch (err) {
+      console.warn('Reset site data failed:', err);
+    } finally {
+      // Hard reload, bypassing HTTP cache where supported
+      window.location.reload();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -74,6 +94,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           })}
           <div className="w-px h-6 bg-border mx-2" />
           <ThemeSwitcher />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleResetSiteData}
+            className="text-muted-foreground gap-2"
+            title="Reset site data (service worker + cache)"
+          >
+            <RefreshCw className="h-4 w-4" /> Reset cache
+          </Button>
           <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground gap-2">
             <LogOut className="h-4 w-4" /> Sign out
           </Button>
@@ -166,6 +195,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             >
               <LogOut className="h-5 w-5" />
               Sign out
+            </button>
+
+            <button
+              onClick={() => { setMobileMenuOpen(false); handleResetSiteData(); }}
+              className="flex items-center gap-3 w-full mt-2 px-4 py-3.5 rounded-2xl font-body text-muted-foreground bg-muted/40 hover:bg-muted text-sm"
+            >
+              <RefreshCw className="h-5 w-5" />
+              Reset site data (SW + cache)
             </button>
 
             <Button
