@@ -188,6 +188,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               Sign out
             </button>
 
+            <button
+              onClick={() => { setMobileMenuOpen(false); handleResetSiteData(); }}
+              className="flex items-center gap-3 w-full mt-2 px-4 py-3.5 rounded-2xl font-body text-muted-foreground bg-muted/40 hover:bg-muted text-sm"
+            >
+              <RefreshCw className="h-5 w-5" />
+              Reset site data (SW + cache)
+            </button>
+
             <Button
               variant="ghost"
               size="lg"
