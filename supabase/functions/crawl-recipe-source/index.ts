@@ -22,33 +22,45 @@ function isRecipeUrl(url: string, baseUrl: string): boolean {
 
     const path = u.pathname.toLowerCase();
 
-    // Reject obvious non-recipe sections
+    // Reject obvious non-recipe sections (junk pages, tags, sitemaps)
     const rejectPatterns = [
       /^\/?$/,
-      /^\/(tag|kategoria|category|autor|author|kontakt|contact|o-(mnie|nas)|polityka|regulamin|sklep|shop|cart|koszyk|search|szukaj|page|strona)\b/,
-      /\.(jpg|jpeg|png|gif|webp|svg|pdf|xml|json|css|js)$/,
+      /^\/(tag|tagi|kategoria|kategorie|category|categories|autor|author|kontakt|contact|o-(mnie|nas)|polityka|regulamin|sklep|shop|cart|koszyk|search|szukaj|page|strona|konto|account|login|logowanie|rejestracja|newsletter|drukuj|info|ranking|ksiega|zdjecia)\b/,
+      /\.(jpg|jpeg|png|gif|webp|svg|pdf|xml|json|css|js|ico)$/,
       /^\/feed\b/,
       /^\/wp-/,
+      /\/fav_category\b/,
+      /\/przepisy-uzytkownikow\b/, // user-submitted, low quality
+      /-sitemap/,
     ];
     if (rejectPatterns.some((re) => re.test(path))) return false;
 
+    // Slug pattern: lowercase letters, digits, hyphens, underscores, URL-encoded chars (%XX)
+    const SLUG = '[a-z0-9\\-_%]+';
+
     // Domain-specific accept rules
     const host = u.hostname.replace(/^www\./, '');
+
     if (host === 'kwestiasmaku.com') {
-      // recipes live under /przepisy/<slug> or /dania/<category>/<slug>
-      return /^\/(przepisy|dania)\/[^/]+(\/[^/]+)?\/?$/.test(path);
+      // /przepis/<slug>  OR  /przepisy/<slug>  OR  /blog-kulinarny/<slug>  OR  /dania/<cat>/<slug>
+      const re = new RegExp(
+        `^\\/(przepis|przepisy|blog-kulinarny)\\/${SLUG}\\/?$|^\\/dania\\/${SLUG}\\/${SLUG}\\/?$`,
+      );
+      return re.test(path);
     }
+
     if (host === 'aniagotuje.pl') {
       // /przepis/<slug>
-      return /^\/przepis\/[a-z0-9-]+\/?$/.test(path);
+      return new RegExp(`^\\/przepis\\/${SLUG}\\/?$`).test(path);
     }
+
     if (host === 'mojewypieki.com') {
-      // /przepis/<slug>
-      return /^\/przepis\/[a-z0-9-]+\/?$/.test(path);
+      // /przepis/<slug>  (excluding /przepis/fav_category etc., already rejected above)
+      return new RegExp(`^\\/przepis\\/${SLUG}\\/?$`).test(path);
     }
 
     // Generic fallback: path contains "przepis" or "recipe" and a slug
-    return /\/(przepis|przepisy|recipe|recipes)\/[a-z0-9-]+/i.test(path);
+    return new RegExp(`\\/(przepis|przepisy|recipe|recipes)\\/${SLUG}`, 'i').test(path);
   } catch {
     return false;
   }
@@ -129,9 +141,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    const mapLimit = Math.min(Math.max(Number(limit) || 1000, 50), 5000);
+    const mapLimit = Math.min(Math.max(Number(limit) || 5000, 50), 30000);
 
-    // Firecrawl /v2/map
+    // Firecrawl /v2/map — use sitemap "include" so we get full coverage,
+    // not just links discovered from the homepage.
     const mapRes = await fetch('https://api.firecrawl.dev/v2/map', {
       method: 'POST',
       headers: {
@@ -142,6 +155,7 @@ Deno.serve(async (req) => {
         url: source.base_url,
         limit: mapLimit,
         includeSubdomains: false,
+        sitemap: 'include',
       }),
     });
 
