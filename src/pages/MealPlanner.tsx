@@ -454,7 +454,83 @@ export default function MealPlanner() {
             recipeId = titleToRecipeId[normalizedTitle];
           }
 
-          if (!recipeId && selected.source === 'new') {
+          if (!recipeId && selected.source === 'scraped' && selected.scraped_id) {
+            // Import from scraped library: scrape full page → AI parse → insert recipe.
+            // Same flow as the manual "Import" button on /sources, just inlined.
+            try {
+              const { data: scrapedRow, error: scrapedErr } = await supabase
+                .from('scraped_recipes')
+                .select('source_url, image_url, title')
+                .eq('id', selected.scraped_id)
+                .maybeSingle();
+              if (scrapedErr || !scrapedRow) throw new Error('Brak przepisu w bibliotece');
+
+              const { data: scrapeData, error: scrapeError } = await supabase.functions.invoke(
+                'scrape-recipe',
+                { body: { url: scrapedRow.source_url } },
+              );
+              if (scrapeError) throw new Error(scrapeError.message);
+              if (!scrapeData?.success) throw new Error(scrapeData?.error || 'Scrape nieudany');
+
+              const { data: parseData, error: parseError } = await supabase.functions.invoke(
+                'parse-recipe',
+                {
+                  body: {
+                    markdown: scrapeData.markdown,
+                    title: scrapeData.title || scrapedRow.title,
+                    source_url: scrapedRow.source_url,
+                  },
+                },
+              );
+              if (parseError) throw new Error(parseError.message);
+              if (!parseData?.success) throw new Error(parseData?.error || 'Parse nieudany');
+
+              const r = parseData.recipe;
+              const { data: inserted, error: insertError } = await supabase
+                .from('recipes')
+                .insert({
+                  user_id: user.id,
+                  title: r.title || normalizedTitle,
+                  description: r.description || null,
+                  image_url: r.image_url || scrapedRow.image_url || null,
+                  servings: r.servings || 4,
+                  prep_time_minutes: r.prep_time_minutes,
+                  cook_time_minutes: r.cook_time_minutes,
+                  category: r.category || selected.category || null,
+                  tags: r.tags || [],
+                  ingredients: (r.ingredients || []).map((i: any) =>
+                    typeof i === 'string'
+                      ? { name: i, quantity: '', unit: '' }
+                      : { name: i.name || '', quantity: String(i.quantity || ''), unit: i.unit || '', category: i.category },
+                  ),
+                  instructions: (r.instructions || []).map((s: any) =>
+                    typeof s === 'string' ? s : s.text || s.step || '',
+                  ),
+                  calories_per_serving: r.calories_per_serving,
+                  protein_grams: r.protein_grams,
+                  carbs_grams: r.carbs_grams,
+                  fat_grams: r.fat_grams,
+                  fiber_grams: r.fiber_grams,
+                  source_json: r,
+                  source_url: scrapedRow.source_url,
+                })
+                .select('id')
+                .single();
+
+              if (insertError) throw insertError;
+              recipeId = inserted.id;
+              titleToRecipeId[normalizedTitle] = recipeId;
+              recipeIngredients[recipeId] = r.ingredients || [];
+              newRecipesCreated++;
+
+              // Bump import_count so the source library shows it as imported.
+              await supabase.rpc('increment_scraped_import_count', { _scraped_id: selected.scraped_id });
+            } catch (e: any) {
+              console.error('Failed to import scraped recipe:', selected.title, e);
+              toast.error(`Nie udało się zaimportować z biblioteki: ${selected.title}`);
+              continue;
+            }
+          } else if (!recipeId && selected.source === 'new') {
             // Generate full recipe and save to cookbook
             try {
               const { data: genData, error: genError } = await supabase.functions.invoke('generate-recipe', {
