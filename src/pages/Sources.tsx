@@ -155,19 +155,20 @@ export default function Sources() {
                     </Badge>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-2 min-w-0">
                   <a
                     href={s.base_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-muted-foreground font-body hover:text-primary inline-flex items-center gap-1 truncate"
+                    className="text-xs text-muted-foreground font-body hover:text-primary inline-flex items-center gap-1 max-w-full truncate"
                   >
-                    {s.base_url} <ExternalLink className="h-3 w-3" />
+                    <span className="truncate">{s.base_url}</span>
+                    <ExternalLink className="h-3 w-3 shrink-0" />
                   </a>
                   {s.description && (
                     <p className="text-sm text-muted-foreground font-body">{s.description}</p>
                   )}
-                  <div className="flex items-center justify-between gap-2 pt-1">
+                  <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
                     <span className="text-xs text-muted-foreground font-body">
                       {s.last_crawled_at
                         ? `Ostatnio: ${formatDistanceToNow(new Date(s.last_crawled_at), { addSuffix: true, locale: pl })}`
