@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Share, X } from "lucide-react";
+import { Download, Share, X, MoreVertical } from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -30,9 +30,19 @@ function isIOS() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 }
 
+function isFirefox() {
+  return /Firefox|FxiOS/i.test(navigator.userAgent);
+}
+
+function isFirefoxAndroid() {
+  return /Firefox/i.test(navigator.userAgent) && /Android/i.test(navigator.userAgent);
+}
+
+type ManualHint = "ios" | "firefox-android" | "firefox-desktop" | null;
+
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showIOSHint, setShowIOSHint] = useState(false);
+  const [manualHint, setManualHint] = useState<ManualHint>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -46,10 +56,15 @@ export default function InstallPrompt() {
 
     window.addEventListener("beforeinstallprompt", handler);
 
-    // iOS Safari never fires beforeinstallprompt - show a manual hint instead
-    if (isIOS()) {
+    // Browsers without beforeinstallprompt support — show a manual hint
+    let hint: ManualHint = null;
+    if (isIOS()) hint = "ios";
+    else if (isFirefoxAndroid()) hint = "firefox-android";
+    else if (isFirefox()) hint = "firefox-desktop";
+
+    if (hint) {
       const t = setTimeout(() => {
-        setShowIOSHint(true);
+        setManualHint(hint);
         setVisible(true);
       }, 3000);
       return () => {
@@ -86,10 +101,22 @@ export default function InstallPrompt() {
           <p className="font-display font-semibold text-sm text-foreground">
             Install Yoko Cookbook
           </p>
-          {showIOSHint ? (
+          {manualHint === "ios" ? (
             <p className="text-xs text-muted-foreground font-body mt-0.5 leading-snug">
               Tap <Share className="inline h-3 w-3 mx-0.5" /> Share, then{" "}
               <span className="font-medium">"Add to Home Screen"</span>.
+            </p>
+          ) : manualHint === "firefox-android" ? (
+            <p className="text-xs text-muted-foreground font-body mt-0.5 leading-snug">
+              Tap <MoreVertical className="inline h-3 w-3 mx-0.5" /> menu, then{" "}
+              <span className="font-medium">"Install"</span> or{" "}
+              <span className="font-medium">"Add to Home Screen"</span>.
+            </p>
+          ) : manualHint === "firefox-desktop" ? (
+            <p className="text-xs text-muted-foreground font-body mt-0.5 leading-snug">
+              Firefox desktop nie wspiera instalacji PWA. Otwórz w{" "}
+              <span className="font-medium">Chrome</span> lub{" "}
+              <span className="font-medium">Edge</span>, aby zainstalować aplikację.
             </p>
           ) : (
             <p className="text-xs text-muted-foreground font-body mt-0.5">
