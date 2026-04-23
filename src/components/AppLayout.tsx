@@ -66,7 +66,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Desktop header */}
       <header className="hidden md:flex items-center justify-between border-b border-border/60 px-6 py-3 bg-card/60 backdrop-blur-md sticky top-0 z-40">
         <Link to="/" className="flex items-center gap-3 group">
