@@ -207,7 +207,7 @@ async function deepNavCrawl(
 
   const seenAll = new Set<string>();
   let totalInserted = 0;
-  const BATCH = 10;
+  const BATCH = 20;
 
   for (let i = 0; i < seeds.length; i += BATCH) {
     const batch = seeds.slice(i, i + BATCH);
