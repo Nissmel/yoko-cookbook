@@ -44,6 +44,25 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || '';
 
+  const handleResetSiteData = async () => {
+    if (!confirm('Wyczyścić cache i service worker, a potem przeładować stronę?')) return;
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch (err) {
+      console.warn('Reset site data failed:', err);
+    } finally {
+      // Hard reload, bypassing HTTP cache where supported
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop header */}
