@@ -141,17 +141,44 @@ async function firecrawlScrapeMarkdown(apiKey: string, url: string): Promise<{ m
   return { markdown: d.markdown || '', links: (d.links || []).filter((l: unknown) => typeof l === 'string') };
 }
 
+// ---------- Incremental upsert helper ----------
+
+async function upsertBatch(
+  admin: SupabaseClient,
+  sourceId: string,
+  urls: string[],
+): Promise<number> {
+  if (urls.length === 0) return 0;
+  const rows = urls.map((u) => ({
+    source_id: sourceId,
+    source_url: u,
+    title: deriveTitleFromUrl(u),
+  }));
+  let inserted = 0;
+  for (let i = 0; i < rows.length; i += 500) {
+    const chunk = rows.slice(i, i + 500);
+    const { error, count } = await admin
+      .from('scraped_recipes')
+      .upsert(chunk, { onConflict: 'source_url', ignoreDuplicates: true, count: 'exact' });
+    if (error) console.error('Upsert error:', error);
+    else if (count) inserted += count;
+  }
+  return inserted;
+}
+
 // ---------- Deep-nav crawl (kwestiasmaku-style sites) ----------
+// Streams results to DB as it goes so progress survives timeouts.
 
 async function deepNavCrawl(
   apiKey: string,
   baseUrl: string,
   maxSeeds: number,
-): Promise<Array<{ url: string; title: string }>> {
+  admin: SupabaseClient,
+  sourceId: string,
+): Promise<{ found: number; inserted: number }> {
   const base = new URL(baseUrl);
   const host = base.hostname.replace(/^www\./, '');
 
-  // 1. Scrape homepage to discover category/tag seed pages
   const home = await firecrawlScrapeMarkdown(apiKey, baseUrl);
 
   const seedSet = new Set<string>();
@@ -177,25 +204,33 @@ async function deepNavCrawl(
   const seeds = Array.from(seedSet).slice(0, maxSeeds);
   console.log(`Deep crawl: ${seeds.length} seed pages discovered for ${host}`);
 
-  // 2. Scrape each seed in parallel batches, collecting recipe URLs
-  const recipeMap = new Map<string, string>(); // url -> title (derived later)
-  const BATCH = 6;
+  const seenAll = new Set<string>();
+  let totalInserted = 0;
+  const BATCH = 10;
+
   for (let i = 0; i < seeds.length; i += BATCH) {
     const batch = seeds.slice(i, i + BATCH);
     const results = await Promise.all(batch.map((s) => firecrawlScrapeLinks(apiKey, s)));
+    const newUrls: string[] = [];
     for (const links of results) {
       for (const l of links) {
         const clean = l.split('#')[0].split('?')[0];
-        if (isRecipeUrl(clean, baseUrl)) {
-          const norm = clean.replace(/\/$/, '');
-          if (!recipeMap.has(norm)) recipeMap.set(norm, '');
-        }
+        if (!isRecipeUrl(clean, baseUrl)) continue;
+        const norm = clean.replace(/\/$/, '');
+        if (seenAll.has(norm)) continue;
+        seenAll.add(norm);
+        newUrls.push(norm);
       }
     }
-    console.log(`  [${Math.min(i + BATCH, seeds.length)}/${seeds.length}] recipes so far: ${recipeMap.size}`);
+    // Stream batch to DB so partial progress is preserved.
+    const inserted = await upsertBatch(admin, sourceId, newUrls);
+    totalInserted += inserted;
+    console.log(
+      `  [${Math.min(i + BATCH, seeds.length)}/${seeds.length}] found=${seenAll.size} new=${inserted} total_new=${totalInserted}`,
+    );
   }
 
-  return Array.from(recipeMap.entries()).map(([url, title]) => ({ url, title }));
+  return { found: seenAll.size, inserted: totalInserted };
 }
 
 // ---------- Main handler ----------
