@@ -247,26 +247,27 @@ export default function Sources() {
               return (
                 <li
                   key={item.id}
-                  className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 py-3 hover:border-primary/40 transition-colors"
+                  className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 py-3 hover:border-primary/40 transition-colors min-w-0"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="font-body font-medium text-foreground truncate flex items-center gap-2">
-                      {item.title}
+                      <span className="truncate">{item.title}</span>
                       {wasImported && (
                         <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                      <Badge variant="outline" className="font-body text-[10px] py-0 h-4">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 min-w-0">
+                      <Badge variant="outline" className="font-body text-[10px] py-0 h-4 shrink-0">
                         {sourceName}
                       </Badge>
                       <a
                         href={item.source_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:text-primary truncate inline-flex items-center gap-1"
+                        className="hover:text-primary truncate inline-flex items-center gap-1 min-w-0"
                       >
-                        Zobacz <ExternalLink className="h-3 w-3" />
+                        <span className="truncate">Zobacz</span>
+                        <ExternalLink className="h-3 w-3 shrink-0" />
                       </a>
                     </div>
                   </div>
