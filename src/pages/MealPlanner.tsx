@@ -38,8 +38,9 @@ const MEAL_TYPE_LABELS: Record<string, string> = {
 const PLAN_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert'] as const;
 
 interface MealOption {
-  source: 'existing' | 'new';
+  source: 'existing' | 'new' | 'scraped';
   recipe_id?: string;
+  scraped_id?: string;
   title: string;
   description?: string;
   category?: string;
