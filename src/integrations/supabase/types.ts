@@ -193,6 +193,42 @@ export type Database = {
         }
         Relationships: []
       }
+      recipe_sources: {
+        Row: {
+          base_url: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          last_crawled_at: string | null
+          name: string
+          recipe_count: number
+          updated_at: string
+        }
+        Insert: {
+          base_url: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_crawled_at?: string | null
+          name: string
+          recipe_count?: number
+          updated_at?: string
+        }
+        Update: {
+          base_url?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_crawled_at?: string | null
+          name?: string
+          recipe_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       recipes: {
         Row: {
           calories_per_serving: number | null
@@ -264,6 +300,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      scraped_recipes: {
+        Row: {
+          id: string
+          image_url: string | null
+          import_count: number
+          scraped_at: string
+          source_id: string
+          source_url: string
+          title: string
+        }
+        Insert: {
+          id?: string
+          image_url?: string | null
+          import_count?: number
+          scraped_at?: string
+          source_id: string
+          source_url: string
+          title: string
+        }
+        Update: {
+          id?: string
+          image_url?: string | null
+          import_count?: number
+          scraped_at?: string
+          source_id?: string
+          source_url?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scraped_recipes_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "recipe_sources"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shopping_list_items: {
         Row: {
