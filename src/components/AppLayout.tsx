@@ -94,6 +94,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           })}
           <div className="w-px h-6 bg-border mx-2" />
           <ThemeSwitcher />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleResetSiteData}
+            className="text-muted-foreground gap-2"
+            title="Reset site data (service worker + cache)"
+          >
+            <RefreshCw className="h-4 w-4" /> Reset cache
+          </Button>
           <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground gap-2">
             <LogOut className="h-4 w-4" /> Sign out
           </Button>
