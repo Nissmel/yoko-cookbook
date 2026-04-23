@@ -1105,6 +1105,125 @@ export default function MealPlanner() {
           </DialogContent>
         </Dialog>
 
+        {/* Random meal dialog — "what should I eat now?" without saving to planner */}
+        <Dialog open={randomDialogOpen} onOpenChange={setRandomDialogOpen}>
+          <DialogContent className="rounded-2xl max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-display flex items-center gap-2">
+                <Dice5 className="h-5 w-5 text-primary" /> Co dziś zjeść?
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              {!randomOptions ? (
+                <>
+                  <p className="text-sm text-muted-foreground font-body">
+                    Wybierz typ posiłku — AI wylosuje 4 propozycje. Nic nie zostanie zapisane do planera.
+                  </p>
+                  <div>
+                    <label className="text-sm font-body text-muted-foreground mb-1.5 block">Typ posiłku</label>
+                    <Select value={randomMealType} onValueChange={setRandomMealType}>
+                      <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {MEAL_TYPES.map((t) => (
+                          <SelectItem key={t} value={t}>{MEAL_TYPE_LABELS[t] || t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    onClick={() => generateRandomMeal(randomMealType)}
+                    disabled={randomLoading}
+                    className="w-full gap-2 rounded-xl"
+                  >
+                    {randomLoading ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Losowanie...</>
+                    ) : (
+                      <><Dice5 className="h-4 w-4" /> Wylosuj propozycje</>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground font-body">
+                    {MEAL_TYPE_LABELS[randomMealType]} — wybierz coś, na co masz ochotę:
+                  </p>
+                  <div className="space-y-2">
+                    {randomOptions.map((option, i) => (
+                      <div
+                        key={i}
+                        className="p-3 rounded-xl border-2 border-border bg-card hover:border-primary/40 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <p className="text-sm font-semibold text-foreground break-words flex-1">
+                            {option.title}
+                          </p>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {option.source === 'existing' && <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />}
+                            {option.source === 'scraped' && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-medium">📚</span>
+                            )}
+                            {option.source === 'new' && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground font-medium">NEW</span>
+                            )}
+                          </div>
+                        </div>
+                        {option.description && (
+                          <p className="text-xs text-muted-foreground mb-2 break-words">{option.description}</p>
+                        )}
+                        <div className="flex gap-1.5">
+                          {option.source === 'existing' && option.recipe_id && (
+                            <Link
+                              to={`/recipe/${option.recipe_id}`}
+                              className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 inline-flex items-center gap-1"
+                              onClick={() => setRandomDialogOpen(false)}
+                            >
+                              <BookOpen className="h-3 w-3" /> Otwórz przepis
+                            </Link>
+                          )}
+                          {option.source === 'scraped' && option.scraped_id && (
+                            <button
+                              onClick={() => openScrapedSource(option.scraped_id!)}
+                              className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 inline-flex items-center gap-1"
+                            >
+                              <ExternalLink className="h-3 w-3" /> Zobacz przepis
+                            </button>
+                          )}
+                          {option.source === 'new' && (
+                            <span className="text-xs text-muted-foreground italic px-1">
+                              Pomysł AI — bez gotowego przepisu
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={rerollRandom}
+                      disabled={randomLoading}
+                      className="flex-1 gap-2 rounded-xl"
+                    >
+                      {randomLoading ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Losowanie...</>
+                      ) : (
+                        <><RefreshCw className="h-4 w-4" /> Wylosuj ponownie</>
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setRandomOptions(null)}
+                      className="rounded-xl"
+                    >
+                      Zmień typ
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* AI Generate dialog */}
         <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
           <DialogContent className="rounded-2xl max-w-sm">
