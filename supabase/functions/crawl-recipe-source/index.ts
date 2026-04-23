@@ -9,7 +9,10 @@
 //
 // Auth: requires logged-in user. Idempotent via unique source_url.
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+
+// Background-task API exposed by Supabase Edge Runtime
+declare const EdgeRuntime: { waitUntil: (p: Promise<unknown>) => void } | undefined;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
