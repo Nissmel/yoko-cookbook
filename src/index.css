@@ -429,11 +429,13 @@
     @apply border-border;
   }
 
-  body {
+  html, body {
     @apply bg-background text-foreground font-body antialiased;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     position: relative;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   /* Subtle paper-grain noise texture overlay — applied to all themes.
