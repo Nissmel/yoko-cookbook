@@ -1,3 +1,8 @@
+// Generate a recipe via AI, using random titles from scraped_recipes as inspiration
+// to avoid the "always the same 5 recipes" problem.
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
@@ -25,12 +30,34 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Pull a random sample of indexed recipe titles as inspiration
+    let inspirationBlock = '';
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (supabaseUrl && serviceRoleKey) {
+        const admin = createClient(supabaseUrl, serviceRoleKey);
+        // Fetch a wider pool, then sample client-side for true randomness
+        const { data: pool } = await admin
+          .from('scraped_recipes')
+          .select('title, source_url')
+          .limit(500);
+        if (pool && pool.length > 0) {
+          const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, 12);
+          inspirationBlock = `\n\nDla inspiracji — oto kilka prawdziwych przepisów z polskich blogów kulinarnych. NIE kopiuj ich dokładnie, ale zainspiruj się stylem, składnikami i technikami:\n${shuffled.map((r, i) => `${i + 1}. ${r.title}`).join('\n')}`;
+        }
+      }
+    } catch (err) {
+      console.warn('Could not fetch inspiration pool:', err);
+    }
+
     const systemPrompt = `You are a professional chef. Generate a complete recipe based on the given title and description.
 
 Rules:
 - Use ONLY metric units (grams, ml, liters, °C).
 - Write ingredient names and instructions in Polish.
 - Be specific with quantities and steps.
+- Be CREATIVE and avoid repetitive, generic recipes — vary techniques, ingredients, and flavor profiles.
 - Return ONLY valid JSON, no markdown.
 
 JSON structure:
@@ -51,7 +78,7 @@ JSON structure:
   "tags": ["tag1", "tag2"]
 }`;
 
-    const userMsg = `Generate a full recipe for: "${title}"${description ? `\nDescription: ${description}` : ''}${category ? `\nCategory: ${category}` : ''}`;
+    const userMsg = `Generate a full recipe for: "${title}"${description ? `\nDescription: ${description}` : ''}${category ? `\nCategory: ${category}` : ''}${inspirationBlock}`;
 
     const aiRes = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
