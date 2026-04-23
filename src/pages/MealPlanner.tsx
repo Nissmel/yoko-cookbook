@@ -101,13 +101,16 @@ export default function MealPlanner() {
   const isViewingOwn = viewingOwnerId === 'me';
   const targetOwnerId = isViewingOwn ? undefined : viewingOwnerId;
 
-  // Plan window starts tomorrow — picking meals for past days makes no sense.
-  const tomorrow = useMemo(() => {
+  // Plan window starts on Monday of the current week, so the user always sees
+  // the full week (including today) instead of being pushed forward day by day.
+  const currentWeekMonday = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
-    return addDays(d, 1);
+    const dow = d.getDay(); // 0 = Sunday, 1 = Monday, ...
+    const diffToMonday = dow === 0 ? -6 : 1 - dow;
+    return addDays(d, diffToMonday);
   }, []);
-  const [weekStart, setWeekStart] = useState<Date>(tomorrow);
+  const [weekStart, setWeekStart] = useState<Date>(currentWeekMonday);
   const startDate = format(weekStart, 'yyyy-MM-dd');
   const endDate = format(addDays(weekStart, 6), 'yyyy-MM-dd');
   
@@ -769,8 +772,8 @@ export default function MealPlanner() {
             <span className="font-display font-semibold text-sm truncate">
               {format(weekStart, 'd MMM')} – {format(addDays(weekStart, 6), 'd MMM yyyy')}
             </span>
-            {weekStart.getTime() !== tomorrow.getTime() && (
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setWeekStart(tomorrow)}>
+            {weekStart.getTime() !== currentWeekMonday.getTime() && (
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setWeekStart(currentWeekMonday)}>
                 Dziś
               </Button>
             )}
