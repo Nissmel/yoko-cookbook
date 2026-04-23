@@ -890,14 +890,25 @@ export default function MealPlanner() {
               </Select>
             )}
             {isViewingOwn && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 rounded-xl"
-                onClick={() => setAiDialogOpen(true)}
-              >
-                <Sparkles className="h-4 w-4" /> AI Generate
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 rounded-xl"
+                  onClick={openRandomDialog}
+                  title="Wylosuj jeden posiłek — bez zapisu do planera"
+                >
+                  <Dice5 className="h-4 w-4" /> Co zjeść?
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 rounded-xl"
+                  onClick={() => setAiDialogOpen(true)}
+                >
+                  <Sparkles className="h-4 w-4" /> AI Generate
+                </Button>
+              </>
             )}
           </div>
         </div>
