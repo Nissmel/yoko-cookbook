@@ -23,18 +23,56 @@ const isPreviewHost =
   host === "localhost" ||
   host === "127.0.0.1";
 
+// Bump this whenever you need to force-evict stale service workers / caches
+// on already-installed clients (e.g. users stuck on an old build whose SW
+// keeps serving stale HTML). Anything other than the currently-stored value
+// triggers a full unregister + caches.delete() sweep on next load.
+const SW_KILL_SWITCH_VERSION = "2026-04-23-1";
+
+async function nukeServiceWorkersAndCaches() {
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map((r) => r.unregister()));
+  } catch {
+    /* noop */
+  }
+  try {
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch {
+    /* noop */
+  }
+}
+
 export async function setupPWA() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
   if (isInIframe || isPreviewHost) {
     // Defensive cleanup: if a SW was ever registered here in the past, kill it.
-    try {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map((r) => r.unregister()));
-    } catch {
-      /* noop */
-    }
+    await nukeServiceWorkersAndCaches();
     return;
+  }
+
+  // Kill switch: if the stored version doesn't match, wipe SWs + caches and
+  // force a one-time hard reload so the user gets the latest bundle. This
+  // unblocks users stuck on a stale install (common on Firefox / iOS where
+  // the user can't easily clear site data).
+  try {
+    const stored = localStorage.getItem("sw-kill-switch");
+    if (stored !== SW_KILL_SWITCH_VERSION) {
+      await nukeServiceWorkersAndCaches();
+      localStorage.setItem("sw-kill-switch", SW_KILL_SWITCH_VERSION);
+      // Only reload if there actually was a SW controlling this page,
+      // otherwise we'd reload on every fresh visit.
+      if (navigator.serviceWorker.controller) {
+        window.location.reload();
+        return;
+      }
+    }
+  } catch {
+    /* noop */
   }
 
   try {
