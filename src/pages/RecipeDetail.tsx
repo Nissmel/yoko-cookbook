@@ -24,6 +24,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
 import { useQuery } from '@tanstack/react-query';
+import { scaleQuantity as scaleQty, scaleInstructionText } from '@/lib/scaling';
 
 function CollectionPicker({ recipeId }: { recipeId: string }) {
   const { data: collections } = useCollections();
@@ -320,29 +321,10 @@ export default function RecipeDetail() {
   const scale = currentServings / recipe.servings;
   const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
 
-  const scaleQuantity = (qty: string) => {
-    const num = parseFloat(qty);
-    if (isNaN(num)) return qty;
-    const scaled = Math.round(num * scale * 100) / 100;
-    return scaled % 1 === 0 ? scaled.toString() : scaled.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
-  };
+  const scaleQuantity = (qty: string) => scaleQty(qty, scale);
 
-  const enrichInstruction = (step: string) => {
-    let enriched = step;
-    recipe.ingredients.forEach((ing) => {
-      if (!ing.name) return;
-      const namePattern = new RegExp(`\\b${ing.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
-      if (namePattern.test(enriched)) {
-        const qty = ing.quantity ? scaleQuantity(ing.quantity) : '';
-        const unit = ing.unit || '';
-        const prefix = `${qty}${unit ? ' ' + unit : ''}`.trim();
-        if (prefix) {
-          enriched = enriched.replace(namePattern, `${prefix} ${ing.name}`);
-        }
-      }
-    });
-    return enriched;
-  };
+  const enrichInstruction = (step: string) =>
+    scaleInstructionText(step, recipe.ingredients, scale);
 
   const handleAddToShoppingList = async () => {
     try {
