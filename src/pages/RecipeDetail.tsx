@@ -24,6 +24,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
 import { useQuery } from '@tanstack/react-query';
+import { scaleQuantity as scaleQty, scaleInstructionText } from '@/lib/scaling';
 
 function CollectionPicker({ recipeId }: { recipeId: string }) {
   const { data: collections } = useCollections();
