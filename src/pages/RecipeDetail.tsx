@@ -222,13 +222,17 @@ function RecipeAIChat({ recipe, onRecipeUpdated }: { recipe: any; onRecipeUpdate
           {chat.map((msg, i) => (
             <div key={i}>
               <div
-                className={`text-sm font-body rounded-2xl px-3 py-2.5 whitespace-pre-wrap ${
+                className={`text-sm font-body rounded-2xl px-3 py-2.5 ${
                   msg.role === 'user'
-                    ? 'bg-primary text-primary-foreground ml-8'
-                    : 'bg-muted mr-8'
+                    ? 'bg-primary text-primary-foreground ml-8 whitespace-pre-wrap'
+                    : 'bg-muted mr-8 prose prose-sm dark:prose-invert max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-headings:my-2'
                 }`}
               >
-                {msg.content}
+                {msg.role === 'assistant' ? (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                ) : (
+                  msg.content
+                )}
               </div>
               {msg.modifiedRecipe && (
                 <div className="mr-8 mt-2">
