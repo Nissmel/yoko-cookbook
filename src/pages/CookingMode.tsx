@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTimers, parseTimeMentions, CookingTimerBar, InlineTimerButton } from '@/components/CookingTimer';
+import { tokenizeInstruction } from '@/lib/scaling';
 
 export default function CookingMode() {
   const { id } = useParams();
@@ -67,63 +68,52 @@ export default function CookingMode() {
     );
   }
 
-  const enrichInstruction = (step: string) => {
-    let enriched = step;
-    recipe.ingredients.forEach((ing) => {
-      if (!ing.name) return;
-      const namePattern = new RegExp(`\\b${ing.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
-      if (namePattern.test(enriched)) {
-        const qty = ing.quantity || '';
-        const unit = ing.unit || '';
-        const prefix = `${qty}${unit ? ' ' + unit : ''}`.trim();
-        if (prefix) {
-          enriched = enriched.replace(namePattern, `${prefix} ${ing.name}`);
-        }
-      }
-    });
-    return enriched;
-  };
-
-  // Parse time mentions from current step and render with inline timer buttons
+  // Render an instruction step: tokenize [[...]] markup, scale numbers,
+  // highlight ingredients, and overlay inline timer buttons on time mentions.
   const renderStepWithTimers = (step: string) => {
-    const enriched = enrichInstruction(step);
-    const timeMatches = parseTimeMentions(enriched);
-    
-    if (timeMatches.length === 0) {
-      return <span>{enriched}</span>;
-    }
-
-    // Replace time mentions with clickable timer buttons
-    let parts: (string | { minutes: number; label: string })[] = [enriched];
-    
-    for (const match of timeMatches) {
-      const newParts: (string | { minutes: number; label: string })[] = [];
-      for (const part of parts) {
-        if (typeof part !== 'string') {
-          newParts.push(part);
-          continue;
-        }
-        const idx = part.indexOf(match.label);
-        if (idx === -1) {
-          newParts.push(part);
-          continue;
-        }
-        if (idx > 0) newParts.push(part.slice(0, idx));
-        newParts.push(match);
-        if (idx + match.label.length < part.length) newParts.push(part.slice(idx + match.label.length));
-      }
-      parts = newParts;
-    }
+    // Cooking mode shows the recipe at its native scale (1x).
+    const tokens = tokenizeInstruction(step, 1, recipe.ingredients);
 
     return (
       <>
-        {parts.map((part, i) =>
-          typeof part === 'string' ? (
-            <span key={i}>{part}</span>
-          ) : (
-            <InlineTimerButton key={i} minutes={part.minutes} label={part.label} onStart={addTimer} />
-          )
-        )}
+        {tokens.map((tok, ti) => {
+          if (tok.type === 'ingredient') {
+            return (
+              <strong key={ti} className="font-semibold text-primary whitespace-nowrap">
+                {tok.scaled}
+              </strong>
+            );
+          }
+          // Plain text segment — split by time mentions and inject timer buttons
+          const text = tok.value;
+          const matches = parseTimeMentions(text);
+          if (matches.length === 0) return <span key={ti}>{text}</span>;
+
+          let parts: (string | { minutes: number; label: string })[] = [text];
+          for (const match of matches) {
+            const newParts: (string | { minutes: number; label: string })[] = [];
+            for (const part of parts) {
+              if (typeof part !== 'string') { newParts.push(part); continue; }
+              const idx = part.indexOf(match.label);
+              if (idx === -1) { newParts.push(part); continue; }
+              if (idx > 0) newParts.push(part.slice(0, idx));
+              newParts.push(match);
+              if (idx + match.label.length < part.length) newParts.push(part.slice(idx + match.label.length));
+            }
+            parts = newParts;
+          }
+          return (
+            <span key={ti}>
+              {parts.map((part, i) =>
+                typeof part === 'string' ? (
+                  <span key={i}>{part}</span>
+                ) : (
+                  <InlineTimerButton key={i} minutes={part.minutes} label={part.label} onStart={addTimer} />
+                ),
+              )}
+            </span>
+          );
+        })}
       </>
     );
   };

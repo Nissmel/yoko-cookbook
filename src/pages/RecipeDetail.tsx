@@ -24,7 +24,8 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
 import { useQuery } from '@tanstack/react-query';
-import { scaleQuantity as scaleQty, scaleInstructionText } from '@/lib/scaling';
+import { scaleQuantity as scaleQty } from '@/lib/scaling';
+import { ScaledInstruction } from '@/components/ScaledInstruction';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -328,9 +329,6 @@ export default function RecipeDetail() {
   const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
 
   const scaleQuantity = (qty: string) => scaleQty(qty, scale);
-
-  const enrichInstruction = (step: string) =>
-    scaleInstructionText(step, recipe.ingredients, scale);
 
   const handleAddToShoppingList = async () => {
     try {
@@ -668,7 +666,12 @@ export default function RecipeDetail() {
                       <span aria-hidden className="mt-2 hidden w-px flex-1 bg-gradient-to-b from-border to-transparent sm:block" />
                     )}
                   </div>
-                  <p className="pt-1.5 leading-relaxed text-foreground text-[15px]">{enrichInstruction(step)}</p>
+                  <ScaledInstruction
+                    step={step}
+                    scale={scale}
+                    ingredients={recipe.ingredients}
+                    className="pt-1.5 leading-relaxed text-foreground text-[15px] block"
+                  />
                 </li>
               ))}
             </ol>

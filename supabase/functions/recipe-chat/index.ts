@@ -45,6 +45,7 @@ Rules:
 - Apply the requested modification to the recipe.
 - Use ONLY metric units (grams, ml, liters, °C).
 - Keep ingredient names and instructions in Polish.
+- In instructions, every reference to an ingredient MUST be wrapped in double square brackets with quantity, unit, and name, e.g. "Dodaj [[150 g mąki]] i wymieszaj z [[200 ml mleka]]." Ingredients without exact amounts (sól do smaku, pieprz) MUST also be wrapped: "[[sól do smaku]]". Preserve existing [[...]] markup when modifying steps.
 - Return the modified recipe as JSON with these fields:
   title, description, servings, category, prep_time_minutes, cook_time_minutes,
   ingredients (array of {name, quantity, unit}), instructions (array of strings),
