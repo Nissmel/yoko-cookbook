@@ -25,6 +25,8 @@ import {
 } from '@/components/ui/dialog';
 import { useQuery } from '@tanstack/react-query';
 import { scaleQuantity as scaleQty, scaleInstructionText } from '@/lib/scaling';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 function CollectionPicker({ recipeId }: { recipeId: string }) {
   const { data: collections } = useCollections();
