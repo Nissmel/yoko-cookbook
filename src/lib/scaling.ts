@@ -44,36 +44,24 @@ function parseSingleNumber(raw: string): number | null {
   return isNaN(num) ? null : num;
 }
 
-// Format a scaled number nicely. Prefers common fractions for small values.
+// Format a scaled number as a clean decimal (no unicode fractions).
 function formatNumber(n: number): string {
   if (!isFinite(n)) return '';
   if (n === 0) return '0';
 
-  // Try to round to a common fraction (eighths) when value < 10
-  if (n < 10) {
-    const eighths = Math.round(n * 8) / 8;
-    if (Math.abs(eighths - n) < 0.02) {
-      const whole = Math.floor(eighths);
-      const rest = eighths - whole;
-      const fracMap: Record<string, string> = {
-        '0.125': '⅛', '0.25': '¼', '0.375': '⅜',
-        '0.5': '½', '0.625': '⅝', '0.75': '¾', '0.875': '⅞',
-      };
-      const key = rest.toString();
-      if (rest === 0) return whole.toString();
-      if (fracMap[key]) return whole > 0 ? `${whole}${fracMap[key]}` : fracMap[key];
-    }
-  }
-
-  // Larger values: round sensibly
+  // Large values: integers only
   if (n >= 100) return Math.round(n).toString();
+
+  // Medium values: at most 1 decimal
   if (n >= 10) {
-    const r = Math.round(n * 2) / 2; // nearest 0.5
+    const r = Math.round(n * 10) / 10;
     return r % 1 === 0 ? r.toString() : r.toFixed(1);
   }
-  // Fallback decimal with up to 2 dp
+
+  // Small values: up to 2 decimals, trim trailing zeros
   const r = Math.round(n * 100) / 100;
-  return r.toString();
+  if (r % 1 === 0) return r.toString();
+  return r.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 }
 
 /**
@@ -240,28 +228,32 @@ export function tokenizeInstruction(
 function scaleMarkupInner(inner: string, scale: number): string {
   if (scale === 1) return inner;
 
-  // Range "2-3 unit name"
-  const range = inner.match(
-    /^(\s*)([\d.,/\s½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]+?)\s*[-–]\s*([\d.,/\s½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]+?)(\s+\S.*)?$/,
-  );
-  if (range) {
-    const a = parseSingleNumber(range[2]);
-    const b = parseSingleNumber(range[3]);
+  // Find the first numeric occurrence anywhere in the inner text.
+  // Supports ranges (2-3, 2–3), decimals (1.5 / 1,5), ascii fractions (1/2),
+  // mixed (1 1/2) and unicode fractions (½, 1½).
+  // We try range first (longer match), then single.
+  const NUM = '[\\d.,/½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]+';
+  const rangeRe = new RegExp(`(${NUM})\\s*[-–]\\s*(${NUM})`);
+  const rMatch = inner.match(rangeRe);
+  if (rMatch && rMatch.index !== undefined) {
+    const a = parseSingleNumber(rMatch[1]);
+    const b = parseSingleNumber(rMatch[2]);
     if (a !== null && b !== null) {
-      const tail = range[4] || '';
-      return `${range[1]}${formatNumber(a * scale)}-${formatNumber(b * scale)}${tail}`;
+      const before = inner.slice(0, rMatch.index);
+      const after = inner.slice(rMatch.index + rMatch[0].length);
+      return `${before}${formatNumber(a * scale)}-${formatNumber(b * scale)}${after}`;
     }
   }
 
-  // Single leading number, optionally followed by unit/name text
-  const single = inner.match(
-    /^(\s*)([\d.,/½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]+(?:\s+\d+\/\d+)?)(\s+\S.*)?$/,
-  );
-  if (single) {
-    const n = parseSingleNumber(single[2]);
+  // Mixed ascii fraction "1 1/2" or plain number, possibly preceded by words.
+  const singleRe = new RegExp(`(\\d+\\s+\\d+\\/\\d+|${NUM})`);
+  const sMatch = inner.match(singleRe);
+  if (sMatch && sMatch.index !== undefined) {
+    const n = parseSingleNumber(sMatch[1]);
     if (n !== null) {
-      const tail = single[3] || '';
-      return `${single[1]}${formatNumber(n * scale)}${tail}`;
+      const before = inner.slice(0, sMatch.index);
+      const after = inner.slice(sMatch.index + sMatch[0].length);
+      return `${before}${formatNumber(n * scale)}${after}`;
     }
   }
 

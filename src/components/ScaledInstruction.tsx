@@ -25,7 +25,7 @@ export function ScaledInstruction({ step, scale, ingredients, className }: Props
         ) : (
           <strong
             key={i}
-            className="font-semibold text-primary whitespace-nowrap"
+            className="font-medium text-foreground/90 whitespace-nowrap"
           >
             {t.scaled}
           </strong>
