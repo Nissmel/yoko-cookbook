@@ -57,6 +57,7 @@ Rules:
 - Use ONLY metric units (grams, ml, liters, °C).
 - Write ingredient names and instructions in Polish.
 - Be specific with quantities and steps.
+- In instructions, every reference to an ingredient MUST be wrapped in double square brackets with quantity, unit, and name, e.g. "Dodaj [[150 g mąki pszennej]] i wymieszaj z [[200 ml mleka]]." Ingredients without exact amounts (sól do smaku, pieprz) MUST also be wrapped: "[[sól do smaku]]". This is required for the app's scaling feature.
 - Be CREATIVE and avoid repetitive, generic recipes — vary techniques, ingredients, and flavor profiles.
 - Return ONLY valid JSON, no markdown.
 

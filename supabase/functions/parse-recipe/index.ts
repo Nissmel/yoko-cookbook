@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     const systemPrompt = `You are a recipe parser that extracts structured recipe data from web pages. Rules:
 - Use ONLY metric units (grams, ml, liters, °C). Convert cups, tablespoons, ounces, fahrenheit etc. to metric.
 - Ingredient names and instructions MUST be in Polish.
-- In instructions, reference ingredients by name with amounts (e.g. "Dodaj 150g mąki pszennej i wymieszaj").
+- In instructions, every reference to an ingredient MUST be wrapped in double square brackets with quantity, unit, and name, e.g. "Dodaj [[150 g mąki pszennej]] i wymieszaj z [[200 ml mleka]]." Even ingredients without exact amounts (sól do smaku, pieprz) MUST be wrapped: "[[sól do smaku]]". This is required so the app can scale recipes correctly.
 - Each ingredient MUST have a "category" field with one of: "Nabiał i Jajka", "Mięso i Drób", "Ryby i Owoce Morza", "Owoce", "Warzywa", "Pieczywo", "Makarony i Kasze", "Konserwy i Słoiki", "Oleje i Sosy", "Przyprawy", "Do Pieczenia", "Mrożonki", "Napoje", "Przekąski i Orzechy", "Inne".
 - calories_per_serving is for ONE serving. Calculate if not provided.
 - Extract ALL instructions as detailed steps, not summaries.
@@ -47,7 +47,7 @@ JSON structure:
   "category": "REQUIRED - one of: Breakfast, Lunch, Dinner, Appetizer, Dessert, Snack, Beverage, Soup, Salad, Side Dish",
   "tags": ["tagi po polsku"],
   "ingredients": [{"name": "Polish name", "quantity": "number as string", "unit": "g/ml/etc", "category": "store section"}],
-  "instructions": ["detailed step in Polish with ingredient amounts"],
+  "instructions": ["Polish step using [[150 g mąki]] markup for every ingredient mention"],
   "calories_per_serving": number or null,
   "protein_grams": number or null,
   "carbs_grams": number or null,
