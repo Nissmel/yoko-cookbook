@@ -79,7 +79,7 @@ export default function CookingMode() {
         {tokens.map((tok, ti) => {
           if (tok.type === 'ingredient') {
             return (
-              <strong key={ti} className="font-semibold text-primary whitespace-nowrap">
+              <strong key={ti} className="font-medium text-foreground/90 whitespace-nowrap">
                 {tok.scaled}
               </strong>
             );
