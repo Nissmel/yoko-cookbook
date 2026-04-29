@@ -44,36 +44,24 @@ function parseSingleNumber(raw: string): number | null {
   return isNaN(num) ? null : num;
 }
 
-// Format a scaled number nicely. Prefers common fractions for small values.
+// Format a scaled number as a clean decimal (no unicode fractions).
 function formatNumber(n: number): string {
   if (!isFinite(n)) return '';
   if (n === 0) return '0';
 
-  // Try to round to a common fraction (eighths) when value < 10
-  if (n < 10) {
-    const eighths = Math.round(n * 8) / 8;
-    if (Math.abs(eighths - n) < 0.02) {
-      const whole = Math.floor(eighths);
-      const rest = eighths - whole;
-      const fracMap: Record<string, string> = {
-        '0.125': '⅛', '0.25': '¼', '0.375': '⅜',
-        '0.5': '½', '0.625': '⅝', '0.75': '¾', '0.875': '⅞',
-      };
-      const key = rest.toString();
-      if (rest === 0) return whole.toString();
-      if (fracMap[key]) return whole > 0 ? `${whole}${fracMap[key]}` : fracMap[key];
-    }
-  }
-
-  // Larger values: round sensibly
+  // Large values: integers only
   if (n >= 100) return Math.round(n).toString();
+
+  // Medium values: at most 1 decimal
   if (n >= 10) {
-    const r = Math.round(n * 2) / 2; // nearest 0.5
+    const r = Math.round(n * 10) / 10;
     return r % 1 === 0 ? r.toString() : r.toFixed(1);
   }
-  // Fallback decimal with up to 2 dp
+
+  // Small values: up to 2 decimals, trim trailing zeros
   const r = Math.round(n * 100) / 100;
-  return r.toString();
+  if (r % 1 === 0) return r.toString();
+  return r.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 }
 
 /**
