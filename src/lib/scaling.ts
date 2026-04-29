@@ -228,28 +228,32 @@ export function tokenizeInstruction(
 function scaleMarkupInner(inner: string, scale: number): string {
   if (scale === 1) return inner;
 
-  // Range "2-3 unit name"
-  const range = inner.match(
-    /^(\s*)([\d.,/\s½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]+?)\s*[-–]\s*([\d.,/\s½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]+?)(\s+\S.*)?$/,
-  );
-  if (range) {
-    const a = parseSingleNumber(range[2]);
-    const b = parseSingleNumber(range[3]);
+  // Find the first numeric occurrence anywhere in the inner text.
+  // Supports ranges (2-3, 2–3), decimals (1.5 / 1,5), ascii fractions (1/2),
+  // mixed (1 1/2) and unicode fractions (½, 1½).
+  // We try range first (longer match), then single.
+  const NUM = '[\\d.,/½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]+';
+  const rangeRe = new RegExp(`(${NUM})\\s*[-–]\\s*(${NUM})`);
+  const rMatch = inner.match(rangeRe);
+  if (rMatch && rMatch.index !== undefined) {
+    const a = parseSingleNumber(rMatch[1]);
+    const b = parseSingleNumber(rMatch[2]);
     if (a !== null && b !== null) {
-      const tail = range[4] || '';
-      return `${range[1]}${formatNumber(a * scale)}-${formatNumber(b * scale)}${tail}`;
+      const before = inner.slice(0, rMatch.index);
+      const after = inner.slice(rMatch.index + rMatch[0].length);
+      return `${before}${formatNumber(a * scale)}-${formatNumber(b * scale)}${after}`;
     }
   }
 
-  // Single leading number, optionally followed by unit/name text
-  const single = inner.match(
-    /^(\s*)([\d.,/½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]+(?:\s+\d+\/\d+)?)(\s+\S.*)?$/,
-  );
-  if (single) {
-    const n = parseSingleNumber(single[2]);
+  // Mixed ascii fraction "1 1/2" or plain number, possibly preceded by words.
+  const singleRe = new RegExp(`(\\d+\\s+\\d+\\/\\d+|${NUM})`);
+  const sMatch = inner.match(singleRe);
+  if (sMatch && sMatch.index !== undefined) {
+    const n = parseSingleNumber(sMatch[1]);
     if (n !== null) {
-      const tail = single[3] || '';
-      return `${single[1]}${formatNumber(n * scale)}${tail}`;
+      const before = inner.slice(0, sMatch.index);
+      const after = inner.slice(sMatch.index + sMatch[0].length);
+      return `${before}${formatNumber(n * scale)}${after}`;
     }
   }
 
