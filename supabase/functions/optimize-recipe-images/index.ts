@@ -19,6 +19,63 @@ const SIZE_THRESHOLD = 400 * 1024;
 // Cron runs daily; with low recipe-add rate this is plenty.
 const BATCH_LIMIT = 1;
 
+/**
+ * Parse EXIF Orientation tag (0x0112) from a JPEG byte stream.
+ * Returns 1 (no rotation) if missing/invalid. Values 1-8 per EXIF spec.
+ */
+function readJpegOrientation(buf: Uint8Array): number {
+  if (buf.length < 4 || buf[0] !== 0xff || buf[1] !== 0xd8) return 1;
+  let offset = 2;
+  while (offset < buf.length) {
+    if (buf[offset] !== 0xff) return 1;
+    const marker = buf[offset + 1];
+    offset += 2;
+    if (marker === 0xda || marker === 0xd9) return 1; // SOS or EOI
+    const segLen = (buf[offset] << 8) | buf[offset + 1];
+    if (marker === 0xe1 && segLen >= 14) {
+      // APP1 — check for "Exif\0\0"
+      if (
+        buf[offset + 2] === 0x45 && buf[offset + 3] === 0x78 &&
+        buf[offset + 4] === 0x69 && buf[offset + 5] === 0x66
+      ) {
+        const tiffStart = offset + 8;
+        const little = buf[tiffStart] === 0x49 && buf[tiffStart + 1] === 0x49;
+        const get16 = (o: number) =>
+          little ? buf[o] | (buf[o + 1] << 8) : (buf[o] << 8) | buf[o + 1];
+        const get32 = (o: number) =>
+          little
+            ? buf[o] | (buf[o + 1] << 8) | (buf[o + 2] << 16) | (buf[o + 3] << 24)
+            : (buf[o] << 24) | (buf[o + 1] << 16) | (buf[o + 2] << 8) | buf[o + 3];
+        const ifdOffset = tiffStart + get32(tiffStart + 4);
+        const numEntries = get16(ifdOffset);
+        for (let i = 0; i < numEntries; i++) {
+          const entry = ifdOffset + 2 + i * 12;
+          if (get16(entry) === 0x0112) {
+            return get16(entry + 8) || 1;
+          }
+        }
+      }
+    }
+    offset += segLen;
+  }
+  return 1;
+}
+
+/** Apply EXIF orientation (1-8) to an imagescript Image, returning the rotated image. */
+function applyExifOrientation(img: Image, orientation: number): Image {
+  if (orientation <= 1 || orientation > 8) return img;
+  switch (orientation) {
+    case 2: return img.flip(true, false);
+    case 3: return img.rotate(180);
+    case 4: return img.flip(false, true);
+    case 5: return img.rotate(90).flip(true, false);
+    case 6: return img.rotate(90);
+    case 7: return img.rotate(270).flip(true, false);
+    case 8: return img.rotate(270);
+    default: return img;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
