@@ -41,12 +41,14 @@ Deno.serve(async (req) => {
     const decoded = await decode(new Uint8Array(await blob.arrayBuffer()));
     if (!(decoded instanceof Image)) throw new Error('Not a still image');
 
-    decoded.rotate(degrees);
+    // imagescript: rotate() may either mutate-and-return-this or return a new Image
+    // depending on version. Reassign to handle both safely.
+    const rotated: Image = decoded.rotate(degrees) || decoded;
     let encoded: Uint8Array;
     try {
-      encoded = await (decoded as any).encodeWEBP(80);
+      encoded = await (rotated as any).encodeWEBP(80);
     } catch {
-      encoded = await decoded.encodeJPEG(85);
+      encoded = await rotated.encodeJPEG(85);
     }
 
     const newPath = `${recipe.user_id}/${crypto.randomUUID()}.webp`;
