@@ -137,6 +137,13 @@ Deno.serve(async (req) => {
           continue;
         }
 
+        // Honor JPEG EXIF orientation — imagescript doesn't apply it automatically,
+        // so phone photos in portrait would otherwise come out sideways.
+        const orientation = readJpegOrientation(buffer);
+        if (orientation > 1) {
+          img = applyExifOrientation(img, orientation);
+        }
+
         const longest = Math.max(img.width, img.height);
         const needsResize = longest > MAX_DIMENSION;
         const isAlreadySmall = originalSize < SIZE_THRESHOLD && !needsResize;
