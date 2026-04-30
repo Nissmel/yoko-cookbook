@@ -29,12 +29,12 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const admin = createClient(supabaseUrl, serviceKey);
 
-    // List recipes that still have non-webp or potentially large images.
-    // We can't filter by file size in the recipes table, so we look at the URL extension.
+    // Only consider images that live in our storage bucket and aren't already WebP.
     const { data: recipes, error: recipesErr } = await admin
       .from('recipes')
       .select('id, image_url, user_id')
       .not('image_url', 'is', null)
+      .ilike('image_url', '%/recipe-images/%')
       .not('image_url', 'ilike', '%.webp')
       .limit(BATCH_LIMIT);
 
