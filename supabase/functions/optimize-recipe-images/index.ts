@@ -30,12 +30,14 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey);
 
     // Only consider images that live in our storage bucket and aren't already WebP.
+    const storageBaseUrl = `${supabaseUrl}/storage/v1/object/public/recipe-images/`;
     const { data: recipes, error: recipesErr } = await admin
       .from('recipes')
       .select('id, image_url, user_id')
       .not('image_url', 'is', null)
-      .ilike('image_url', '%/recipe-images/%')
-      .not('image_url', 'ilike', '%.webp')
+      .like('image_url', `${storageBaseUrl}%`)
+      .not('image_url', 'like', '%.webp')
+      .order('created_at', { ascending: true })
       .limit(BATCH_LIMIT);
 
     if (recipesErr) throw recipesErr;
