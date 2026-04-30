@@ -67,39 +67,40 @@ Deno.serve(async (req) => {
         const originalSize = blob.size;
         const buffer = new Uint8Array(await blob.arrayBuffer());
 
-        let img: Image;
+        let img: PhotonImage;
         try {
-          const decoded = await decode(buffer);
-          // imagescript returns Image | GIF — only handle still images
-          if (!(decoded instanceof Image)) {
-            results.push({ id: recipe.id, status: 'skipped-animated' });
-            continue;
-          }
-          img = decoded;
+          img = PhotonImage.new_from_byteslice(buffer);
         } catch (decodeErr) {
           results.push({ id: recipe.id, status: 'decode-failed', error: String(decodeErr) });
           continue;
         }
 
-        const longest = Math.max(img.width, img.height);
+        const w = img.get_width();
+        const h = img.get_height();
+        const longest = Math.max(w, h);
         const needsResize = longest > MAX_DIMENSION;
         const isAlreadySmall = originalSize < SIZE_THRESHOLD && !needsResize;
 
         if (isAlreadySmall) {
+          img.free();
           results.push({ id: recipe.id, status: 'already-optimal', from: originalSize });
           continue;
         }
 
+        let processed = img;
         if (needsResize) {
           const scale = MAX_DIMENSION / longest;
-          img.resize(Math.round(img.width * scale), Math.round(img.height * scale));
+          processed = resize(
+            img,
+            Math.round(w * scale),
+            Math.round(h * scale),
+            SamplingFilter.Lanczos3,
+          );
+          img.free();
         }
 
-        // Encode to WebP — quality 80 (imagescript scale 0-100)
-        const encoded = await img.encode(80, { format: 'webp' as any }).catch(async () => {
-          // imagescript may not support webp on all versions — fall back to JPEG
-          return await img.encodeJPEG(85);
-        });
+        const encoded = processed.get_bytes_webp();
+        processed.free();
 
         if (encoded.length >= originalSize * 0.95) {
           results.push({ id: recipe.id, status: 'no-savings', from: originalSize, to: encoded.length });
