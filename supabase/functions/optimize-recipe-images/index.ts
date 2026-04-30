@@ -6,11 +6,7 @@
 // Uses Photon (Rust→WASM) — much more memory-efficient than pure-JS decoders.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
-import {
-  PhotonImage,
-  resize,
-  SamplingFilter,
-} from 'https://deno.land/x/photon@0.3.2/mod.ts';
+import { decode, Image } from 'https://deno.land/x/imagescript@1.2.17/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,7 +15,9 @@ const corsHeaders = {
 
 const MAX_DIMENSION = 1600;
 const SIZE_THRESHOLD = 400 * 1024;
-const BATCH_LIMIT = 5; // smaller batch — WASM memory adds up
+// Process one image per invocation — large phone photos can use ~150 MB during decode.
+// Cron runs daily; with low recipe-add rate this is plenty.
+const BATCH_LIMIT = 1;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
