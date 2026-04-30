@@ -10,7 +10,9 @@ export async function compressImage(file: File): Promise<File> {
   if (file.size < 200 * 1024) return file; // < 200 KB — not worth compressing
 
   try {
-    const bitmap = await createImageBitmap(file);
+    // `imageOrientation: 'from-image'` makes the browser apply EXIF rotation
+    // so portrait phone photos don't end up sideways after canvas re-encode.
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
     const { width, height } = bitmap;
 
     const scale = Math.min(1, MAX_DIMENSION / Math.max(width, height));
