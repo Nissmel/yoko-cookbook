@@ -65,40 +65,40 @@ Deno.serve(async (req) => {
         const originalSize = blob.size;
         const buffer = new Uint8Array(await blob.arrayBuffer());
 
-        let img: PhotonImage;
+        let img: Image;
         try {
-          img = PhotonImage.new_from_byteslice(buffer);
+          const decoded = await decode(buffer);
+          if (!(decoded instanceof Image)) {
+            results.push({ id: recipe.id, status: 'skipped-animated' });
+            continue;
+          }
+          img = decoded;
         } catch (decodeErr) {
           results.push({ id: recipe.id, status: 'decode-failed', error: String(decodeErr) });
           continue;
         }
 
-        const w = img.get_width();
-        const h = img.get_height();
-        const longest = Math.max(w, h);
+        const longest = Math.max(img.width, img.height);
         const needsResize = longest > MAX_DIMENSION;
         const isAlreadySmall = originalSize < SIZE_THRESHOLD && !needsResize;
 
         if (isAlreadySmall) {
-          img.free();
           results.push({ id: recipe.id, status: 'already-optimal', from: originalSize });
           continue;
         }
 
-        let processed = img;
         if (needsResize) {
           const scale = MAX_DIMENSION / longest;
-          processed = resize(
-            img,
-            Math.round(w * scale),
-            Math.round(h * scale),
-            SamplingFilter.Lanczos3,
-          );
-          img.free();
+          img.resize(Math.round(img.width * scale), Math.round(img.height * scale));
         }
 
-        const encoded = processed.get_bytes_webp();
-        processed.free();
+        // imagescript supports WebP encoding via .encodeWEBP() in 1.2.17+
+        let encoded: Uint8Array;
+        try {
+          encoded = await (img as any).encodeWEBP(80);
+        } catch {
+          encoded = await img.encodeJPEG(85);
+        }
 
         if (encoded.length >= originalSize * 0.95) {
           results.push({ id: recipe.id, status: 'no-savings', from: originalSize, to: encoded.length });
