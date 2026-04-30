@@ -3,9 +3,14 @@
 // is cheap because already-optimized images are skipped.
 //
 // Triggered by pg_cron daily; also callable manually for one-off optimization.
+// Uses Photon (Rust→WASM) — much more memory-efficient than pure-JS decoders.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
-import { decode, Image } from 'https://deno.land/x/imagescript@1.2.17/mod.ts';
+import {
+  PhotonImage,
+  resize,
+  SamplingFilter,
+} from 'https://deno.land/x/photon@0.3.2/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,8 +18,8 @@ const corsHeaders = {
 };
 
 const MAX_DIMENSION = 1600;
-const SIZE_THRESHOLD = 400 * 1024; // skip if already <400 KB and small enough
-const BATCH_LIMIT = 25; // images per invocation — keeps under edge function timeout
+const SIZE_THRESHOLD = 400 * 1024;
+const BATCH_LIMIT = 5; // smaller batch — WASM memory adds up
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
