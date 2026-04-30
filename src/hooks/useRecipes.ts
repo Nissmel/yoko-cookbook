@@ -123,10 +123,14 @@ export function useDeleteRecipe() {
 }
 
 export async function uploadRecipeImage(userId: string, file: File): Promise<string> {
-  const ext = file.name.split('.').pop();
+  const { compressImage } = await import('@/lib/imageCompression');
+  const compressed = await compressImage(file);
+  const ext = compressed.name.split('.').pop() || 'webp';
   const path = `${userId}/${crypto.randomUUID()}.${ext}`;
 
-  const { error } = await supabase.storage.from('recipe-images').upload(path, file);
+  const { error } = await supabase.storage
+    .from('recipe-images')
+    .upload(path, compressed, { contentType: compressed.type });
   if (error) throw error;
 
   const { data } = supabase.storage.from('recipe-images').getPublicUrl(path);
