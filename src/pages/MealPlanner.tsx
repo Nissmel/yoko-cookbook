@@ -804,8 +804,8 @@ export default function MealPlanner() {
                                       </span>
                                     )}
                                     {option.batch_cooking && !option.leftover_from_day && (
-                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium" title="Większa porcja — starczy na 2 dni">
-                                        2x porcja
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium" title="Bigger portion — lasts 2 days">
+                                        2x portion
                                       </span>
                                     )}
                                     {option.source === 'new' && !option.leftover_from_day && (
