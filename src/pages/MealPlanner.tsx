@@ -429,7 +429,7 @@ export default function MealPlanner() {
       });
       toast.success('Nowe propozycje wygenerowane!');
     } catch (e: any) {
-      toast.error(e.message || 'Nie udało się odświeżyć slotu');
+      toast.error(e.message || 'Failed to refresh slot');
     } finally {
       setRerollingSlot(null);
     }
