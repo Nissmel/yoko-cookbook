@@ -213,7 +213,7 @@ export default function ShoppingList() {
             {items && items.length >= 2 && (
               <Button variant="outline" size="sm" onClick={consolidateWithAI} disabled={consolidating} className="gap-1.5">
                 {consolidating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                Scal AI
+                Merge with AI
               </Button>
             )}
             {checked.length > 0 && (
