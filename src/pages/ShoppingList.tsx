@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, ShoppingCart, CheckCheck, Share2, XCircle, Eye } from 'lucide-react';
+import { Trash2, ShoppingCart, CheckCheck, Share2, XCircle, Eye, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { getStoreSection } from '@/types/recipe';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function ShoppingList() {
   const { data: sharedOwners } = useSharedWithMe();
@@ -25,6 +27,28 @@ export default function ShoppingList() {
   const clearChecked = useClearCheckedItems();
   const clearAll = useClearAllItems();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [consolidating, setConsolidating] = useState(false);
+  const queryClient = useQueryClient();
+
+  const consolidateWithAI = async () => {
+    setConsolidating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('consolidate-shopping-list', {
+        body: { owner_id: targetOwnerId },
+      });
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['shopping-list'] });
+      if (data?.merged > 0) {
+        toast.success(`Scalono ${data.merged} pozycji w ${data.groups} grup`);
+      } else {
+        toast.info('Nie ma czego scalać 🎉');
+      }
+    } catch (e: any) {
+      toast.error(e?.message || 'Nie udało się skonsolidować listy');
+    } finally {
+      setConsolidating(false);
+    }
+  };
 
   const unchecked = items?.filter((i) => !i.checked) || [];
   const checked = items?.filter((i) => i.checked) || [];
@@ -186,6 +210,12 @@ export default function ShoppingList() {
             <Button variant="outline" size="sm" onClick={shareShoppingList} className="gap-1.5">
               <Share2 className="h-4 w-4" /> Share {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
             </Button>
+            {items && items.length >= 2 && (
+              <Button variant="outline" size="sm" onClick={consolidateWithAI} disabled={consolidating} className="gap-1.5">
+                {consolidating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                Scal AI
+              </Button>
+            )}
             {checked.length > 0 && (
               <Button variant="outline" size="sm" onClick={() => clearChecked.mutate(targetOwnerId)} className="gap-1.5">
                 <CheckCheck className="h-4 w-4" /> Clear checked
