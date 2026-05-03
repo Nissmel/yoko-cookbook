@@ -308,7 +308,7 @@ export default function Pantry() {
               </TabsContent>
               <TabsContent value="ai" className="mt-3 space-y-3">
                 <p className="text-sm text-muted-foreground font-body">
-                  Skopiuj poniższy prompt i wklej go do dowolnego asystenta AI (ChatGPT, Claude, Gemini). Następnie skopiuj otrzymany JSON i wklej w zakładce "Paste JSON".
+                  Copy the prompt below and paste it into any AI assistant (ChatGPT, Claude, Gemini). Then copy the returned JSON and paste it under the "Paste JSON" tab.
                 </p>
                 <Textarea value={AI_PROMPT_TEMPLATE} readOnly rows={10} className="font-mono text-xs bg-muted/40" />
                 <Button
