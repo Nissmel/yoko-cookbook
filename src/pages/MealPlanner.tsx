@@ -812,8 +812,8 @@ export default function MealPlanner() {
                                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground font-medium">NEW</span>
                                     )}
                                     {option.source === 'scraped' && !option.leftover_from_day && (
-                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-medium" title="Z biblioteki przepisów (zostanie zaimportowany przy zapisie)">
-                                        📚 Z BIBLIOTEKI
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-medium" title="From recipe library (will be imported on save)">
+                                        📚 LIBRARY
                                       </span>
                                     )}
                                     {option.source === 'existing' && (
