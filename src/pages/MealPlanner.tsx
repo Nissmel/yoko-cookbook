@@ -1190,7 +1190,7 @@ export default function MealPlanner() {
                           )}
                           {option.source === 'new' && (
                             <span className="text-xs text-muted-foreground italic px-1">
-                              Pomysł AI — bez gotowego przepisu
+                              AI idea — no full recipe yet
                             </span>
                           )}
                         </div>
