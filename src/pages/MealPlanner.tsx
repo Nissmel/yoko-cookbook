@@ -585,7 +585,7 @@ export default function MealPlanner() {
               await supabase.rpc('increment_scraped_import_count', { _scraped_id: selected.scraped_id });
             } catch (e: any) {
               console.error('Failed to import scraped recipe:', selected.title, e);
-              toast.error(`Nie udało się zaimportować z biblioteki: ${selected.title}`);
+              toast.error(`Failed to import from library: ${selected.title}`);
               continue;
             }
           } else if (!recipeId && selected.source === 'new') {
