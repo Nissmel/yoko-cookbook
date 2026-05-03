@@ -800,7 +800,7 @@ export default function MealPlanner() {
                                   <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end max-w-[40%]">
                                     {option.leftover_from_day && (
                                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium" title={`Z dnia ${option.leftover_from_day}`}>
-                                        ♻️ Wczorajsze
+                                        ♻️ Leftover
                                       </span>
                                     )}
                                     {option.batch_cooking && !option.leftover_from_day && (
