@@ -706,7 +706,7 @@ export default function MealPlanner() {
                 Cancel
               </Button>
               <Button size="sm" onClick={handleSavePlan} disabled={savingPlan || selectedCount === 0} className="gap-1.5">
-                {savingPlan ? <><Loader2 className="h-4 w-4 animate-spin" /> Zapisywanie...</> : <><Check className="h-4 w-4" /> Zapisz plan ({selectedCount})</>}
+                {savingPlan ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : <><Check className="h-4 w-4" /> Save plan ({selectedCount})</>}
               </Button>
             </div>
           </div>
