@@ -95,7 +95,7 @@ TRZY TYPY PROPOZYCJI (BARDZO WAŻNE — zawsze ustaw "source"):
 2. "scraped" — gotowy przepis z biblioteki polskich blogów kulinarnych (lista poniżej). DOŁĄCZ "scraped_id" z listy. Tytuł skopiuj 1:1.
 3. "new" — całkowicie nowy pomysł, którego nie ma ani w książce, ani w bibliotece. AI musi go wygenerować od zera.
 
-PROPORCJE (cel): ~30% existing (jeśli są), ~50% scraped (jeśli pasują tematycznie), ~20% new. Jeśli istniejących/scraped jest mało lub nie pasują do slotu — zwiększ udział "new".
+PROPORCJE (cel dla pełnego planu tygodniowego): w KAŻDYM dniu spośród 4 slotów (śniadanie/obiad/kolacja/deser) co najmniej 3 sloty muszą mieć WYBRANĄ opcję oznaczoną jako "new" (świeży pomysł AI), a maksymalnie 1 slot dziennie może wybierać z biblioteki ("existing" lub "scraped" łącznie). Dla pojedynczego slotu/dnia trzymaj się tej samej zasady — dominują propozycje "new". W każdym slocie nadal proponujesz 4 opcje, ale przewaga musi być po stronie "new" (≥3 z 4). Jeśli scraped/existing nie pasują tematycznie — wszystkie 4 opcje niech będą "new".
 NIGDY nie wymyślaj scraped_id ani recipe_id — używaj tylko tych z list poniżej. Jeśli żaden nie pasuje, użyj "source": "new".
 `;
 
