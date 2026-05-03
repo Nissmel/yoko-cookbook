@@ -343,7 +343,7 @@ export default function MealPlanner() {
       if (!options?.length) throw new Error('Brak propozycji');
       setRandomOptions(options);
     } catch (e: any) {
-      toast.error(e.message || 'Nie udało się wylosować');
+      toast.error(e.message || 'Failed to roll suggestions');
     } finally {
       setRandomLoading(false);
     }
