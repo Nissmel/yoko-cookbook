@@ -1110,7 +1110,7 @@ export default function MealPlanner() {
           <DialogContent className="rounded-2xl max-w-md">
             <DialogHeader>
               <DialogTitle className="font-display flex items-center gap-2">
-                <Dice5 className="h-5 w-5 text-primary" /> Co dziś zjeść?
+                <Dice5 className="h-5 w-5 text-primary" /> What to eat today?
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-2">
