@@ -1185,7 +1185,7 @@ export default function MealPlanner() {
                               onClick={() => openScrapedSource(option.scraped_id!)}
                               className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 inline-flex items-center gap-1"
                             >
-                              <ExternalLink className="h-3 w-3" /> Zobacz przepis
+                              <ExternalLink className="h-3 w-3" /> View recipe
                             </button>
                           )}
                           {option.source === 'new' && (
