@@ -990,7 +990,7 @@ export default function MealPlanner() {
                           className="text-xs text-muted-foreground font-body py-2 px-2 rounded-md border-2 border-dashed transition-colors border-transparent"
                           activeClassName="!border-primary !bg-primary/5 !text-primary"
                         >
-                          {activeMealId ? 'Upuść tutaj' : 'No meals planned'}
+                          {activeMealId ? 'Drop here' : 'No meals planned'}
                         </Droppable>
                       ) : (
                         <div className="space-y-2">
