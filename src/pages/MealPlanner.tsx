@@ -860,7 +860,7 @@ export default function MealPlanner() {
   const ownerLabel = (() => {
     if (isViewingOwn) return null;
     const owner = sharedOwners?.find((o) => o.recipe_owner_id === viewingOwnerId);
-    return owner?.owner_display_name || owner?.owner_email || 'Wspólny planer';
+    return owner?.owner_display_name || owner?.owner_email || 'Shared planner';
   })();
 
   return (
