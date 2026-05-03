@@ -39,12 +39,12 @@ export default function ShoppingList() {
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['shopping-list'] });
       if (data?.merged > 0) {
-        toast.success(`Scalono ${data.merged} pozycji w ${data.groups} grup`);
+        toast.success(`Merged ${data.merged} items into ${data.groups} groups`);
       } else {
-        toast.info('Nie ma czego scalać 🎉');
+        toast.info('Nothing to merge 🎉');
       }
     } catch (e: any) {
-      toast.error(e?.message || 'Nie udało się skonsolidować listy');
+      toast.error(e?.message || 'Failed to consolidate list');
     } finally {
       setConsolidating(false);
     }
