@@ -210,6 +210,12 @@ export default function ShoppingList() {
             <Button variant="outline" size="sm" onClick={shareShoppingList} className="gap-1.5">
               <Share2 className="h-4 w-4" /> Share {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
             </Button>
+            {items && items.length >= 2 && (
+              <Button variant="outline" size="sm" onClick={consolidateWithAI} disabled={consolidating} className="gap-1.5">
+                {consolidating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                Scal AI
+              </Button>
+            )}
             {checked.length > 0 && (
               <Button variant="outline" size="sm" onClick={() => clearChecked.mutate(targetOwnerId)} className="gap-1.5">
                 <CheckCheck className="h-4 w-4" /> Clear checked
