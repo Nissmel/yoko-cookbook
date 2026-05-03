@@ -457,7 +457,7 @@ export default function Pantry() {
                     className="w-full gap-1.5 mt-1"
                   >
                     {savingIdx === i ? (
-                      <><Loader2 className="h-4 w-4 animate-spin" /> Generuję pełny przepis...</>
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Generating full recipe...</>
                     ) : (
                       <><Save className="h-4 w-4" /> Save as recipe</>
                     )}
