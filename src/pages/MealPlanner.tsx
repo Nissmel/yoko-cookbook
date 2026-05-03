@@ -880,7 +880,7 @@ export default function MealPlanner() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="me">Mój planer</SelectItem>
+                  <SelectItem value="me">My planner</SelectItem>
                   {sharedOwners.map((o) => (
                     <SelectItem key={o.recipe_owner_id} value={o.recipe_owner_id}>
                       {o.owner_display_name || o.owner_email || 'Shared'}
