@@ -70,7 +70,7 @@ export default function Pantry() {
 
   const handleSaveAsRecipe = async (idea: AIIdea, idx: number) => {
     setSavingIdx(idx);
-    const tId = toast.loading(`Generuję pełny przepis: ${idea.title}...`);
+    const tId = toast.loading(`Generating full recipe: ${idea.title}...`);
     try {
       const { data, error } = await supabase.functions.invoke('generate-recipe', {
         body: { title: idea.title, description: idea.description },
