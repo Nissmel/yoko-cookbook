@@ -699,7 +699,7 @@ export default function MealPlanner() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-display text-2xl font-bold text-foreground">Choose Your Meals</h1>
-              <p className="text-muted-foreground font-body text-sm mt-1">Kliknij propozycję, by ją wybrać. Przeciągnij wybrany posiłek na inny slot, by go przenieść.</p>
+              <p className="text-muted-foreground font-body text-sm mt-1">Tap a suggestion to select it. Drag a selected meal onto another slot to move it.</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => { setAiPlan(null); setSingleDayDate(null); setSelections({}); }}>
