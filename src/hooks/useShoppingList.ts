@@ -341,13 +341,13 @@ export function useAddToShoppingList(ownerId?: string) {
     onSuccess: ({ inserted, merged, skipped }) => {
       queryClient.invalidateQueries({ queryKey: ['shopping-list'] });
       const parts: string[] = [];
-      if (inserted > 0) parts.push(`Dodano ${inserted}`);
-      if (merged > 0) parts.push(`scalono ${merged}`);
+      if (inserted > 0) parts.push(`Added ${inserted}`);
+      if (merged > 0) parts.push(`merged ${merged}`);
       if (parts.length === 0 && skipped > 0) {
-        toast.info('Wszystko już masz w spiżarni 🎉');
+        toast.info('Everything is already in your pantry 🎉');
       } else if (parts.length > 0) {
         toast.success(parts.join(', '), {
-          description: skipped > 0 ? `Pominięto ${skipped} (są w spiżarni)` : undefined,
+          description: skipped > 0 ? `Skipped ${skipped} (already in pantry)` : undefined,
         });
       }
     },
