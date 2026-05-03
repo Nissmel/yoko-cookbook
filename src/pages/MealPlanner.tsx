@@ -1145,7 +1145,7 @@ export default function MealPlanner() {
               ) : (
                 <>
                   <p className="text-sm text-muted-foreground font-body">
-                    {MEAL_TYPE_LABELS[randomMealType]} — wybierz coś, na co masz ochotę:
+                    {MEAL_TYPE_LABELS[randomMealType]} — pick what you feel like:
                   </p>
                   <div className="space-y-2">
                     {randomOptions.map((option, i) => (
