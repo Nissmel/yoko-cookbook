@@ -1251,7 +1251,7 @@ export default function MealPlanner() {
                   </Button>
                   <div className="flex-1 text-center">
                     <span className="font-display text-2xl font-bold">{aiDays}</span>
-                    <span className="text-sm text-muted-foreground font-body ml-1">{aiDays === 1 ? 'dzień' : aiDays < 5 ? 'dni' : 'dni'}</span>
+                    <span className="text-sm text-muted-foreground font-body ml-1">{aiDays === 1 ? 'day' : 'days'}</span>
                   </div>
                   <Button
                     type="button"
