@@ -689,7 +689,7 @@ export default function MealPlanner() {
 
   // AI Plan Selection view
   if (aiPlan) {
-    const mealTypeLabels: Record<string, string> = { breakfast: '🌅 Śniadanie', lunch: '☀️ Obiad', dinner: '🌙 Kolacja', dessert: '🍰 Deser' };
+    const mealTypeLabels: Record<string, string> = { breakfast: '🌅 Breakfast', lunch: '☀️ Lunch', dinner: '🌙 Dinner', dessert: '🍰 Dessert' };
     const selectedCount = Object.keys(selections).length;
     const activeSelected = activeSelectionKey ? selections[activeSelectionKey] : null;
     return (
