@@ -318,7 +318,7 @@ export default function MealPlanner() {
       setSelections({});
       toast.success('Propozycje dnia wygenerowane!');
     } catch (e: any) {
-      toast.error(e.message || 'Nie udało się wygenerować dnia');
+      toast.error(e.message || 'Failed to generate day');
     } finally {
       setGeneratingDayDate(null);
     }
