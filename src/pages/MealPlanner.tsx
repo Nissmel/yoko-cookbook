@@ -1136,9 +1136,9 @@ export default function MealPlanner() {
                     className="w-full gap-2 rounded-xl"
                   >
                     {randomLoading ? (
-                      <><Loader2 className="h-4 w-4 animate-spin" /> Losowanie...</>
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Rolling...</>
                     ) : (
-                      <><Dice5 className="h-4 w-4" /> Wylosuj propozycje</>
+                      <><Dice5 className="h-4 w-4" /> Roll suggestions</>
                     )}
                   </Button>
                 </>
