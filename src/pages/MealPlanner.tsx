@@ -98,7 +98,31 @@ function Droppable({ id, children, className, activeClassName }: { id: string; c
 export default function MealPlanner() {
   const { user } = useAuth();
   const { data: sharedOwners } = useSharedWithMe();
-  const [viewingOwnerId, setViewingOwnerId] = useState<string>('me');
+  const storageKey = user ? `mealPlanner.viewingOwnerId:${user.id}` : null;
+  const [viewingOwnerId, setViewingOwnerIdState] = useState<string>('me');
+
+  // Restore last-viewed planner once we know the user
+  useEffect(() => {
+    if (!storageKey) return;
+    const saved = localStorage.getItem(storageKey);
+    if (saved) setViewingOwnerIdState(saved);
+  }, [storageKey]);
+
+  // If the saved owner is no longer shared with us, fall back to own planner
+  useEffect(() => {
+    if (viewingOwnerId === 'me' || !sharedOwners) return;
+    const stillShared = sharedOwners.some((o) => o.recipe_owner_id === viewingOwnerId);
+    if (!stillShared) {
+      setViewingOwnerIdState('me');
+      if (storageKey) localStorage.removeItem(storageKey);
+    }
+  }, [sharedOwners, viewingOwnerId, storageKey]);
+
+  const setViewingOwnerId = (id: string) => {
+    setViewingOwnerIdState(id);
+    if (storageKey) localStorage.setItem(storageKey, id);
+  };
+
   const isViewingOwn = viewingOwnerId === 'me';
   const targetOwnerId = isViewingOwn ? undefined : viewingOwnerId;
 
