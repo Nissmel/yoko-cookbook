@@ -925,7 +925,7 @@ export default function MealPlanner() {
             </span>
             {weekStart.getTime() !== currentWeekMonday.getTime() && (
               <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setWeekStart(currentWeekMonday)}>
-                Dziś
+                Today
               </Button>
             )}
           </div>
