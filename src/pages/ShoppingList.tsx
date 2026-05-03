@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, ShoppingCart, CheckCheck, Share2, XCircle, Eye } from 'lucide-react';
+import { Trash2, ShoppingCart, CheckCheck, Share2, XCircle, Eye, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { getStoreSection } from '@/types/recipe';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function ShoppingList() {
   const { data: sharedOwners } = useSharedWithMe();
