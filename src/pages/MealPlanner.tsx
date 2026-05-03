@@ -837,10 +837,10 @@ export default function MealPlanner() {
           <div className="sticky bottom-20 md:bottom-4 flex justify-center">
             <Button size="lg" onClick={handleSavePlan} disabled={savingPlan || selectedCount === 0} className="gap-2 rounded-xl shadow-lg">
               {savingPlan
-                ? <><Loader2 className="h-4 w-4 animate-spin" /> Tworzenie przepisów i zapisywanie...</>
+                ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating recipes and saving...</>
                 : selectedCount === 0
-                  ? <>Wybierz co najmniej jeden posiłek</>
-                  : <><Check className="h-5 w-5" /> Zapisz plan ({selectedCount}) i dodaj nowe przepisy</>}
+                  ? <>Select at least one meal</>
+                  : <><Check className="h-5 w-5" /> Save plan ({selectedCount}) and add new recipes</>}
             </Button>
           </div>
         </div>
