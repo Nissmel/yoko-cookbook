@@ -471,9 +471,9 @@ export default function MealPlanner() {
         for (const mt of PLAN_MEAL_TYPES) delete next[`${dayNum}-${mt}`];
         return next;
       });
-      toast.success(`Dzień ${dayNum} — nowe propozycje wygenerowane!`);
+      toast.success(`Day ${dayNum} — new suggestions generated!`);
     } catch (e: any) {
-      toast.error(e.message || 'Nie udało się odświeżyć dnia');
+      toast.error(e.message || 'Failed to refresh day');
     } finally {
       setRerollingDay(null);
     }
