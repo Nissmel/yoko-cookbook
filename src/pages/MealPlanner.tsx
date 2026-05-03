@@ -135,7 +135,26 @@ export default function MealPlanner() {
     const diffToMonday = dow === 0 ? -6 : 1 - dow;
     return addDays(d, diffToMonday);
   }, []);
-  const [weekStart, setWeekStart] = useState<Date>(currentWeekMonday);
+  const weekStorageKey = user ? `mealPlanner.weekStart:${user.id}` : null;
+  const [weekStart, setWeekStartState] = useState<Date>(currentWeekMonday);
+
+  // Restore last-viewed week
+  useEffect(() => {
+    if (!weekStorageKey) return;
+    const saved = localStorage.getItem(weekStorageKey);
+    if (!saved) return;
+    const d = new Date(saved);
+    if (!isNaN(d.getTime())) setWeekStartState(d);
+  }, [weekStorageKey]);
+
+  const setWeekStart = (next: Date | ((prev: Date) => Date)) => {
+    setWeekStartState((prev) => {
+      const value = typeof next === 'function' ? (next as (p: Date) => Date)(prev) : next;
+      if (weekStorageKey) localStorage.setItem(weekStorageKey, format(value, 'yyyy-MM-dd'));
+      return value;
+    });
+  };
+
   const startDate = format(weekStart, 'yyyy-MM-dd');
   const endDate = format(addDays(weekStart, 6), 'yyyy-MM-dd');
   
