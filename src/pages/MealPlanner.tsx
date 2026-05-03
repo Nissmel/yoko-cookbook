@@ -1117,10 +1117,10 @@ export default function MealPlanner() {
               {!randomOptions ? (
                 <>
                   <p className="text-sm text-muted-foreground font-body">
-                    Wybierz typ posiłku — AI wylosuje 4 propozycje. Nic nie zostanie zapisane do planera.
+                    Pick a meal type — AI will roll 4 suggestions. Nothing is saved to the planner.
                   </p>
                   <div>
-                    <label className="text-sm font-body text-muted-foreground mb-1.5 block">Typ posiłku</label>
+                    <label className="text-sm font-body text-muted-foreground mb-1.5 block">Meal type</label>
                     <Select value={randomMealType} onValueChange={setRandomMealType}>
                       <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                       <SelectContent>
