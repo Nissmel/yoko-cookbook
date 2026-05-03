@@ -168,10 +168,10 @@ export default function MealPlanner() {
     if (meal.plan_date === planDate && meal.meal_type === mealType) return;
     try {
       await moveMealPlan.mutateAsync({ id, planDate, mealType });
-      toast.success('Posiłek przeniesiony');
+      toast.success('Meal moved');
     } catch (err: any) {
-      if (err?.message?.includes('duplicate')) toast.error('Ten przepis już jest w tym slocie');
-      else toast.error('Nie udało się przenieść');
+      if (err?.message?.includes('duplicate')) toast.error('This recipe is already in that slot');
+      else toast.error('Failed to move meal');
     }
   };
 
