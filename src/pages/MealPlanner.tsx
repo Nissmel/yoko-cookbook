@@ -1215,7 +1215,7 @@ export default function MealPlanner() {
                       onClick={() => setRandomOptions(null)}
                       className="rounded-xl"
                     >
-                      Zmień typ
+                      Change type
                     </Button>
                   </div>
                 </>
