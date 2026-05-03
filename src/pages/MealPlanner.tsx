@@ -30,10 +30,10 @@ import {
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert'];
 const MEAL_TYPE_LABELS: Record<string, string> = {
-  breakfast: 'Śniadanie',
-  lunch: 'Obiad',
-  dinner: 'Kolacja',
-  dessert: 'Deser',
+  breakfast: 'Breakfast',
+  lunch: 'Lunch',
+  dinner: 'Dinner',
+  dessert: 'Dessert',
 };
 const PLAN_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert'] as const;
 
