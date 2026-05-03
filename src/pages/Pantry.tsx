@@ -70,7 +70,7 @@ export default function Pantry() {
 
   const handleSaveAsRecipe = async (idea: AIIdea, idx: number) => {
     setSavingIdx(idx);
-    const tId = toast.loading(`Generuję pełny przepis: ${idea.title}...`);
+    const tId = toast.loading(`Generating full recipe: ${idea.title}...`);
     try {
       const { data, error } = await supabase.functions.invoke('generate-recipe', {
         body: { title: idea.title, description: idea.description },
@@ -99,12 +99,12 @@ export default function Pantry() {
         source_json: r,
       } as any);
 
-      toast.success('Przepis zapisany!', { id: tId });
+      toast.success('Recipe saved!', { id: tId });
       navigate(`/recipe/${created.id}`);
     } catch (e: any) {
-      const msg = e?.message || 'Nie udało się zapisać';
-      if (msg.includes('429')) toast.error('Rate limit — spróbuj za chwilę', { id: tId });
-      else if (msg.includes('402')) toast.error('Brak kredytów AI', { id: tId, description: 'Doładuj w ustawieniach workspace' });
+      const msg = e?.message || 'Failed to save';
+      if (msg.includes('429')) toast.error('Rate limit — try again in a moment', { id: tId });
+      else if (msg.includes('402')) toast.error('AI credits exhausted', { id: tId, description: 'Top up in workspace settings' });
       else toast.error(msg, { id: tId });
     } finally {
       setSavingIdx(null);
@@ -308,7 +308,7 @@ export default function Pantry() {
               </TabsContent>
               <TabsContent value="ai" className="mt-3 space-y-3">
                 <p className="text-sm text-muted-foreground font-body">
-                  Skopiuj poniższy prompt i wklej go do dowolnego asystenta AI (ChatGPT, Claude, Gemini). Następnie skopiuj otrzymany JSON i wklej w zakładce "Paste JSON".
+                  Copy the prompt below and paste it into any AI assistant (ChatGPT, Claude, Gemini). Then copy the returned JSON and paste it under the "Paste JSON" tab.
                 </p>
                 <Textarea value={AI_PROMPT_TEMPLATE} readOnly rows={10} className="font-mono text-xs bg-muted/40" />
                 <Button
@@ -457,7 +457,7 @@ export default function Pantry() {
                     className="w-full gap-1.5 mt-1"
                   >
                     {savingIdx === i ? (
-                      <><Loader2 className="h-4 w-4 animate-spin" /> Generuję pełny przepis...</>
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Generating full recipe...</>
                     ) : (
                       <><Save className="h-4 w-4" /> Save as recipe</>
                     )}

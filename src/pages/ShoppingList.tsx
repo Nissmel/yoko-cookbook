@@ -39,12 +39,12 @@ export default function ShoppingList() {
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['shopping-list'] });
       if (data?.merged > 0) {
-        toast.success(`Scalono ${data.merged} pozycji w ${data.groups} grup`);
+        toast.success(`Merged ${data.merged} items into ${data.groups} groups`);
       } else {
-        toast.info('Nie ma czego scalać 🎉');
+        toast.info('Nothing to merge 🎉');
       }
     } catch (e: any) {
-      toast.error(e?.message || 'Nie udało się skonsolidować listy');
+      toast.error(e?.message || 'Failed to consolidate list');
     } finally {
       setConsolidating(false);
     }
@@ -213,7 +213,7 @@ export default function ShoppingList() {
             {items && items.length >= 2 && (
               <Button variant="outline" size="sm" onClick={consolidateWithAI} disabled={consolidating} className="gap-1.5">
                 {consolidating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                Scal AI
+                Merge with AI
               </Button>
             )}
             {checked.length > 0 && (
@@ -245,8 +245,8 @@ export default function ShoppingList() {
 
             <Tabs defaultValue="store" className="w-full">
               <TabsList className="grid w-full grid-cols-2 h-auto">
-                <TabsTrigger value="store" className="text-xs sm:text-sm whitespace-normal py-2 leading-tight">Wg sklepu</TabsTrigger>
-                <TabsTrigger value="recipe" className="text-xs sm:text-sm whitespace-normal py-2 leading-tight">Wg przepisu</TabsTrigger>
+                <TabsTrigger value="store" className="text-xs sm:text-sm whitespace-normal py-2 leading-tight">By store</TabsTrigger>
+                <TabsTrigger value="recipe" className="text-xs sm:text-sm whitespace-normal py-2 leading-tight">By recipe</TabsTrigger>
               </TabsList>
 
               <TabsContent value="store" className="mt-3 space-y-1">

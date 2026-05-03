@@ -114,9 +114,9 @@ export default function InstallPrompt() {
             </p>
           ) : manualHint === "firefox-desktop" ? (
             <p className="text-xs text-muted-foreground font-body mt-0.5 leading-snug">
-              Firefox desktop nie wspiera instalacji PWA. Otwórz w{" "}
-              <span className="font-medium">Chrome</span> lub{" "}
-              <span className="font-medium">Edge</span>, aby zainstalować aplikację.
+              Firefox on desktop doesn't support PWA install. Open in{" "}
+              <span className="font-medium">Chrome</span> or{" "}
+              <span className="font-medium">Edge</span> to install the app.
             </p>
           ) : (
             <p className="text-xs text-muted-foreground font-body mt-0.5">

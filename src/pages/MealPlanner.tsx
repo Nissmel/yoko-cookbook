@@ -30,10 +30,10 @@ import {
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert'];
 const MEAL_TYPE_LABELS: Record<string, string> = {
-  breakfast: 'Śniadanie',
-  lunch: 'Obiad',
-  dinner: 'Kolacja',
-  dessert: 'Deser',
+  breakfast: 'Breakfast',
+  lunch: 'Lunch',
+  dinner: 'Dinner',
+  dessert: 'Dessert',
 };
 const PLAN_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert'] as const;
 
@@ -168,10 +168,10 @@ export default function MealPlanner() {
     if (meal.plan_date === planDate && meal.meal_type === mealType) return;
     try {
       await moveMealPlan.mutateAsync({ id, planDate, mealType });
-      toast.success('Posiłek przeniesiony');
+      toast.success('Meal moved');
     } catch (err: any) {
-      if (err?.message?.includes('duplicate')) toast.error('Ten przepis już jest w tym slocie');
-      else toast.error('Nie udało się przenieść');
+      if (err?.message?.includes('duplicate')) toast.error('This recipe is already in that slot');
+      else toast.error('Failed to move meal');
     }
   };
 
@@ -318,7 +318,7 @@ export default function MealPlanner() {
       setSelections({});
       toast.success('Propozycje dnia wygenerowane!');
     } catch (e: any) {
-      toast.error(e.message || 'Nie udało się wygenerować dnia');
+      toast.error(e.message || 'Failed to generate day');
     } finally {
       setGeneratingDayDate(null);
     }
@@ -343,7 +343,7 @@ export default function MealPlanner() {
       if (!options?.length) throw new Error('Brak propozycji');
       setRandomOptions(options);
     } catch (e: any) {
-      toast.error(e.message || 'Nie udało się wylosować');
+      toast.error(e.message || 'Failed to roll suggestions');
     } finally {
       setRandomLoading(false);
     }
@@ -372,7 +372,7 @@ export default function MealPlanner() {
       if (error || !data?.source_url) throw new Error('Brak linku');
       window.open(data.source_url, '_blank', 'noopener,noreferrer');
     } catch (e: any) {
-      toast.error(e.message || 'Nie udało się otworzyć przepisu');
+      toast.error(e.message || 'Failed to open recipe');
     }
   };
 
@@ -429,7 +429,7 @@ export default function MealPlanner() {
       });
       toast.success('Nowe propozycje wygenerowane!');
     } catch (e: any) {
-      toast.error(e.message || 'Nie udało się odświeżyć slotu');
+      toast.error(e.message || 'Failed to refresh slot');
     } finally {
       setRerollingSlot(null);
     }
@@ -471,9 +471,9 @@ export default function MealPlanner() {
         for (const mt of PLAN_MEAL_TYPES) delete next[`${dayNum}-${mt}`];
         return next;
       });
-      toast.success(`Dzień ${dayNum} — nowe propozycje wygenerowane!`);
+      toast.success(`Day ${dayNum} — new suggestions generated!`);
     } catch (e: any) {
-      toast.error(e.message || 'Nie udało się odświeżyć dnia');
+      toast.error(e.message || 'Failed to refresh day');
     } finally {
       setRerollingDay(null);
     }
@@ -585,7 +585,7 @@ export default function MealPlanner() {
               await supabase.rpc('increment_scraped_import_count', { _scraped_id: selected.scraped_id });
             } catch (e: any) {
               console.error('Failed to import scraped recipe:', selected.title, e);
-              toast.error(`Nie udało się zaimportować z biblioteki: ${selected.title}`);
+              toast.error(`Failed to import from library: ${selected.title}`);
               continue;
             }
           } else if (!recipeId && selected.source === 'new') {
@@ -689,7 +689,7 @@ export default function MealPlanner() {
 
   // AI Plan Selection view
   if (aiPlan) {
-    const mealTypeLabels: Record<string, string> = { breakfast: '🌅 Śniadanie', lunch: '☀️ Obiad', dinner: '🌙 Kolacja', dessert: '🍰 Deser' };
+    const mealTypeLabels: Record<string, string> = { breakfast: '🌅 Breakfast', lunch: '☀️ Lunch', dinner: '🌙 Dinner', dessert: '🍰 Dessert' };
     const selectedCount = Object.keys(selections).length;
     const activeSelected = activeSelectionKey ? selections[activeSelectionKey] : null;
     return (
@@ -699,14 +699,14 @@ export default function MealPlanner() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-display text-2xl font-bold text-foreground">Choose Your Meals</h1>
-              <p className="text-muted-foreground font-body text-sm mt-1">Kliknij propozycję, by ją wybrać. Przeciągnij wybrany posiłek na inny slot, by go przenieść.</p>
+              <p className="text-muted-foreground font-body text-sm mt-1">Tap a suggestion to select it. Drag a selected meal onto another slot to move it.</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => { setAiPlan(null); setSingleDayDate(null); setSelections({}); }}>
                 Cancel
               </Button>
               <Button size="sm" onClick={handleSavePlan} disabled={savingPlan || selectedCount === 0} className="gap-1.5">
-                {savingPlan ? <><Loader2 className="h-4 w-4 animate-spin" /> Zapisywanie...</> : <><Check className="h-4 w-4" /> Zapisz plan ({selectedCount})</>}
+                {savingPlan ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : <><Check className="h-4 w-4" /> Save plan ({selectedCount})</>}
               </Button>
             </div>
           </div>
@@ -799,21 +799,21 @@ export default function MealPlanner() {
                                   </div>
                                   <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end max-w-[40%]">
                                     {option.leftover_from_day && (
-                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium" title={`Z dnia ${option.leftover_from_day}`}>
-                                        ♻️ Wczorajsze
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium" title={`From day ${option.leftover_from_day}`}>
+                                        ♻️ Leftover
                                       </span>
                                     )}
                                     {option.batch_cooking && !option.leftover_from_day && (
-                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium" title="Większa porcja — starczy na 2 dni">
-                                        2x porcja
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium" title="Bigger portion — lasts 2 days">
+                                        2x portion
                                       </span>
                                     )}
                                     {option.source === 'new' && !option.leftover_from_day && (
                                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground font-medium">NEW</span>
                                     )}
                                     {option.source === 'scraped' && !option.leftover_from_day && (
-                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-medium" title="Z biblioteki przepisów (zostanie zaimportowany przy zapisie)">
-                                        📚 Z BIBLIOTEKI
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-medium" title="From recipe library (will be imported on save)">
+                                        📚 LIBRARY
                                       </span>
                                     )}
                                     {option.source === 'existing' && (
@@ -837,10 +837,10 @@ export default function MealPlanner() {
           <div className="sticky bottom-20 md:bottom-4 flex justify-center">
             <Button size="lg" onClick={handleSavePlan} disabled={savingPlan || selectedCount === 0} className="gap-2 rounded-xl shadow-lg">
               {savingPlan
-                ? <><Loader2 className="h-4 w-4 animate-spin" /> Tworzenie przepisów i zapisywanie...</>
+                ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating recipes and saving...</>
                 : selectedCount === 0
-                  ? <>Wybierz co najmniej jeden posiłek</>
-                  : <><Check className="h-5 w-5" /> Zapisz plan ({selectedCount}) i dodaj nowe przepisy</>}
+                  ? <>Select at least one meal</>
+                  : <><Check className="h-5 w-5" /> Save plan ({selectedCount}) and add new recipes</>}
             </Button>
           </div>
         </div>
@@ -860,7 +860,7 @@ export default function MealPlanner() {
   const ownerLabel = (() => {
     if (isViewingOwn) return null;
     const owner = sharedOwners?.find((o) => o.recipe_owner_id === viewingOwnerId);
-    return owner?.owner_display_name || owner?.owner_email || 'Wspólny planer';
+    return owner?.owner_display_name || owner?.owner_email || 'Shared planner';
   })();
 
   return (
@@ -880,7 +880,7 @@ export default function MealPlanner() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="me">Mój planer</SelectItem>
+                  <SelectItem value="me">My planner</SelectItem>
                   {sharedOwners.map((o) => (
                     <SelectItem key={o.recipe_owner_id} value={o.recipe_owner_id}>
                       {o.owner_display_name || o.owner_email || 'Shared'}
@@ -896,9 +896,9 @@ export default function MealPlanner() {
                   size="sm"
                   className="gap-1.5 rounded-xl"
                   onClick={openRandomDialog}
-                  title="Wylosuj jeden posiłek — bez zapisu do planera"
+                  title="Roll one meal — no save to planner"
                 >
-                  <Dice5 className="h-4 w-4" /> Co zjeść?
+                  <Dice5 className="h-4 w-4" /> What to eat?
                 </Button>
                 <Button
                   variant="outline"
@@ -925,7 +925,7 @@ export default function MealPlanner() {
             </span>
             {weekStart.getTime() !== currentWeekMonday.getTime() && (
               <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setWeekStart(currentWeekMonday)}>
-                Dziś
+                Today
               </Button>
             )}
           </div>
@@ -941,7 +941,7 @@ export default function MealPlanner() {
           <DndContext sensors={sensors} onDragStart={onPlannedDragStart} onDragEnd={onPlannedDragEnd} onDragCancel={() => setActiveMealId(null)}>
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground font-body -mb-1">
-                💡 Wskazówka: przeciągnij posiłek na inny slot lub dzień, by go przenieść.
+                💡 Tip: drag a meal to another slot or day to move it.
               </p>
               {days.map((day) => {
                 const meals = mealsByDay[day.dateStr] || [];
@@ -990,7 +990,7 @@ export default function MealPlanner() {
                           className="text-xs text-muted-foreground font-body py-2 px-2 rounded-md border-2 border-dashed transition-colors border-transparent"
                           activeClassName="!border-primary !bg-primary/5 !text-primary"
                         >
-                          {activeMealId ? 'Upuść tutaj' : 'No meals planned'}
+                          {activeMealId ? 'Drop here' : 'No meals planned'}
                         </Droppable>
                       ) : (
                         <div className="space-y-2">
@@ -1022,7 +1022,7 @@ export default function MealPlanner() {
                                           <>
                                             <button
                                               {...handleProps}
-                                              aria-label="Przeciągnij"
+                                              aria-label="Drag"
                                               className="shrink-0 mr-1 p-1 -m-1 text-muted-foreground/60 hover:text-foreground active:cursor-grabbing cursor-grab"
                                             >
                                               <GripVertical className="h-3.5 w-3.5" />
@@ -1062,7 +1062,7 @@ export default function MealPlanner() {
             <DragOverlay>
               {activeMealId ? (
                 <div className="rounded-md bg-card border border-primary shadow-lg px-2 py-1.5 text-sm font-body">
-                  {mealPlans?.find((m) => m.id === activeMealId)?.recipe?.title || 'Posiłek'}
+                  {mealPlans?.find((m) => m.id === activeMealId)?.recipe?.title || 'Meal'}
                 </div>
               ) : null}
             </DragOverlay>
@@ -1110,17 +1110,17 @@ export default function MealPlanner() {
           <DialogContent className="rounded-2xl max-w-md">
             <DialogHeader>
               <DialogTitle className="font-display flex items-center gap-2">
-                <Dice5 className="h-5 w-5 text-primary" /> Co dziś zjeść?
+                <Dice5 className="h-5 w-5 text-primary" /> What to eat today?
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-2">
               {!randomOptions ? (
                 <>
                   <p className="text-sm text-muted-foreground font-body">
-                    Wybierz typ posiłku — AI wylosuje 4 propozycje. Nic nie zostanie zapisane do planera.
+                    Pick a meal type — AI will roll 4 suggestions. Nothing is saved to the planner.
                   </p>
                   <div>
-                    <label className="text-sm font-body text-muted-foreground mb-1.5 block">Typ posiłku</label>
+                    <label className="text-sm font-body text-muted-foreground mb-1.5 block">Meal type</label>
                     <Select value={randomMealType} onValueChange={setRandomMealType}>
                       <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -1136,16 +1136,16 @@ export default function MealPlanner() {
                     className="w-full gap-2 rounded-xl"
                   >
                     {randomLoading ? (
-                      <><Loader2 className="h-4 w-4 animate-spin" /> Losowanie...</>
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Rolling...</>
                     ) : (
-                      <><Dice5 className="h-4 w-4" /> Wylosuj propozycje</>
+                      <><Dice5 className="h-4 w-4" /> Roll suggestions</>
                     )}
                   </Button>
                 </>
               ) : (
                 <>
                   <p className="text-sm text-muted-foreground font-body">
-                    {MEAL_TYPE_LABELS[randomMealType]} — wybierz coś, na co masz ochotę:
+                    {MEAL_TYPE_LABELS[randomMealType]} — pick what you feel like:
                   </p>
                   <div className="space-y-2">
                     {randomOptions.map((option, i) => (
@@ -1177,7 +1177,7 @@ export default function MealPlanner() {
                               className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 inline-flex items-center gap-1"
                               onClick={() => setRandomDialogOpen(false)}
                             >
-                              <BookOpen className="h-3 w-3" /> Otwórz przepis
+                              <BookOpen className="h-3 w-3" /> Open recipe
                             </Link>
                           )}
                           {option.source === 'scraped' && option.scraped_id && (
@@ -1185,12 +1185,12 @@ export default function MealPlanner() {
                               onClick={() => openScrapedSource(option.scraped_id!)}
                               className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 inline-flex items-center gap-1"
                             >
-                              <ExternalLink className="h-3 w-3" /> Zobacz przepis
+                              <ExternalLink className="h-3 w-3" /> View recipe
                             </button>
                           )}
                           {option.source === 'new' && (
                             <span className="text-xs text-muted-foreground italic px-1">
-                              Pomysł AI — bez gotowego przepisu
+                              AI idea — no full recipe yet
                             </span>
                           )}
                         </div>
@@ -1205,9 +1205,9 @@ export default function MealPlanner() {
                       className="flex-1 gap-2 rounded-xl"
                     >
                       {randomLoading ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" /> Losowanie...</>
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Rolling...</>
                       ) : (
-                        <><RefreshCw className="h-4 w-4" /> Wylosuj ponownie</>
+                        <><RefreshCw className="h-4 w-4" /> Roll again</>
                       )}
                     </Button>
                     <Button
@@ -1215,7 +1215,7 @@ export default function MealPlanner() {
                       onClick={() => setRandomOptions(null)}
                       className="rounded-xl"
                     >
-                      Zmień typ
+                      Change type
                     </Button>
                   </div>
                 </>
@@ -1251,7 +1251,7 @@ export default function MealPlanner() {
                   </Button>
                   <div className="flex-1 text-center">
                     <span className="font-display text-2xl font-bold">{aiDays}</span>
-                    <span className="text-sm text-muted-foreground font-body ml-1">{aiDays === 1 ? 'dzień' : aiDays < 5 ? 'dni' : 'dni'}</span>
+                    <span className="text-sm text-muted-foreground font-body ml-1">{aiDays === 1 ? 'day' : 'days'}</span>
                   </div>
                   <Button
                     type="button"
