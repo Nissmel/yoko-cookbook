@@ -941,7 +941,7 @@ export default function MealPlanner() {
           <DndContext sensors={sensors} onDragStart={onPlannedDragStart} onDragEnd={onPlannedDragEnd} onDragCancel={() => setActiveMealId(null)}>
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground font-body -mb-1">
-                💡 Wskazówka: przeciągnij posiłek na inny slot lub dzień, by go przenieść.
+                💡 Tip: drag a meal to another slot or day to move it.
               </p>
               {days.map((day) => {
                 const meals = mealsByDay[day.dateStr] || [];
