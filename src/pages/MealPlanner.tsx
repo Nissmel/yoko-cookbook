@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useMealPlans, useAddMealPlan, useRemoveMealPlan, useMoveMealPlan } from '@/hooks/useMealPlanner';
 import { useRecipes } from '@/hooks/useRecipes';
