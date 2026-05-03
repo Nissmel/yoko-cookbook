@@ -372,7 +372,7 @@ export default function MealPlanner() {
       if (error || !data?.source_url) throw new Error('Brak linku');
       window.open(data.source_url, '_blank', 'noopener,noreferrer');
     } catch (e: any) {
-      toast.error(e.message || 'Nie udało się otworzyć przepisu');
+      toast.error(e.message || 'Failed to open recipe');
     }
   };
 
