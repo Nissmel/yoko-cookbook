@@ -99,12 +99,12 @@ export default function Pantry() {
         source_json: r,
       } as any);
 
-      toast.success('Przepis zapisany!', { id: tId });
+      toast.success('Recipe saved!', { id: tId });
       navigate(`/recipe/${created.id}`);
     } catch (e: any) {
-      const msg = e?.message || 'Nie udało się zapisać';
-      if (msg.includes('429')) toast.error('Rate limit — spróbuj za chwilę', { id: tId });
-      else if (msg.includes('402')) toast.error('Brak kredytów AI', { id: tId, description: 'Doładuj w ustawieniach workspace' });
+      const msg = e?.message || 'Failed to save';
+      if (msg.includes('429')) toast.error('Rate limit — try again in a moment', { id: tId });
+      else if (msg.includes('402')) toast.error('AI credits exhausted', { id: tId, description: 'Top up in workspace settings' });
       else toast.error(msg, { id: tId });
     } finally {
       setSavingIdx(null);
