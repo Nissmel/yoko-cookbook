@@ -27,6 +27,28 @@ export default function ShoppingList() {
   const clearChecked = useClearCheckedItems();
   const clearAll = useClearAllItems();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [consolidating, setConsolidating] = useState(false);
+  const queryClient = useQueryClient();
+
+  const consolidateWithAI = async () => {
+    setConsolidating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('consolidate-shopping-list', {
+        body: { owner_id: targetOwnerId },
+      });
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['shopping-list'] });
+      if (data?.merged > 0) {
+        toast.success(`Scalono ${data.merged} pozycji w ${data.groups} grup`);
+      } else {
+        toast.info('Nie ma czego scalać 🎉');
+      }
+    } catch (e: any) {
+      toast.error(e?.message || 'Nie udało się skonsolidować listy');
+    } finally {
+      setConsolidating(false);
+    }
+  };
 
   const unchecked = items?.filter((i) => !i.checked) || [];
   const checked = items?.filter((i) => i.checked) || [];
