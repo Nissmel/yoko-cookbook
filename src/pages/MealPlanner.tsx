@@ -1177,7 +1177,7 @@ export default function MealPlanner() {
                               className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 inline-flex items-center gap-1"
                               onClick={() => setRandomDialogOpen(false)}
                             >
-                              <BookOpen className="h-3 w-3" /> Otwórz przepis
+                              <BookOpen className="h-3 w-3" /> Open recipe
                             </Link>
                           )}
                           {option.source === 'scraped' && option.scraped_id && (
