@@ -1022,7 +1022,7 @@ export default function MealPlanner() {
                                           <>
                                             <button
                                               {...handleProps}
-                                              aria-label="Przeciągnij"
+                                              aria-label="Drag"
                                               className="shrink-0 mr-1 p-1 -m-1 text-muted-foreground/60 hover:text-foreground active:cursor-grabbing cursor-grab"
                                             >
                                               <GripVertical className="h-3.5 w-3.5" />
