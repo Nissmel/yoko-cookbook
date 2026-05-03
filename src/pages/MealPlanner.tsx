@@ -896,9 +896,9 @@ export default function MealPlanner() {
                   size="sm"
                   className="gap-1.5 rounded-xl"
                   onClick={openRandomDialog}
-                  title="Wylosuj jeden posiłek — bez zapisu do planera"
+                  title="Roll one meal — no save to planner"
                 >
-                  <Dice5 className="h-4 w-4" /> Co zjeść?
+                  <Dice5 className="h-4 w-4" /> What to eat?
                 </Button>
                 <Button
                   variant="outline"
