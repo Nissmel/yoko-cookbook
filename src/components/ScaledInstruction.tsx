@@ -23,10 +23,7 @@ export function ScaledInstruction({ step, scale, ingredients, className }: Props
         t.type === 'text' ? (
           <span key={i}>{t.value}</span>
         ) : (
-          <strong
-            key={i}
-            className="font-medium text-foreground/90 whitespace-nowrap"
-          >
+          <strong key={i} className="font-medium text-foreground/90">
             {t.scaled}
           </strong>
         ),
