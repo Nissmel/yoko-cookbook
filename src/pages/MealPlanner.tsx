@@ -253,6 +253,7 @@ export default function MealPlanner() {
   // AI generation state
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [aiDays, setAiDays] = useState(7);
+  const [aiStartDate, setAiStartDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
   const [aiPreferences, setAiPreferences] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -538,7 +539,17 @@ export default function MealPlanner() {
     try {
       for (const dayPlan of aiPlan) {
         // Single-day mode: use the explicitly chosen date; otherwise map by index in current week
-        const dateStr = singleDayDate ?? days[dayPlan.day - 1]?.dateStr;
+        let dateStr: string | undefined;
+        if (singleDayDate) {
+          dateStr = singleDayDate;
+        } else if (aiStartDate) {
+          // Map day index (1-based) onto user-chosen start date
+          const base = new Date(aiStartDate);
+          if (!isNaN(base.getTime())) {
+            dateStr = format(addDays(base, dayPlan.day - 1), 'yyyy-MM-dd');
+          }
+        }
+        if (!dateStr) dateStr = days[dayPlan.day - 1]?.dateStr;
         if (!dateStr) continue;
 
         for (const mealType of PLAN_MEAL_TYPES) {
@@ -1307,6 +1318,18 @@ export default function MealPlanner() {
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
+              </div>
+              <div>
+                <label className="text-sm font-body text-muted-foreground mb-1.5 block">Start date</label>
+                <Input
+                  type="date"
+                  value={aiStartDate}
+                  onChange={(e) => setAiStartDate(e.target.value)}
+                  className="rounded-xl"
+                />
+                <p className="text-xs text-muted-foreground font-body mt-1">
+                  Plan will cover {aiDays} {aiDays === 1 ? 'day' : 'days'} starting from this date.
+                </p>
               </div>
               <div>
                 <label className="text-sm font-body text-muted-foreground mb-1.5 block">Preferences (optional)</label>
