@@ -27,7 +27,7 @@ const isPreviewHost =
 // on already-installed clients (e.g. users stuck on an old build whose SW
 // keeps serving stale HTML). Anything other than the currently-stored value
 // triggers a full unregister + caches.delete() sweep on next load.
-const SW_KILL_SWITCH_VERSION = "2026-04-23-1";
+const SW_KILL_SWITCH_VERSION = "2026-05-11-1";
 
 async function nukeServiceWorkersAndCaches() {
   try {
