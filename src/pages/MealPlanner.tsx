@@ -1334,7 +1334,7 @@ export default function MealPlanner() {
 
         {/* AI Generate dialog */}
         <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
-          <DialogContent className="rounded-2xl max-w-sm">
+          <DialogContent className="rounded-2xl max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="font-display flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" /> AI Meal Plan
