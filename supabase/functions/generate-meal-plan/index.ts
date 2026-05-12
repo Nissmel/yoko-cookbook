@@ -74,7 +74,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipes, days, preferences, singleSlot, singleDay, exclude, excludeByMeal } = await req.json();
+    const {
+      recipes,
+      days,
+      preferences,
+      singleSlot,
+      singleDay,
+      exclude,
+      excludeByMeal,
+      sourceWeights,
+      ownWeight,
+      newWeight,
+    } = await req.json();
     if (!days && !singleSlot && !singleDay) {
       return new Response(JSON.stringify({ error: 'Days, singleSlot or singleDay required' }), {
         status: 400,
@@ -96,8 +107,8 @@ Deno.serve(async (req) => {
       category: r.category,
     }));
 
-    // Pull scraped recipe candidates in parallel-ready fashion (awaited here for prompt assembly).
-    const scrapedCandidates = await fetchScrapedSample();
+    // Pull scraped recipe candidates, weighted per source.
+    const scrapedCandidates = await fetchScrapedSample(sourceWeights);
 
     const mealLabelMap: Record<string, string> = {
       breakfast: 'Śniadanie',
@@ -106,19 +117,41 @@ Deno.serve(async (req) => {
       dessert: 'Deser',
     };
 
-    // Block describing the 3 source types the AI may pick from.
-    // Reused across all 3 prompt variants.
+    // Compute target proportions from caller weights.
+    // Default ratio is 1 / 2 / 1 (existing / scraped / new) per slot of 4 options.
+    const wOwn = Math.max(0, ownWeight ?? 1);
+    const wNew = Math.max(0, newWeight ?? 1);
+    // Aggregate scraped weight = sum of per-source weights (capped to keep ratio sane).
+    const wScrapedRaw = sourceWeights
+      ? Object.values(sourceWeights).reduce((a: number, b) => a + Math.max(0, Number(b) || 0), 0)
+      : 2;
+    const wScraped = Math.max(0, wScrapedRaw);
+
+    const totalW = wOwn + wScraped + wNew || 1;
+    const slot = 4;
+    let nOwn = Math.round((wOwn / totalW) * slot);
+    let nNew = Math.round((wNew / totalW) * slot);
+    let nScraped = slot - nOwn - nNew;
+    if (nScraped < 0) {
+      nScraped = 0;
+      const over = nOwn + nNew - slot;
+      if (nNew >= over) nNew -= over;
+      else { nOwn -= over - nNew; nNew = 0; }
+    }
+    // Force at least 1 "new" if AI has nothing else.
+    if (nOwn + nScraped + nNew === 0) nNew = slot;
+
     const sourceTypesBlock = `
 TRZY TYPY PROPOZYCJI (BARDZO WAŻNE — zawsze ustaw "source"):
 1. "existing" — przepis już zapisany w książce kucharskiej użytkownika. DOŁĄCZ "recipe_id" z listy poniżej.
 2. "scraped" — gotowy przepis z biblioteki polskich blogów kulinarnych (lista poniżej). DOŁĄCZ "scraped_id" z listy. Tytuł skopiuj 1:1.
 3. "new" — całkowicie nowy pomysł, którego nie ma ani w książce, ani w bibliotece. AI musi go wygenerować od zera.
 
-PROPORCJE (CEL DLA KAŻDEGO SLOTU — 4 opcje):
-- maksymalnie 1 opcja "existing" (z książki użytkownika),
-- 2 opcje "scraped" (z biblioteki polskich blogów),
-- 1 opcja "new" (świeży pomysł AI).
-Jeśli istniejących nie ma lub żaden nie pasuje → zastąp dodatkową opcją "scraped" lub "new". Jeśli scraped nie pasuje tematycznie → zastąp przez "new". NIGDY nie przekraczaj 1 opcji "existing" w slocie.
+PROPORCJE (CEL DLA KAŻDEGO SLOTU — 4 opcje, dostosowane do preferencji użytkownika):
+- ${nOwn} opcji "existing" (z książki użytkownika),
+- ${nScraped} opcji "scraped" (z biblioteki polskich blogów),
+- ${nNew} opcji "new" (świeży pomysł AI).
+Jeśli istniejących nie ma lub żaden nie pasuje → zastąp dodatkową opcją "scraped" lub "new". Jeśli scraped nie pasuje tematycznie → zastąp przez "new".
 NIGDY nie wymyślaj scraped_id ani recipe_id — używaj tylko tych z list poniżej. Jeśli żaden nie pasuje, użyj "source": "new".
 `;
 
