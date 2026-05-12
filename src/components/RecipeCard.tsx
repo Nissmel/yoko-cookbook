@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Clock, Users } from 'lucide-react';
+import { Clock, Users, User, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Recipe } from '@/types/recipe';
+import { getRecipeSourceLabel, isOwnRecipe } from '@/lib/recipeSource';
 
 export default function RecipeCard({ recipe }: { recipe: Recipe }) {
   const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
