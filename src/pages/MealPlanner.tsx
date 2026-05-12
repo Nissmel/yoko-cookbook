@@ -259,6 +259,54 @@ export default function MealPlanner() {
   const [aiPreferences, setAiPreferences] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
 
+  // Source weights — controls which sources dominate AI suggestions.
+  // 0 = exclude this source entirely. Persisted per-user in localStorage.
+  const { data: recipeSources } = useRecipeSources();
+  const weightsKey = user ? `mealPlanner.sourceWeights:${user.id}` : null;
+  const [sourceWeights, setSourceWeights] = useState<Record<string, number>>({});
+  const [ownWeight, setOwnWeight] = useState<number>(1);
+  const [newWeight, setNewWeight] = useState<number>(1);
+
+  useEffect(() => {
+    if (!weightsKey) return;
+    try {
+      const raw = localStorage.getItem(weightsKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed.sources) setSourceWeights(parsed.sources);
+      if (typeof parsed.own === 'number') setOwnWeight(parsed.own);
+      if (typeof parsed.new === 'number') setNewWeight(parsed.new);
+    } catch {
+      // ignore
+    }
+  }, [weightsKey]);
+
+  const persistWeights = useCallback(
+    (next: { sources?: Record<string, number>; own?: number; new?: number }) => {
+      if (!weightsKey) return;
+      const payload = {
+        sources: next.sources ?? sourceWeights,
+        own: next.own ?? ownWeight,
+        new: next.new ?? newWeight,
+      };
+      try {
+        localStorage.setItem(weightsKey, JSON.stringify(payload));
+      } catch {
+        // ignore
+      }
+    },
+    [weightsKey, sourceWeights, ownWeight, newWeight],
+  );
+
+  // Build the weights payload sent to the edge function.
+  const buildWeightsBody = useCallback(() => {
+    const sw: Record<string, number> = {};
+    for (const s of recipeSources || []) {
+      sw[s.id] = sourceWeights[s.id] ?? 1;
+    }
+    return { sourceWeights: sw, ownWeight, newWeight };
+  }, [recipeSources, sourceWeights, ownWeight, newWeight]);
+
   // AI plan selection state
   const [aiPlan, setAiPlan] = useState<DayPlan[] | null>(null);
   const [singleDayDate, setSingleDayDate] = useState<string | null>(null); // when set, aiPlan is for ONE specific date
