@@ -372,7 +372,8 @@ export default function MealPlanner() {
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
-        body: { recipes: recipes || [], days: aiDays, preferences: aiPreferences || undefined, ...buildWeightsBody() },
+        body: { recipes: recipes || [], days: aiDays, preferences: aiPreferences || undefined,
+          ...buildWeightsBody(), ...buildWeightsBody() },
       });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
@@ -400,6 +401,7 @@ export default function MealPlanner() {
           recipes: recipes || [],
           singleDay: { day: 1 },
           preferences: aiPreferences || undefined,
+          ...buildWeightsBody(),
         },
       });
       if (error) throw error;
@@ -429,6 +431,7 @@ export default function MealPlanner() {
           singleSlot: { day: 1, mealType },
           exclude: exclude || [],
           preferences: aiPreferences || undefined,
+          ...buildWeightsBody(),
         },
       });
       if (error) throw error;
@@ -498,6 +501,7 @@ export default function MealPlanner() {
           singleSlot: { day: dayNum, mealType },
           exclude,
           preferences: aiPreferences || undefined,
+          ...buildWeightsBody(),
         },
       });
       if (error) throw error;
@@ -548,6 +552,7 @@ export default function MealPlanner() {
           singleDay: { day: dayNum },
           excludeByMeal,
           preferences: aiPreferences || undefined,
+          ...buildWeightsBody(),
         },
       });
       if (error) throw error;
