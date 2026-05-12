@@ -17,27 +17,46 @@ interface ScrapedSample {
 }
 
 /**
- * Pull a random-ish sample of scraped recipes across all active sources.
- * We over-fetch (3x) and shuffle in JS so the AI sees variety, not just
- * the alphabetically-first 150 from one source.
+ * Pull a sample of scraped recipes across active sources, weighted by the
+ * caller's `sourceWeights` map ({ source_id: weight 0-5 }). Sources with
+ * weight 0 are excluded entirely; higher weights dominate the sample.
  */
-async function fetchScrapedSample(): Promise<ScrapedSample[]> {
+async function fetchScrapedSample(
+  sourceWeights?: Record<string, number>,
+): Promise<ScrapedSample[]> {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!supabaseUrl || !serviceKey) return [];
 
     const supabase = createClient(supabaseUrl, serviceKey);
+    // Over-fetch so weighted sampling has room to work.
     const { data, error } = await supabase
       .from('scraped_recipes')
       .select('id, title, source_url, source_id, recipe_sources(name)')
-      .limit(SCRAPED_SAMPLE_SIZE * 3);
+      .limit(SCRAPED_SAMPLE_SIZE * 6);
 
     if (error || !data) return [];
 
-    // Shuffle so we don't always send the same 150 to the model.
-    const shuffled = [...data].sort(() => Math.random() - 0.5).slice(0, SCRAPED_SAMPLE_SIZE);
-    return shuffled.map((r: any) => ({
+    const filtered = (data as any[]).filter((r) => {
+      if (!sourceWeights) return true;
+      const w = sourceWeights[r.source_id];
+      // If the user provided weights, an unknown source defaults to 1.
+      // A weight of 0 means "exclude this source".
+      return w === undefined ? true : w > 0;
+    });
+
+    // Weighted reservoir-style sampling: key = -log(U) / weight, take smallest keys.
+    const keyed = filtered.map((r) => {
+      const w = sourceWeights?.[r.source_id];
+      const weight = (w === undefined ? 1 : w) || 0.0001;
+      const u = Math.random();
+      return { r, key: -Math.log(u || 1e-9) / weight };
+    });
+    keyed.sort((a, b) => a.key - b.key);
+    const picked = keyed.slice(0, SCRAPED_SAMPLE_SIZE).map((x) => x.r);
+
+    return picked.map((r: any) => ({
       id: r.id,
       title: r.title,
       source_url: r.source_url,
