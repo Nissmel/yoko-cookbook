@@ -259,6 +259,54 @@ export default function MealPlanner() {
   const [aiPreferences, setAiPreferences] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
 
+  // Source weights — controls which sources dominate AI suggestions.
+  // 0 = exclude this source entirely. Persisted per-user in localStorage.
+  const { data: recipeSources } = useRecipeSources();
+  const weightsKey = user ? `mealPlanner.sourceWeights:${user.id}` : null;
+  const [sourceWeights, setSourceWeights] = useState<Record<string, number>>({});
+  const [ownWeight, setOwnWeight] = useState<number>(1);
+  const [newWeight, setNewWeight] = useState<number>(1);
+
+  useEffect(() => {
+    if (!weightsKey) return;
+    try {
+      const raw = localStorage.getItem(weightsKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed.sources) setSourceWeights(parsed.sources);
+      if (typeof parsed.own === 'number') setOwnWeight(parsed.own);
+      if (typeof parsed.new === 'number') setNewWeight(parsed.new);
+    } catch {
+      // ignore
+    }
+  }, [weightsKey]);
+
+  const persistWeights = useCallback(
+    (next: { sources?: Record<string, number>; own?: number; new?: number }) => {
+      if (!weightsKey) return;
+      const payload = {
+        sources: next.sources ?? sourceWeights,
+        own: next.own ?? ownWeight,
+        new: next.new ?? newWeight,
+      };
+      try {
+        localStorage.setItem(weightsKey, JSON.stringify(payload));
+      } catch {
+        // ignore
+      }
+    },
+    [weightsKey, sourceWeights, ownWeight, newWeight],
+  );
+
+  // Build the weights payload sent to the edge function.
+  const buildWeightsBody = useCallback(() => {
+    const sw: Record<string, number> = {};
+    for (const s of recipeSources || []) {
+      sw[s.id] = sourceWeights[s.id] ?? 1;
+    }
+    return { sourceWeights: sw, ownWeight, newWeight };
+  }, [recipeSources, sourceWeights, ownWeight, newWeight]);
+
   // AI plan selection state
   const [aiPlan, setAiPlan] = useState<DayPlan[] | null>(null);
   const [singleDayDate, setSingleDayDate] = useState<string | null>(null); // when set, aiPlan is for ONE specific date
@@ -324,7 +372,7 @@ export default function MealPlanner() {
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
-        body: { recipes: recipes || [], days: aiDays, preferences: aiPreferences || undefined },
+        body: { recipes: recipes || [], days: aiDays, preferences: aiPreferences || undefined, ...buildWeightsBody() },
       });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
@@ -352,6 +400,7 @@ export default function MealPlanner() {
           recipes: recipes || [],
           singleDay: { day: 1 },
           preferences: aiPreferences || undefined,
+          ...buildWeightsBody(),
         },
       });
       if (error) throw error;
@@ -381,6 +430,7 @@ export default function MealPlanner() {
           singleSlot: { day: 1, mealType },
           exclude: exclude || [],
           preferences: aiPreferences || undefined,
+          ...buildWeightsBody(),
         },
       });
       if (error) throw error;
@@ -450,6 +500,7 @@ export default function MealPlanner() {
           singleSlot: { day: dayNum, mealType },
           exclude,
           preferences: aiPreferences || undefined,
+          ...buildWeightsBody(),
         },
       });
       if (error) throw error;
@@ -500,6 +551,7 @@ export default function MealPlanner() {
           singleDay: { day: dayNum },
           excludeByMeal,
           preferences: aiPreferences || undefined,
+          ...buildWeightsBody(),
         },
       });
       if (error) throw error;
@@ -1282,7 +1334,7 @@ export default function MealPlanner() {
 
         {/* AI Generate dialog */}
         <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
-          <DialogContent className="rounded-2xl max-w-sm">
+          <DialogContent className="rounded-2xl max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="font-display flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" /> AI Meal Plan
@@ -1333,6 +1385,72 @@ export default function MealPlanner() {
                   Plan will cover {aiDays} {aiDays === 1 ? 'day' : 'days'} starting from this date.
                 </p>
               </div>
+
+              {/* Source weights — control which sources dominate AI picks */}
+              <div className="rounded-xl border border-border/60 bg-muted/30 p-3 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-sm font-body font-medium text-foreground">Source weights</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const reset: Record<string, number> = {};
+                      for (const s of recipeSources || []) reset[s.id] = 1;
+                      setSourceWeights(reset);
+                      setOwnWeight(1);
+                      setNewWeight(1);
+                      persistWeights({ sources: reset, own: 1, new: 1 });
+                    }}
+                    className="text-xs text-muted-foreground hover:text-primary font-body"
+                  >
+                    Reset
+                  </button>
+                </div>
+                <p className="text-[11px] text-muted-foreground font-body -mt-1">
+                  Higher weight = more suggestions from that source. Set to 0 to exclude.
+                </p>
+
+                {[
+                  {
+                    key: '__own',
+                    label: 'My cookbook',
+                    value: ownWeight,
+                    set: (v: number) => { setOwnWeight(v); persistWeights({ own: v }); },
+                  },
+                  {
+                    key: '__new',
+                    label: 'New AI ideas',
+                    value: newWeight,
+                    set: (v: number) => { setNewWeight(v); persistWeights({ new: v }); },
+                  },
+                  ...((recipeSources || []).map((s) => ({
+                    key: s.id,
+                    label: s.name,
+                    value: sourceWeights[s.id] ?? 1,
+                    set: (v: number) => {
+                      const next = { ...sourceWeights, [s.id]: v };
+                      setSourceWeights(next);
+                      persistWeights({ sources: next });
+                    },
+                  }))),
+                ].map((row) => (
+                  <div key={row.key} className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-body text-foreground truncate">{row.label}</span>
+                      <span className="text-xs font-body text-muted-foreground tabular-nums w-6 text-right">
+                        {row.value === 0 ? 'off' : row.value}
+                      </span>
+                    </div>
+                    <Slider
+                      value={[row.value]}
+                      min={0}
+                      max={5}
+                      step={1}
+                      onValueChange={(v) => row.set(v[0])}
+                    />
+                  </div>
+                ))}
+              </div>
+
               <div>
                 <label className="text-sm font-body text-muted-foreground mb-1.5 block">Preferences (optional)</label>
                 <Input
