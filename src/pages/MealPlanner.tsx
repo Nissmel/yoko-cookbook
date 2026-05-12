@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useMealPlans, useAddMealPlan, useRemoveMealPlan, useMoveMealPlan } from '@/hooks/useMealPlanner';
 import { useRecipes } from '@/hooks/useRecipes';
+import { useRecipeSources } from '@/hooks/useRecipeSources';
 import { useAddToShoppingList } from '@/hooks/useShoppingList';
 import { useSharedWithMe } from '@/hooks/useRecipeSharing';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, Plus, X, Sparkles, Loader2, Check, BookOpen, RefreshCw, Minus, GripVertical, Dice5, ExternalLink } from 'lucide-react';
 import { format, addDays } from 'date-fns';
