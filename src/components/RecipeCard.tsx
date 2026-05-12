@@ -42,7 +42,7 @@ export default function RecipeCard({ recipe }: { recipe: Recipe }) {
             {recipe.description}
           </p>
         )}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground font-body pt-1">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground font-body pt-1 flex-wrap">
           {totalTime > 0 && (
             <span className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-primary/70" />
@@ -52,6 +52,14 @@ export default function RecipeCard({ recipe }: { recipe: Recipe }) {
           <span className="flex items-center gap-1.5">
             <Users className="h-3.5 w-3.5 text-primary/70" />
             {recipe.servings} servings
+          </span>
+          <span className="flex items-center gap-1.5 ml-auto">
+            {isOwnRecipe(recipe.source_url) ? (
+              <User className="h-3.5 w-3.5 text-primary/70" />
+            ) : (
+              <Globe className="h-3.5 w-3.5 text-primary/70" />
+            )}
+            <span className="truncate max-w-[120px]">{getRecipeSourceLabel(recipe.source_url)}</span>
           </span>
         </div>
         {recipe.tags.length > 0 && (
