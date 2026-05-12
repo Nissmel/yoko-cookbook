@@ -64,6 +64,29 @@ function isRecipeUrl(url: string, baseUrl: string): boolean {
       return new RegExp(`^\\/przepis\\/${SLUG}\\/?$`).test(path);
     }
 
+    // WordPress-style English recipe blogs: recipes live at root as /<slug>/.
+    // Reject obvious non-recipe single-slug pages.
+    if (host === 'justonecookbook.com' || host === 'recipetineats.com') {
+      const wpRejects = [
+        'about', 'about-us', 'contact', 'privacy', 'privacy-policy', 'terms',
+        'disclaimer', 'shop', 'store', 'cookbook', 'cookbooks', 'subscribe',
+        'newsletter', 'press', 'work-with-me', 'faq', 'faqs', 'recipes',
+        'recipe-index', 'recipe-collection', 'recipe-collections', 'collections',
+        'category', 'tag', 'page', 'author', 'search', 'gallery', 'video',
+        'videos', 'cart', 'checkout', 'my-account', 'login', 'register',
+        'sitemap', 'feed', 'wp-content', 'wp-admin', 'amp', 'print',
+        'web-stories', 'web-story', 'comments', 'reviews', 'travel',
+        'cooking-101', 'meal-plan', 'meal-plans', 'how-to',
+      ];
+      const m = path.match(new RegExp(`^\\/(${SLUG})\\/?$`));
+      if (!m) return false;
+      const slug = m[1];
+      if (wpRejects.includes(slug)) return false;
+      // Recipe slugs are usually multi-word.
+      if (!slug.includes('-')) return false;
+      return true;
+    }
+
     return new RegExp(`\\/(przepis|przepisy|recipe|recipes)\\/${SLUG}`, 'i').test(path);
   } catch {
     return false;
