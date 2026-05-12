@@ -372,7 +372,7 @@ export default function MealPlanner() {
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
-        body: { recipes: recipes || [], days: aiDays, preferences: aiPreferences || undefined },
+        body: { recipes: recipes || [], days: aiDays, preferences: aiPreferences || undefined, ...buildWeightsBody() },
       });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
