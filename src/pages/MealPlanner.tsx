@@ -1237,7 +1237,8 @@ export default function MealPlanner() {
               {activeMealId ? (
                 <div className="rounded-md bg-card border border-primary shadow-lg px-2 py-1.5 text-sm font-body">
                   {mealPlans?.find((m) => m.id === activeMealId)?.recipe?.title || 'Meal'}
-                </div>
+                  </div>
+                  {renderSourceWeights()}
               ) : null}
             </DragOverlay>
           </DndContext>
