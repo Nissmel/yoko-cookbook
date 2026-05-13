@@ -1304,6 +1304,7 @@ export default function MealPlanner() {
                       </SelectContent>
                     </Select>
                   </div>
+                  {renderSourceWeights()}
                   <Button
                     onClick={() => generateRandomMeal(randomMealType)}
                     disabled={randomLoading}
