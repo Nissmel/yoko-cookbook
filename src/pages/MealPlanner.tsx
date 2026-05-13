@@ -451,6 +451,72 @@ export default function MealPlanner() {
     setRandomDialogOpen(true);
   };
 
+  // Reusable Source weights panel — used in both AI plan and "What to eat" dialogs.
+  const renderSourceWeights = () => (
+    <div className="rounded-xl border border-border/60 bg-muted/30 p-3 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <label className="text-sm font-body font-medium text-foreground">Source weights</label>
+        <button
+          type="button"
+          onClick={() => {
+            const reset: Record<string, number> = {};
+            for (const s of recipeSources || []) reset[s.id] = 1;
+            setSourceWeights(reset);
+            setOwnWeight(1);
+            setNewWeight(1);
+            persistWeights({ sources: reset, own: 1, new: 1 });
+          }}
+          className="text-xs text-muted-foreground hover:text-primary font-body"
+        >
+          Reset
+        </button>
+      </div>
+      <p className="text-[11px] text-muted-foreground font-body -mt-1">
+        Higher weight = more suggestions from that source. Set to 0 to exclude.
+      </p>
+      {[
+        {
+          key: '__own',
+          label: 'My cookbook',
+          value: ownWeight,
+          set: (v: number) => { setOwnWeight(v); persistWeights({ own: v }); },
+        },
+        {
+          key: '__new',
+          label: 'New AI ideas',
+          value: newWeight,
+          set: (v: number) => { setNewWeight(v); persistWeights({ new: v }); },
+        },
+        ...((recipeSources || []).map((s) => ({
+          key: s.id,
+          label: s.name,
+          value: sourceWeights[s.id] ?? 1,
+          set: (v: number) => {
+            const next = { ...sourceWeights, [s.id]: v };
+            setSourceWeights(next);
+            persistWeights({ sources: next });
+          },
+        }))),
+      ].map((row) => (
+        <div key={row.key} className="space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-body text-foreground truncate">{row.label}</span>
+            <span className="text-xs font-body text-muted-foreground tabular-nums w-6 text-right">
+              {row.value === 0 ? 'off' : row.value}
+            </span>
+          </div>
+          <Slider
+            value={[row.value]}
+            min={0}
+            max={5}
+            step={1}
+            onValueChange={(v) => row.set(v[0])}
+          />
+        </div>
+      ))}
+    </div>
+  );
+
   const rerollRandom = () => {
     const exclude = (randomOptions || []).map((o) => o.title);
     generateRandomMeal(randomMealType, exclude);
