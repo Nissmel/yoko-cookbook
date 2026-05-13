@@ -1281,7 +1281,7 @@ export default function MealPlanner() {
 
         {/* Random meal dialog — "what should I eat now?" without saving to planner */}
         <Dialog open={randomDialogOpen} onOpenChange={setRandomDialogOpen}>
-          <DialogContent className="rounded-2xl max-w-md">
+          <DialogContent className="rounded-2xl max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="font-display flex items-center gap-2">
                 <Dice5 className="h-5 w-5 text-primary" /> What to eat today?
